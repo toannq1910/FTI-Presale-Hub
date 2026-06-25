@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="vi" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FTI Collaboration Hub | Customer Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div id="loginOverlay" class="login-overlay" hidden>
+  <form class="login-card" id="loginForm">
+    <img src="assets/logo-fpt.png" class="login-logo" alt="FPT"><span class="eyebrow">Permission demo</span>
+    <h1>FTI Collaboration Hub</h1><p>Login đã viết sẵn, mặc định chưa cho hoạt động. Bật/tắt tại <code>js/config.js</code>.</p>
+    <label>Email</label><input id="loginEmail" type="email" value="customer@company.vn">
+    <label>Password</label><input id="loginPassword" type="password" value="demo123">
+    <button class="btn btn-primary">Đăng nhập Demo</button>
+  </form>
+</div>
+<div class="app-shell">
+<aside class="sidebar" id="sidebar">
+  <div class="brand"><img src="assets/logo-fpt.png" alt="FPT"><div><strong>FTI Collaboration</strong><span>Customer Intelligence Hub</span></div><button id="sidebarToggle" class="icon-btn">☰</button></div>
+  <nav class="sidebar-nav">
+    <a class="nav-item active" href="#overview" data-page="overview"><span>🏠</span><b>Tổng quan</b><em>Home</em></a>
+    <div class="nav-group expanded"><button class="nav-group-head" data-toggle-group><span>🎧</span><div><b>CONTACT CENTER</b><small>UCaaS · CCaaS · AI</small></div><i>⌄</i></button><div class="nav-group-body">
+      <a class="nav-item" href="#oncallcx" data-page="oncallcx"><span>📞</span><b>OnCallCX</b><em>FPT</em></a>
+      <a class="nav-item" href="#ccaas-vn" data-page="ccaas-vn"><span>🇻🇳</span><b>CCaaS Việt Nam</b><em>VN</em></a>
+      <a class="nav-item" href="#ccaas-global" data-page="ccaas-global"><span>☁️</span><b>CCaaS Global</b></a>
+      <a class="nav-item" href="#api-reference" data-page="api-reference"><span>📗</span><b>API Reference</b><em>New</em></a>
+      <a class="nav-item" href="#ucpbx-vn" data-page="ucpbx-vn"><span>🏁</span><b>UC/PBX Việt Nam</b><em>VN</em></a>
+    </div></div>
+    <div class="nav-group expanded"><button class="nav-group-head" data-toggle-group><span>🎥</span><div><b>VIDEO CONFERENCE</b><small>Room · Endpoint</small></div><i>⌄</i></button><div class="nav-group-body">
+      <a class="nav-item" href="#video" data-page="video"><span>📹</span><b>Video Solutions</b></a>
+      <a class="nav-item" href="#devices" data-page="devices"><span>🖥️</span><b>Thiết bị phòng họp</b></a>
+    </div></div>
+    <div class="nav-group expanded"><button class="nav-group-head" data-toggle-group><span>🔌</span><div><b>INTEGRATION</b><small>CRM · ERP · BYOC</small></div><i>⌄</i></button><div class="nav-group-body">
+      <a class="nav-item" href="#integration" data-page="integration"><span>🔁</span><b>Integration Playbook</b></a>
+      <a class="nav-item" href="#crm" data-page="crm"><span>🧩</span><b>CRM/ERP Việt Nam</b><em>VN</em></a>
+      <a class="nav-item" href="#compliance" data-page="compliance"><span>🛡️</span><b>Tuân thủ VN</b></a>
+    </div></div>
+    <div class="nav-group expanded"><button class="nav-group-head" data-toggle-group><span>🚀</span><div><b>DEMO & SALES</b><small>Khách hàng đọc hiểu</small></div><i>⌄</i></button><div class="nav-group-body">
+      <a class="nav-item" href="#demo" data-page="demo"><span>▶️</span><b>Demo sản phẩm</b><em>Live</em></a>
+      <a class="nav-item" href="#compare" data-page="compare"><span>📊</span><b>Bảng so sánh</b></a>
+      <a class="nav-item" href="#resources" data-page="resources"><span>📚</span><b>Nguồn tài liệu</b></a>
+      <a class="nav-item" href="#editor" data-page="editor"><span>✏️</span><b>Chỉnh sửa bài viết</b><em>Edit</em></a>
+    </div></div>
+  </nav>
+  <div class="sidebar-footer"><div class="user-pill"><div class="avatar">FT</div><div><strong>FTI Staff</strong><span>Presales Demo</span></div><button class="icon-btn" id="logoutBtn">↪</button></div><div class="version"><span>Cập nhật: 06/2026</span><b>v8.0</b></div></div>
+</aside>
+<main class="main">
+<header class="topbar"><button class="icon-btn mobile-menu" id="mobileMenu">☰</button><div><h1 id="pageTitle">Tổng quan</h1><p id="pageSubtitle">Customer-facing Collaboration Portal</p></div><div class="topbar-actions"><div class="search-box"><span>🔎</span><input id="globalSearch" placeholder="Tìm giải pháp, API, CRM, demo..."></div><button class="icon-btn" id="themeToggle">◐</button><span class="permission-chip" id="permissionChip">Login: OFF</span></div></header>
+<section id="pageRoot" class="page-root"></section>
+</main></div>
+<div id="toastRoot" class="toast-root"></div>
+<script type="module" src="js/main.js"></script>
+</body></html>

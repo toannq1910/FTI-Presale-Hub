@@ -1,0 +1,1 @@
+export const CONFIG={LOGIN_REQUIRED:false,PERMISSIONS:{viewDashboard:true,viewSolutions:true,viewDemo:true,viewApiDocs:true,viewCompare:true,viewCompliance:true,exportProposal:false,adminMode:false},SESSION_KEY:'fti_customer_hub_session'};

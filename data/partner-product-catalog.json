@@ -1,0 +1,550 @@
+{
+  "ccaas-vn": {
+    "title": "CCaaS — Đối Tác Việt Nam",
+    "apiFolder": "CONTACT CENTER/API Reference/CCaaS/Đối Tác Việt Nam",
+    "productTitle": "CCaaS Việt Nam — Bài viết sản phẩm đối tác",
+    "products": [
+      {
+        "id": "prod-oncallcx-fpt",
+        "name": "OncallCX - Contact Center As A Service",
+        "icon": "📞",
+        "category": "Cloud Contact Center Platform",
+        "tags": [
+          "FPT",
+          "CCaaS",
+          "Omnichannel",
+          "AI",
+          "CRM Integration"
+        ],
+        "source": "oncallcx.vn",
+        "desc": "OncallCX là nền tảng Contact Center as a Service (CCaaS) do FPT Telecom phát triển, giúp doanh nghiệp triển khai tổng đài chăm sóc khách hàng trên nền tảng Cloud với thời gian triển khai nhanh, khả năng mở rộng linh hoạt và tích hợp dễ dàng với CRM, ERP, AI Bot và các hệ thống nghiệp vụ.",
+        "strengths": [
+          "Omnichannel Contact Center",
+          "Voice / Chat / Email / Social",
+          "AI Voicebot & Chatbot",
+          "Call Recording",
+          "Dashboard & Realtime Report",
+          "Workflow Automation",
+          "CRM Integration",
+          "Open REST API & Webhook"
+        ],
+        "usecases": [
+          "Enterprise",
+          "Banking",
+          "Finance",
+          "Insurance",
+          "Healthcare",
+          "Retail",
+          "Logistics",
+          "Government"
+        ],
+        "link": "oncallcx.vn"
+      },
+      {
+        "id": "prod-mitek-contact-center",
+        "name": "Mitek Contact Center",
+        "icon": "🎧",
+        "category": "CCaaS / On-premise + Cloud",
+        "tags": [
+          "VN",
+          "Contact Center",
+          "Enterprise",
+          "Hybrid"
+        ],
+        "source": "mitek.vn",
+        "desc": "Mitek là nhà cung cấp giải pháp Contact Center tại Việt Nam, tập trung vào các sản phẩm và giải pháp phục vụ doanh nghiệp cần tổng đài chăm sóc khách hàng, vận hành chiến dịch, báo cáo và tích hợp hệ thống. Mô hình phù hợp với khách hàng cần lựa chọn on-premise, cloud hoặc triển khai lai.",
+        "strengths": [
+          "Có hiện diện và hỗ trợ tại Việt Nam",
+          "Phù hợp khách hàng cần kiểm soát hạ tầng",
+          "Định hướng giải pháp Contact Center cho doanh nghiệp",
+          "Có kênh hỗ trợ/hotline và tư vấn trong nước"
+        ],
+        "usecases": [
+          "Ngân hàng, bảo hiểm, tài chính",
+          "Doanh nghiệp cần on-premise/hybrid",
+          "Tổng đài CSKH có yêu cầu tuân thủ dữ liệu"
+        ],
+        "link": "mitek.vn"
+      },
+      {
+        "id": "prod-stringeex",
+        "name": "StringeeX — Cloud Contact Center",
+        "icon": "🎧",
+        "category": "CCaaS / Omnichannel",
+        "tags": [
+          "VN",
+          "AI",
+          "Callbot",
+          "Chatbot",
+          "Cloud"
+        ],
+        "source": "stringeex.com",
+        "desc": "StringeeX là nền tảng Cloud Contact Center hỗ trợ chăm sóc khách hàng đa kênh, kết hợp AI, Callbot và Chatbot để tự động hóa một phần quy trình vận hành, hỗ trợ agent và nâng cao năng suất đội ngũ CSKH.",
+        "strengths": [
+          "Nền tảng cloud contact center",
+          "Hỗ trợ voice call và kênh số",
+          "Có AI, Callbot, Chatbot",
+          "Có thống kê, giám sát và báo cáo",
+          "Phù hợp đội CSKH cần triển khai nhanh"
+        ],
+        "usecases": [
+          "CSKH đa kênh",
+          "Call center cloud",
+          "Telesales có báo cáo và giám sát",
+          "Doanh nghiệp cần automation bằng AI"
+        ],
+        "link": "stringeex.com"
+      },
+      {
+        "id": "prod-viettel-cx-cloud",
+        "name": "Viettel CX Cloud",
+        "icon": "📶",
+        "category": "Omni-channel Cloud Contact Center",
+        "tags": [
+          "VN",
+          "AI",
+          "Data Analytics",
+          "Enterprise"
+        ],
+        "source": "solutions.viettel.vn",
+        "desc": "Viettel CX Cloud là hệ thống tổng đài đa kênh cho doanh nghiệp, kết hợp AI và Data Analytics nhằm nâng cao hiệu suất nhân viên, tối ưu chi phí vận hành và hỗ trợ doanh nghiệp quản lý tập trung hoạt động bán hàng/chăm sóc khách hàng.",
+        "strengths": [
+          "Omni-channel cloud contact center",
+          "Kết hợp AI và Data Analytics",
+          "Hỗ trợ quản lý người dùng, quy trình, chất lượng nghiệp vụ",
+          "Phù hợp doanh nghiệp cần hạ tầng/telco Việt Nam"
+        ],
+        "usecases": [
+          "Tổng đài đa kênh quy mô lớn",
+          "Bán hàng và CSKH tập trung",
+          "Doanh nghiệp cần đầu số/telco Viettel",
+          "Tối ưu chi phí vận hành contact center"
+        ],
+        "link": "solutions.viettel.vn"
+      },
+      {
+        "id": "prod-callio",
+        "name": "Callio — CRM + Tổng đài bán hàng",
+        "icon": "📞",
+        "category": "SME Sales CRM / Call Center",
+        "tags": [
+          "VN",
+          "CRM",
+          "Telesales",
+          "AI Agent"
+        ],
+        "source": "callio.vn",
+        "desc": "Callio là phần mềm quản lý kinh doanh tập trung tích hợp tổng đài thông minh, hướng tới tăng tốc cuộc gọi telesales, quản lý khách hàng, hội thoại đa kênh và tạo chiến dịch gọi/nhắn tin/email tự động cho đội bán hàng.",
+        "strengths": [
+          "Tích hợp CRM và tổng đài trong cùng nền tảng",
+          "Tập trung vào telesales và tăng trưởng doanh số",
+          "Có quản lý chat/hội thoại đa kênh",
+          "Có campaign gọi, nhắn tin, email tự động",
+          "Phù hợp doanh nghiệp SME và đội sales"
+        ],
+        "usecases": [
+          "Telesales SME",
+          "Quản lý lead và pipeline bán hàng",
+          "CSKH nhỏ và vừa",
+          "Đội sales cần gọi nhanh, theo dõi lịch sử và chiến dịch"
+        ],
+        "link": "callio.vn"
+      },
+      {
+        "id": "prod-cmc-nextcx",
+        "name": "CMC Telecom Contact Center / NextCX",
+        "icon": "☁️",
+        "category": "Cloud Contact Center / AI CX",
+        "tags": [
+          "VN",
+          "CMC",
+          "AI",
+          "Omnichannel"
+        ],
+        "source": "cmctelecom.vn",
+        "desc": "Nhóm giải pháp Contact Center của CMC Telecom hướng tới nâng tầm dịch vụ khách hàng với mô hình đa kênh, kết hợp AI Contact Center để cá nhân hóa trải nghiệm, hiểu khách hàng tốt hơn và tối ưu chi phí mở rộng đội CSKH.",
+        "strengths": [
+          "Định hướng CSKH đa kênh all-in-one",
+          "Có câu chuyện AI Contact Center",
+          "Phù hợp doanh nghiệp cần cá nhân hóa trải nghiệm khách hàng",
+          "Có nền tảng hạ tầng và dịch vụ doanh nghiệp từ CMC Telecom"
+        ],
+        "usecases": [
+          "CSKH đa kênh",
+          "AI Contact Center",
+          "Doanh nghiệp bán lẻ/dịch vụ cần cá nhân hóa CX",
+          "Khách hàng cần nhà cung cấp hạ tầng trong nước"
+        ],
+        "link": "cmctelecom.vn"
+      }
+    ]
+  },
+  "ccaas-global": {
+    "title": "CCaaS — Nền Tảng Quốc Tế",
+    "apiFolder": "CONTACT CENTER/API Reference/CCaaS/Đối tác quốc tế",
+    "productTitle": "CCaaS Quốc tế — Bài viết sản phẩm đối tác",
+    "products": [
+      {
+        "id": "prod-genesys-cloud-cx",
+        "name": "Genesys Cloud CX",
+        "icon": "☁️",
+        "category": "AI-powered Experience Orchestration",
+        "tags": [
+          "Global",
+          "AI",
+          "Omnichannel",
+          "Enterprise"
+        ],
+        "source": "genesys.com",
+        "desc": "Genesys Cloud CX là nền tảng cloud-native cho contact center và điều phối trải nghiệm khách hàng bằng AI. Giải pháp nhấn mạnh khả năng mở rộng, giao diện sẵn sàng triển khai, công cụ xây dựng orchestration flow và nền tảng dữ liệu sự kiện.",
+        "strengths": [
+          "Cloud-native và dễ mở rộng",
+          "AI-powered experience orchestration",
+          "Hỗ trợ voice, digital, AI và workforce engagement",
+          "Phù hợp enterprise contact center đa kênh"
+        ],
+        "usecases": [
+          "Enterprise CCaaS",
+          "Omnichannel customer experience",
+          "Journey orchestration",
+          "Workforce engagement management"
+        ],
+        "link": "genesys.com"
+      },
+      {
+        "id": "prod-nice-cxone",
+        "name": "NICE CXone",
+        "icon": "🤖",
+        "category": "Enterprise CCaaS / AI",
+        "tags": [
+          "Global",
+          "AI",
+          "WEM",
+          "Enterprise"
+        ],
+        "source": "nice.com",
+        "desc": "NICE CXone là nền tảng CCaaS quốc tế cho contact center enterprise, tập trung vào AI, quản trị tương tác khách hàng, tối ưu vận hành agent và workforce engagement. Phù hợp các tổ chức cần nền tảng cloud contact center quy mô lớn.",
+        "strengths": [
+          "Định vị enterprise CCaaS",
+          "Tập trung AI và tối ưu năng suất agent",
+          "Hỗ trợ quản trị contact center quy mô lớn",
+          "Phù hợp nhu cầu vận hành đa quốc gia"
+        ],
+        "usecases": [
+          "Enterprise contact center",
+          "AI agent assist",
+          "Workforce optimization",
+          "Global customer service"
+        ],
+        "link": "nice.com"
+      },
+      {
+        "id": "prod-webex-contact-center",
+        "name": "Webex Contact Center",
+        "icon": "💬",
+        "category": "Cloud Contact Center",
+        "tags": [
+          "Global",
+          "Cisco",
+          "Webex",
+          "Enterprise"
+        ],
+        "source": "webex.com",
+        "desc": "Webex Contact Center là nền tảng contact center cloud trong hệ sinh thái Cisco/Webex, phù hợp khách hàng đã sử dụng collaboration, meeting và calling của Cisco. Giải pháp tập trung vào agent experience, customer journey và tích hợp hệ thống.",
+        "strengths": [
+          "Nằm trong hệ sinh thái Cisco/Webex",
+          "Phù hợp khách hàng đã dùng Webex Calling/Meeting",
+          "Hỗ trợ contact center cloud",
+          "Có hướng tích hợp CRM và hệ thống enterprise"
+        ],
+        "usecases": [
+          "Cloud contact center",
+          "Khách hàng dùng Cisco/Webex",
+          "Customer journey management",
+          "Enterprise collaboration + contact center"
+        ],
+        "link": "webex.com"
+      },
+      {
+        "id": "prod-zoom-contact-center",
+        "name": "Zoom Contact Center",
+        "icon": "🎥",
+        "category": "Cloud Contact Center",
+        "tags": [
+          "Global",
+          "Zoom",
+          "Video",
+          "Cloud"
+        ],
+        "source": "zoom.us",
+        "desc": "Zoom Contact Center phù hợp doanh nghiệp đã dùng hệ sinh thái Zoom và muốn mở rộng sang contact center cloud. Sản phẩm kết hợp các kênh tương tác khách hàng, quản lý hàng chờ/agent và trải nghiệm khách hàng trên nền tảng Zoom.",
+        "strengths": [
+          "Tích hợp tốt với hệ sinh thái Zoom",
+          "Phù hợp tổ chức đã dùng Zoom Phone/Meetings",
+          "Hỗ trợ cloud contact center",
+          "Tập trung trải nghiệm khách hàng hiện đại"
+        ],
+        "usecases": [
+          "Contact center cloud cho khách hàng Zoom",
+          "Video/customer engagement",
+          "Agent queue management",
+          "Digital service desk"
+        ],
+        "link": "zoom.us"
+      },
+      {
+        "id": "prod-twilio-flex",
+        "name": "Twilio Flex",
+        "icon": "🧱",
+        "category": "Programmable Contact Center",
+        "tags": [
+          "Global",
+          "CPaaS",
+          "Programmable",
+          "Developer"
+        ],
+        "source": "twilio.com",
+        "desc": "Twilio Flex là nền tảng contact center có khả năng lập trình và tùy biến cao, phù hợp đội ngũ kỹ thuật muốn kiểm soát sâu UI, routing, workflow và tích hợp với các dịch vụ CPaaS của Twilio.",
+        "strengths": [
+          "Programmable contact center",
+          "Tùy biến sâu theo nghiệp vụ",
+          "Phù hợp đội kỹ thuật mạnh",
+          "Kết hợp tốt với hệ sinh thái CPaaS"
+        ],
+        "usecases": [
+          "Contact center tùy biến cao",
+          "Sản phẩm cần embedded communications",
+          "Workflow đặc thù",
+          "Dev team muốn full control"
+        ],
+        "link": "twilio.com"
+      },
+      {
+        "id": "prod-amazon-connect",
+        "name": "Amazon Connect",
+        "icon": "aws",
+        "category": "AWS Cloud Contact Center",
+        "tags": [
+          "Global",
+          "AWS",
+          "Cloud",
+          "AI"
+        ],
+        "source": "aws.amazon.com",
+        "desc": "Amazon Connect là dịch vụ contact center cloud của AWS, phù hợp khách hàng đang sử dụng AWS và cần tích hợp sâu với các dịch vụ như storage, analytics, AI/ML, automation và event-driven architecture.",
+        "strengths": [
+          "Tích hợp tự nhiên với AWS",
+          "Cloud-native và mở rộng linh hoạt",
+          "Phù hợp kiến trúc serverless/event-driven",
+          "Có khả năng kết hợp analytics và AI/ML"
+        ],
+        "usecases": [
+          "Contact center trên AWS",
+          "Tích hợp S3/Lambda/AI",
+          "Doanh nghiệp cloud-first",
+          "Dịch vụ khách hàng quy mô linh hoạt"
+        ],
+        "link": "aws.amazon.com/connect"
+      }
+    ]
+  },
+  "ucpbx-vn": {
+    "title": "UC / PBX — Nhà Cung Cấp Việt Nam",
+    "apiFolder": "CONTACT CENTER/API Reference/UCaaS/Đối Tác Việt Nam",
+    "productTitle": "UCaaS / PBX Việt Nam — Bài viết sản phẩm đối tác",
+    "products": [
+      {
+        "id": "prod-stringee-call-api",
+        "name": "Stringee Call API",
+        "icon": "📞",
+        "category": "Programmable Voice / UC",
+        "tags": [
+          "VN",
+          "Voice API",
+          "SDK",
+          "Web/iOS/Android"
+        ],
+        "source": "developer.stringee.com / stringee.com",
+        "desc": "Stringee Call API cung cấp khả năng gọi điện lập trình cho ứng dụng web/mobile, hỗ trợ các mô hình App-to-App, App-to-Phone, Phone-to-App, conference và tích hợp realtime communications vào sản phẩm số.",
+        "strengths": [
+          "Voice API cho web/mobile app",
+          "Có SDK cho Web, iOS, Android",
+          "Phù hợp tích hợp gọi điện vào ứng dụng",
+          "Hỗ trợ kịch bản click-to-call và app calling"
+        ],
+        "usecases": [
+          "Ứng dụng cần gọi trực tiếp",
+          "Click-to-call trong CRM",
+          "Tư vấn khách hàng trên app",
+          "Kết nối thoại trong sản phẩm số"
+        ],
+        "link": "developer.stringee.com"
+      },
+      {
+        "id": "prod-oncallcx-uc",
+        "name": "OnCallCX UCaaS",
+        "icon": "🏢",
+        "category": "UCaaS / Contact Center",
+        "tags": [
+          "FPT",
+          "UCaaS",
+          "Contact Center",
+          "Vietnam"
+        ],
+        "source": "oncallcx.vn / fpt-corp.com",
+        "desc": "OnCallCX trong nhóm UCaaS/Contact Center hỗ trợ doanh nghiệp vận hành tổng đài, quản lý tương tác khách hàng, tích hợp ticket/campaign và kết nối hệ sinh thái FPT như hotline, SMS Brandname, AI, Chatbot, Voicebot.",
+        "strengths": [
+          "Vận hành trên hệ sinh thái FPT",
+          "Kết nối hotline, SMS Brandname, AI, Chatbot, Voicebot",
+          "Phù hợp khách hàng cần giải pháp tổng đài và contact center trong nước",
+          "Hỗ trợ mở rộng theo nhu cầu doanh nghiệp"
+        ],
+        "usecases": [
+          "Tổng đài doanh nghiệp",
+          "Contact center tích hợp CRM",
+          "Omnichannel CSKH",
+          "Khách hàng cần dịch vụ FPT đồng bộ"
+        ],
+        "link": "oncallcx.vn"
+      },
+      {
+        "id": "prod-cloudfone",
+        "name": "CloudFone",
+        "icon": "☁️",
+        "category": "Cloud PBX",
+        "tags": [
+          "VN",
+          "Cloud PBX",
+          "CRM Integration"
+        ],
+        "source": "ods.vn",
+        "desc": "CloudFone là giải pháp tổng đài ảo/Cloud PBX tại Việt Nam, hướng tới doanh nghiệp cần triển khai nhanh tổng đài, quản lý cuộc gọi và tích hợp với các phần mềm CRM phổ biến.",
+        "strengths": [
+          "Cloud PBX triển khai nhanh",
+          "Phù hợp SME",
+          "Hỗ trợ tích hợp CRM",
+          "Không cần đầu tư tổng đài vật lý lớn"
+        ],
+        "usecases": [
+          "Tổng đài ảo cho SME",
+          "Click-to-call CRM",
+          "Quản lý lịch sử cuộc gọi",
+          "Hotline kinh doanh"
+        ],
+        "link": "ods.vn"
+      },
+      {
+        "id": "prod-mitek-ippbx",
+        "name": "Mitek IP-PBX & UC Suite",
+        "icon": "🖧",
+        "category": "IP-PBX / UC Suite",
+        "tags": [
+          "VN",
+          "IP-PBX",
+          "UC",
+          "On-premise"
+        ],
+        "source": "mitek.vn",
+        "desc": "Mitek IP-PBX & UC Suite phù hợp doanh nghiệp cần hệ thống tổng đài nội bộ, quản lý máy nhánh, thoại doanh nghiệp và các tính năng UC như hội nghị, presence hoặc kết nối SIP trunk.",
+        "strengths": [
+          "Phù hợp triển khai on-premise",
+          "Hỗ trợ nhu cầu tổng đài nội bộ",
+          "Có định hướng UC cho doanh nghiệp",
+          "Phù hợp khách hàng cần kiểm soát hạ tầng"
+        ],
+        "usecases": [
+          "Tổng đài nội bộ doanh nghiệp",
+          "Kết nối SIP trunk",
+          "UC trong văn phòng",
+          "Doanh nghiệp có yêu cầu triển khai tại chỗ"
+        ],
+        "link": "mitek.vn"
+      }
+    ]
+  },
+  "ucaas-global": {
+    "title": "UCaaS — Đối tác quốc tế",
+    "apiFolder": "CONTACT CENTER/API Reference/UCaaS/Đối tác quốc tế",
+    "productTitle": "UCaaS Quốc tế — Bài viết sản phẩm đối tác",
+    "products": [
+      {
+        "id": "prod-webex-calling",
+        "name": "Webex Calling",
+        "icon": "📞",
+        "category": "Cloud Calling / UCaaS",
+        "tags": [
+          "Global",
+          "Cisco",
+          "Cloud Calling"
+        ],
+        "source": "webex.com",
+        "desc": "Webex Calling là dịch vụ cloud calling trong hệ sinh thái Webex, phù hợp doanh nghiệp muốn hiện đại hóa hệ thống thoại, tích hợp với meeting, messaging và collaboration.",
+        "strengths": [
+          "Cloud calling trong hệ sinh thái Cisco",
+          "Phù hợp enterprise collaboration",
+          "Kết hợp meeting, messaging và calling",
+          "Có khả năng triển khai theo mô hình cloud"
+        ],
+        "usecases": [
+          "Enterprise cloud calling",
+          "Thay thế PBX truyền thống",
+          "Collaboration suite",
+          "Liên kết với Webex Meetings"
+        ],
+        "link": "webex.com"
+      },
+      {
+        "id": "prod-zoom-phone",
+        "name": "Zoom Phone",
+        "icon": "🎥",
+        "category": "Cloud Phone / UCaaS",
+        "tags": [
+          "Global",
+          "Zoom",
+          "Cloud Phone"
+        ],
+        "source": "zoom.us",
+        "desc": "Zoom Phone là dịch vụ cloud phone trong hệ sinh thái Zoom, phù hợp tổ chức đã dùng Zoom Meetings và muốn hợp nhất thoại doanh nghiệp trên cùng nền tảng.",
+        "strengths": [
+          "Phù hợp khách hàng đã dùng Zoom",
+          "Cloud phone dễ mở rộng",
+          "Kết hợp meeting và phone",
+          "Quản lý người dùng tập trung"
+        ],
+        "usecases": [
+          "Cloud phone cho doanh nghiệp",
+          "Hợp nhất meeting và calling",
+          "Làm việc từ xa",
+          "Văn phòng phân tán"
+        ],
+        "link": "zoom.us"
+      },
+      {
+        "id": "prod-microsoft-teams-phone",
+        "name": "Microsoft Teams Phone",
+        "icon": "🟦",
+        "category": "Teams Calling / UCaaS",
+        "tags": [
+          "Global",
+          "Microsoft",
+          "Teams"
+        ],
+        "source": "microsoft.com",
+        "desc": "Microsoft Teams Phone phù hợp khách hàng đã dùng Microsoft 365/Teams và muốn tích hợp thoại doanh nghiệp, gọi nội bộ, PSTN hoặc Direct Routing/Operator Connect trong cùng workspace.",
+        "strengths": [
+          "Tích hợp sâu với Microsoft Teams",
+          "Phù hợp Microsoft 365 enterprise",
+          "Hỗ trợ các mô hình PSTN linh hoạt",
+          "Trải nghiệm người dùng thống nhất"
+        ],
+        "usecases": [
+          "Teams Calling",
+          "Direct Routing",
+          "Operator Connect",
+          "Doanh nghiệp dùng Microsoft 365"
+        ],
+        "link": "microsoft.com"
+      }
+    ]
+  }
+}
