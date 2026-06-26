@@ -1,27 +1,15 @@
-# CHANGELOG — v9.1.0 Product Portal
+# CHANGELOG
 
-Baseline: v9.0.8
+## v9.1.1 — DevOps Workflow Setup
 
-## Phạm vi thay đổi
+### Added
+- GitHub Actions workflow for automatic GitHub Pages deployment from `main`.
+- GitHub Actions workflow for creating releases from tags like `v9.1.1`.
+- `.gitignore` for Windows, VSCode, cache, logs and backup files.
+- `VERSION` file to track the current project version.
+- Git workflow guide for `main`, `develop`, tag, release and patch management.
 
-Chỉ thay đổi khu vực OnCallCX Product Center.
-
-## Nội dung
-
-Nâng Product Center thành Product Portal, bổ sung:
-
-- Architecture
-- Pricing
-- FAQ
-- Presales Checklist
-
-Các tab này giúp OnCallCX không chỉ là nơi xem tài liệu, mà trở thành trung tâm tư vấn Presales.
-
-## File thay đổi
-
-```text
-js/main.js
-css/styles.css
-CHANGELOG.md
-PATCH_APPLY_GUIDE.md
-```
+### Scope
+- No UI change.
+- No OnCallCX feature change.
+- No business data change.

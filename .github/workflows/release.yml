@@ -1,0 +1,48 @@
+name: Create GitHub Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag, example: v9.1.1"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Publish release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Resolve tag
+        id: vars
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create source package
+        shell: bash
+        run: |
+          mkdir -p release
+          git archive --format=zip --output="release/FTI-Collaboration-Hub-${{ steps.vars.outputs.tag }}.zip" HEAD
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.vars.outputs.tag }}
+          name: FTI Collaboration Hub ${{ steps.vars.outputs.tag }}
+          body_path: CHANGELOG.md
+          files: release/FTI-Collaboration-Hub-${{ steps.vars.outputs.tag }}.zip

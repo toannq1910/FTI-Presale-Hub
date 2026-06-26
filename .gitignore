@@ -1,0 +1,24 @@
+# Windows
+Thumbs.db
+Desktop.ini
+
+# VSCode
+.vscode/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temp / backup
+*.tmp
+*.bak
+*.swp
+
+# Node / build cache, if used later
+node_modules/
+.cache/
+dist/
+build/
+
+# OS metadata
+.DS_Store
