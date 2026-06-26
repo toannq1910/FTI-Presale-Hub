@@ -1,15 +1,19 @@
 # CHANGELOG
 
-## v9.1.1 — DevOps Workflow Setup
+## v9.2.0 — CMS Data Foundation
 
 ### Added
-- GitHub Actions workflow for automatic GitHub Pages deployment from `main`.
-- GitHub Actions workflow for creating releases from tags like `v9.1.1`.
-- `.gitignore` for Windows, VSCode, cache, logs and backup files.
-- `VERSION` file to track the current project version.
-- Git workflow guide for `main`, `develop`, tag, release and patch management.
+- CMS Data page at `#cms`.
+- Static CMS data file: `data/cms-content.json`.
+- Independent CMS module: `js/cms-portal.js`.
+- CMS stylesheet: `css/cms.css`.
+- CMS preview for Product / Pricing / FAQ / Presales Checklist.
+- JSON Editor with LocalStorage save.
+- Export JSON for committing back to GitHub.
+- Reset local CMS data.
 
 ### Scope
-- No UI change.
-- No OnCallCX feature change.
-- No business data change.
+- Frontend-only.
+- GitHub Pages compatible.
+- Does not require backend.
+- Does not modify core `js/main.js`; this patch attaches CMS as an independent module.

@@ -1,0 +1,102 @@
+{
+  "meta": {
+    "version": "v9.2.0",
+    "name": "FTI Collaboration Hub CMS",
+    "updatedAt": "2026-06-26",
+    "description": "Static JSON CMS for GitHub Pages. Edit here, export, then commit to GitHub."
+  },
+  "products": [
+    {
+      "id": "oncallcx",
+      "title": "OncallCX - Contact Center As A Service",
+      "subtitle": "Cloud Contact Center Platform",
+      "category": "FPT / CCaaS",
+      "summary": "OncallCX là nền tảng Contact Center as a Service do FPT Telecom phát triển, hỗ trợ doanh nghiệp triển khai tổng đài chăm sóc khách hàng trên Cloud, mở rộng linh hoạt và tích hợp với CRM, ERP, AI Bot, REST API và Webhook.",
+      "tags": [
+        "FPT",
+        "CCaaS",
+        "Omnichannel",
+        "AI",
+        "CRM Integration"
+      ],
+      "highlights": [
+        "Omnichannel Contact Center",
+        "Voice / Chat / Email / Social",
+        "AI Voicebot & Chatbot",
+        "Call Recording",
+        "Dashboard & Realtime Report",
+        "CRM / ERP Integration",
+        "Workflow Automation",
+        "Open REST API & Webhook"
+      ],
+      "useCases": [
+        "Enterprise",
+        "Banking",
+        "Finance",
+        "Insurance",
+        "Healthcare",
+        "Retail",
+        "Logistics",
+        "Government"
+      ]
+    }
+  ],
+  "faqs": [
+    {
+      "question": "OnCallCX có tích hợp CRM được không?",
+      "answer": "Có. Có thể tích hợp qua REST API, Webhook, CTI hoặc screen pop tùy hệ thống CRM/ERP của khách hàng."
+    },
+    {
+      "question": "Có hỗ trợ ghi âm cuộc gọi không?",
+      "answer": "Có. Recording có thể phục vụ tra soát, QA/QC, đào tạo agent và đối soát dịch vụ."
+    },
+    {
+      "question": "Có triển khai được AI Voicebot/Chatbot không?",
+      "answer": "Có thể tích hợp AI Bot trong luồng CSKH, phân loại yêu cầu, tạo ticket và hỗ trợ self-service."
+    },
+    {
+      "question": "Khách hàng cần chuẩn bị gì trước khi POC?",
+      "answer": "Cần thông tin số lượng agent, kênh tương tác, đầu số, CRM cần tích hợp, kịch bản IVR, báo cáo mong muốn và tiêu chí nghiệm thu."
+    }
+  ],
+  "pricingPlans": [
+    {
+      "name": "Starter",
+      "summary": "Phù hợp pilot hoặc đội CSKH nhỏ.",
+      "features": [
+        "Voice channel",
+        "Basic report",
+        "Small agent team"
+      ]
+    },
+    {
+      "name": "Business",
+      "summary": "Phù hợp doanh nghiệp cần Omnichannel và CRM.",
+      "featured": true,
+      "features": [
+        "Omnichannel",
+        "CRM Integration",
+        "Recording + Dashboard"
+      ]
+    },
+    {
+      "name": "Enterprise",
+      "summary": "Phù hợp khách hàng quy mô lớn, yêu cầu tích hợp/AI.",
+      "features": [
+        "AI Bot",
+        "Advanced API",
+        "Custom workflow"
+      ]
+    }
+  ],
+  "presalesChecklist": [
+    "Số lượng agent / supervisor / admin",
+    "Kênh cần triển khai: Voice, Chat, Email, Social",
+    "Đầu số hotline và SIP trunk/BYOC",
+    "Kịch bản IVR và routing",
+    "CRM/ERP cần tích hợp",
+    "Báo cáo, dashboard, SLA cần theo dõi",
+    "Chính sách ghi âm và lưu trữ dữ liệu",
+    "Tiêu chí POC/UAT/Go-live"
+  ]
+}
