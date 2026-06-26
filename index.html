@@ -8,15 +8,91 @@
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/styles.css">
 <link rel="stylesheet" href="css/cms.css">
+
+<style id="vcStaticSidebarStyle">
+.nav-section-label{color:#7487a7;font-size:10px;font-weight:900;letter-spacing:.08em;margin:10px 0 3px 14px;text-transform:uppercase;}
+</style>
+
+<style id="enterpriseAuthStyle">
+html,body{height:100%;overflow:hidden!important}
+.app-shell{height:100vh;overflow:hidden}
+.sidebar{height:100vh;overflow:hidden!important;display:flex;flex-direction:column}
+.sidebar-nav{flex:1;overflow-y:auto!important;overflow-x:hidden!important;min-height:0;scrollbar-width:thin;scrollbar-color:rgba(148,163,184,.55) transparent;padding-right:6px}
+.sidebar-nav::-webkit-scrollbar{width:8px;height:0}
+.sidebar-nav::-webkit-scrollbar-track{background:transparent}
+.sidebar-nav::-webkit-scrollbar-thumb{background:rgba(148,163,184,.45);border-radius:999px;border:2px solid transparent;background-clip:content-box}
+.sidebar-nav::-webkit-scrollbar-thumb:hover{background:rgba(148,163,184,.7);background-clip:content-box}
+.sidebar-footer{flex-shrink:0}
+.main{height:100vh;overflow:hidden}
+.page-root{height:calc(100vh - 64px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:rgba(148,163,184,.5) transparent}
+.page-root::-webkit-scrollbar{width:8px;height:0}.page-root::-webkit-scrollbar-thumb{background:rgba(148,163,184,.45);border-radius:999px}
+.auth-hint{font-size:12px;color:#93a4bd;margin:10px 0 0}
+.permission-chip.login-on{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.35);color:#86efac}
+.permission-chip.login-off{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.35);color:#fca5a5}
+.auth-denied{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.auth-page-hero{background:linear-gradient(135deg,rgba(249,115,22,.16),rgba(59,130,246,.10));border:1px solid rgba(249,115,22,.28);border-radius:28px;padding:28px;margin-bottom:18px}
+.auth-page-hero h2{font-size:34px;margin:10px 0}.auth-page-hero p{color:#c4d3ea;line-height:1.65}
+.auth-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.auth-card{background:var(--card,#111c31);border:1px solid var(--line,#263754);border-radius:20px;padding:18px}.auth-card h3{margin-top:0}.auth-card p,.auth-card li{color:#c4d3ea;line-height:1.6}
+.auth-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:10px;margin-top:14px}.auth-form input,.auth-form select{border:1px solid var(--line,#263754);background:#050a18;color:#dbeafe;border-radius:12px;padding:11px 12px;outline:none}
+.auth-table{width:100%;border-collapse:collapse}.auth-table th,.auth-table td{border-bottom:1px solid rgba(148,163,184,.15);padding:10px;text-align:left;color:#c4d3ea}.auth-table th{color:#e2e8f0;background:rgba(255,255,255,.04)}
+.auth-badge{display:inline-flex;border-radius:999px;padding:3px 8px;font-size:11px;font-weight:900;background:rgba(59,130,246,.14);border:1px solid rgba(59,130,246,.28);color:#93c5fd}
+.auth-badge.locked{background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.28);color:#fca5a5}
+@media(max-width:1100px){.auth-grid,.auth-form{grid-template-columns:1fr}}
+</style>
+
+
+<style id="publicPortalAuthFixStyle">
+:root{--sidebar-w:300px}
+.sidebar{width:300px!important;min-width:300px!important;max-width:300px!important}
+.app-shell.sidebar-collapsed .sidebar{width:76px!important;min-width:76px!important;max-width:76px!important}
+.app-shell.sidebar-collapsed .sidebar .brand div,
+.app-shell.sidebar-collapsed .nav-group-head div,
+.app-shell.sidebar-collapsed .nav-item b,
+.app-shell.sidebar-collapsed .nav-item em,
+.app-shell.sidebar-collapsed .nav-section-label,
+.app-shell.sidebar-collapsed .sidebar-footer{display:none!important}
+.app-shell.sidebar-collapsed .nav-group-body{display:none!important}
+.app-shell.sidebar-collapsed .nav-item,
+.app-shell.sidebar-collapsed .nav-group-head{justify-content:center}
+.sidebar-nav{overflow-y:auto!important;overflow-x:hidden!important;padding-right:8px}
+.nav-item b{white-space:normal;line-height:1.25}
+.nav-group-head{width:100%;text-align:left}
+.nav-group:not(.expanded)>.nav-group-body{display:none!important}
+.nav-group.expanded>.nav-group-body{display:block}
+.nav-group-head i{transition:.18s ease}
+.nav-group.expanded>.nav-group-head i{transform:rotate(0deg)}
+.nav-group:not(.expanded)>.nav-group-head i{transform:rotate(-90deg)}
+.auth-edit-required{position:relative}
+.permission-chip{cursor:pointer;user-select:none}
+.permission-chip.login-guest{background:rgba(59,130,246,.12);border-color:rgba(59,130,246,.30);color:#93c5fd}
+.public-edit-note{font-size:12px;color:#93a4bd;margin-top:8px}
+body.cms-locked .cms-only,
+body.cms-locked a[href="#cms"],
+body.cms-locked a[href="#enterprise-cms"],
+body.cms-locked a[href="#users"],
+body.cms-locked a[href="#permissions"],
+body.cms-locked a[href="#audit-log"],
+body.cms-locked a[href="#cms-audit"]{display:none!important}
+</style>
+
+
+<style id="systemSecurityVisibilityFixStyle">
+body.cms-locked .auth-system-group{display:none!important}
+body:not(.cms-locked) .auth-system-group{display:block!important}
+.auth-system-group:not(.expanded)>.nav-group-body{display:none!important}
+.auth-system-group.expanded>.nav-group-body{display:block!important}
+.auth-system-group .nav-group-head{cursor:pointer}
+</style>
+
 </head>
 <body>
 <div id="loginOverlay" class="login-overlay" hidden>
   <form class="login-card" id="loginForm">
-    <img src="assets/logo-fpt.png" class="login-logo" alt="FPT"><span class="eyebrow">Permission demo</span>
-    <h1>FTI Collaboration Hub</h1><p>Login đã viết sẵn, mặc định chưa cho hoạt động. Bật/tắt tại <code>js/config.js</code>.</p>
-    <label>Email</label><input id="loginEmail" type="email" value="customer@company.vn">
-    <label>Password</label><input id="loginPassword" type="password" value="demo123">
-    <button class="btn btn-primary">Đăng nhập Demo</button>
+    <img src="assets/logo-fpt.png" class="login-logo" alt="FPT"><span class="eyebrow">Enterprise Authentication</span>
+    <h1>FTI Collaboration Hub</h1><p>Đăng nhập để sử dụng CMS theo phân quyền.</p>
+    <label>Username</label><input id="loginEmail" type="text" value="admin" autocomplete="username">
+    <label>Password</label><input id="loginPassword" type="password" value="Admin!@#$%2020" autocomplete="current-password">
+    <button class="btn btn-primary">Đăng nhập</button><p class="auth-hint">Default: admin / Admin!@#$%2020</p>
   </form>
 </div>
 <div class="app-shell">
@@ -32,8 +108,17 @@
       <a class="nav-item" href="#ucpbx-vn" data-page="ucpbx-vn"><span>🏁</span><b>UC/PBX Việt Nam</b><em>VN</em></a>
     </div></div>
     <div class="nav-group expanded"><button class="nav-group-head" data-toggle-group><span>🎥</span><div><b>VIDEO CONFERENCE</b><small>Room · Endpoint</small></div><i>⌄</i></button><div class="nav-group-body">
-      <a class="nav-item" href="#video" data-page="video"><span>📹</span><b>Video Solutions</b></a>
-      <a class="nav-item" href="#devices" data-page="devices"><span>🖥️</span><b>Thiết bị phòng họp</b></a>
+      <a class="nav-item" href="#video-conferencing" data-page="video-conferencing"><span>📹</span><b>Tổng quan Video Conference</b><em>New</em></a>
+      <div class="nav-section-label">GLOBAL BRANDS</div>
+      <a class="nav-item" href="#vc-yealink" data-page="vc-yealink"><span>🖥️</span><b>Yealink Meeting Bar</b><em>A40</em></a>
+      <a class="nav-item" href="#vc-logitech" data-page="vc-logitech"><span>📷</span><b>Logitech Rally Bar</b><em>CollabOS</em></a>
+      <a class="nav-item" href="#vc-poly" data-page="vc-poly"><span>🎙️</span><b>HP Poly Studio X52</b><em>TC10</em></a>
+      <a class="nav-item" href="#vc-cisco" data-page="vc-cisco"><span>🗄️</span><b>Cisco Webex Devices</b></a>
+      <a class="nav-item" href="#vc-jabra" data-page="vc-jabra"><span>🎧</span><b>Jabra PanaCast</b></a>
+      <a class="nav-item" href="#vc-crestron" data-page="vc-crestron"><span>🎛️</span><b>Crestron Flex</b></a>
+      <div class="nav-section-label">THEO LOẠI PHÒNG</div>
+      <a class="nav-item" href="#vc-huddle-room" data-page="vc-huddle-room"><span>👥</span><b>Huddle Room</b><em>≤4 người</em></a>
+      <a class="nav-item" href="#vc-medium-large-room" data-page="vc-medium-large-room"><span>🏢</span><b>Medium / Large Room</b><em>5–20+</em></a>
     </div></div>
     <div class="nav-group expanded"><button class="nav-group-head" data-toggle-group><span>🔌</span><div><b>INTEGRATION</b><small>CRM · ERP · BYOC</small></div><i>⌄</i></button><div class="nav-group-body">
       <a class="nav-item" href="#integration" data-page="integration"><span>🔁</span><b>Integration Playbook</b></a>
@@ -44,16 +129,38 @@
       <a class="nav-item" href="#demo" data-page="demo"><span>▶️</span><b>Demo sản phẩm</b><em>Live</em></a>
       <a class="nav-item" href="#compare" data-page="compare"><span>📊</span><b>Bảng so sánh</b></a>
       <a class="nav-item" href="#resources" data-page="resources"><span>📚</span><b>Nguồn tài liệu</b></a>
-      <a class="nav-item" href="#editor" data-page="editor"><span>✏️</span><b>Chỉnh sửa bài viết</b><em>Edit</em></a>
+      <a class="nav-item cms-only" href="#editor" data-page="editor" data-permission="articles.update"><span>✏️</span><b>Chỉnh sửa bài viết</b><em>Edit</em></a>
+    </div></div>
+    <div class="nav-group expanded auth-system-group"><button class="nav-group-head" data-toggle-group><span>🔐</span><div><b>SYSTEM & SECURITY</b><small>User · Role · Audit</small></div><i>⌄</i></button><div class="nav-group-body">
+      <a class="nav-item" href="#users" data-page="users" data-permission="users.view"><span>👤</span><b>Quản lý User</b><em>Admin</em></a>
+      <a class="nav-item" href="#permissions" data-page="permissions" data-permission="roles.view"><span>🛡️</span><b>Phân quyền</b><em>RBAC</em></a>
+      <a class="nav-item" href="#audit-log" data-page="audit-log" data-permission="audit.view"><span>📜</span><b>Audit Log</b></a>
     </div></div>
   </nav>
-  <div class="sidebar-footer"><div class="user-pill"><div class="avatar">FT</div><div><strong>FTI Staff</strong><span>Presales Demo</span></div><button class="icon-btn" id="logoutBtn">↪</button></div><div class="version"><span>Cập nhật: 06/2026</span><b>v8.0</b></div></div>
+  <div class="sidebar-footer"><div class="user-pill"><div class="avatar">FT</div><div><strong>FTI Staff</strong><span>Presales Demo</span></div><button class="icon-btn" id="logoutBtn">↪</button></div><div class="version"><span>Cập nhật: 06/2026</span><b>v10.8</b></div></div>
 </aside>
 <main class="main">
-<header class="topbar"><button class="icon-btn mobile-menu" id="mobileMenu">☰</button><div><h1 id="pageTitle">Tổng quan</h1><p id="pageSubtitle">Customer-facing Collaboration Portal</p></div><div class="topbar-actions"><div class="search-box"><span>🔎</span><input id="globalSearch" placeholder="Tìm giải pháp, API, CRM, demo..."></div><button class="icon-btn" id="themeToggle">◐</button><span class="permission-chip" id="permissionChip">Login: OFF</span></div></header>
+<header class="topbar"><button class="icon-btn mobile-menu" id="mobileMenu">☰</button><div><h1 id="pageTitle">Tổng quan</h1><p id="pageSubtitle">Customer-facing Collaboration Portal</p></div><div class="topbar-actions"><div class="search-box"><span>🔎</span><input id="globalSearch" placeholder="Tìm giải pháp, API, CRM, demo..."></div><button class="icon-btn" id="themeToggle">◐</button><button class="permission-chip login-guest" id="permissionChip" type="button">Login</button></div></header>
 <section id="pageRoot" class="page-root"></section>
 </main></div>
 <div id="toastRoot" class="toast-root"></div>
 <script type="module" src="js/main.js"></script>
 <script type="module" src="js/cms-portal.js"></script>
+<script type="module" src="js/unified-product-cms.js"></script>
+<script type="module" src="js/product-catalog.js"></script>
+<script type="module" src="js/product-detail.js"></script>
+<script type="module" src="js/sidebar-alignment.js"></script>
+<script type="module" src="js/cms-article-routes.js"></script>
+<script type="module" src="js/legacy-editor-cleanup.js"></script>
+<script type="module" src="js/enterprise-cms-runtime.js"></script>
+<script type="module" src="js/api-center-runtime.js"></script>
+<script type="module" src="js/document-center-runtime.js"></script>
+<script type="module" src="js/global-search-runtime.js"></script>
+<script type="module" src="js/asset-manager-2-runtime.js"></script>
+<script type="module" src="js/relationship-graph-runtime.js"></script>
+<script type="module" src="js/knowledge-base-runtime.js"></script>
+<script type="module" src="js/ai-assistant-runtime.js"></script>
+<script type="module" src="js/video-conference-complete-runtime.js"></script>
+<script type="module" src="js/cms-full-content-sync.js"></script>
+<script type="module" src="js/enterprise-auth-runtime.js"></script>
 </body></html>

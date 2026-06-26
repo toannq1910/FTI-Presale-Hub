@@ -1,19 +1,12 @@
 # CHANGELOG
 
-## v9.2.0 — CMS Data Foundation
+## v10.8.2 — System & Security Visibility Fix
 
-### Added
-- CMS Data page at `#cms`.
-- Static CMS data file: `data/cms-content.json`.
-- Independent CMS module: `js/cms-portal.js`.
-- CMS stylesheet: `css/cms.css`.
-- CMS preview for Product / Pricing / FAQ / Presales Checklist.
-- JSON Editor with LocalStorage save.
-- Export JSON for committing back to GitHub.
-- Reset local CMS data.
+### Fixed
+- Public Visitor không còn thấy nhóm `SYSTEM & SECURITY`.
+- Khi login Admin, nhóm `SYSTEM & SECURITY` hiển thị lại.
+- Nhóm `SYSTEM & SECURITY` expand/collapse được bình thường.
 
-### Scope
-- Frontend-only.
-- GitHub Pages compatible.
-- Does not require backend.
-- Does not modify core `js/main.js`; this patch attaches CMS as an independent module.
+### Behavior
+- Public customer portal chỉ hiển thị nội dung tham khảo.
+- CMS/admin routes chỉ hiện sau khi login.

@@ -1,68 +1,24 @@
-# PATCH_APPLY_GUIDE — v9.2.0 CMS Data Foundation
+# PATCH_APPLY_GUIDE — v10.8.2
 
-## Files in this patch
+Apply over v10.8.1.
 
-```text
-index.html
-data/cms-content.json
-js/cms-portal.js
-css/cms.css
-VERSION
-CHANGELOG.md
-PATCH_APPLY_GUIDE.md
-```
-
-## Apply steps
-
-```bash
-git checkout develop
-git pull origin develop
-```
-
-1. Extract PATCH ZIP.
-2. Copy all files/folders into project root.
+1. Extract ZIP.
+2. Copy files into project root.
 3. Replace existing files.
-4. Commit:
+4. Hard refresh: Ctrl + F5.
 
-```bash
-git status
-git add .
-git commit -m "Add CMS data foundation v9.2.0"
-git push origin develop
-```
+## Test
 
-5. Test locally with Live Server:
+### Public mode
+Logout hoặc mở browser mới:
+- Không thấy `SYSTEM & SECURITY`.
 
+### Admin mode
+Login:
 ```text
-index.html#cms
+admin / Admin!@#$%2020
 ```
 
-6. If OK, release:
-
-```bash
-git checkout main
-git pull origin main
-git merge develop
-git push origin main
-
-git tag v9.2.0
-git push origin v9.2.0
-```
-
-## CMS usage
-
-Open:
-
-```text
-index.html#cms
-```
-
-Workflow:
-1. Open tab `JSON Editor`.
-2. Edit JSON.
-3. Click `Lưu Local` to preview in your browser.
-4. Click `Export JSON`.
-5. Replace `data/cms-content.json`.
-6. Commit and push.
-
-LocalStorage changes are browser-local only. To publish CMS changes to GitHub Pages, always export JSON and commit `data/cms-content.json`.
+Expected:
+- Thấy `SYSTEM & SECURITY`.
+- Click header `SYSTEM & SECURITY` expand/collapse được.

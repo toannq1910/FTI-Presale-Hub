@@ -1,9 +1,9 @@
 {
   "meta": {
-    "version": "v9.2.0",
-    "name": "FTI Collaboration Hub CMS",
+    "version": "v9.8.2",
+    "name": "Unified Product CMS",
     "updatedAt": "2026-06-26",
-    "description": "Static JSON CMS for GitHub Pages. Edit here, export, then commit to GitHub."
+    "description": "Operational CMS Guide and Sidebar Articles migration."
   },
   "products": [
     {
@@ -11,6 +11,9 @@
       "title": "OncallCX - Contact Center As A Service",
       "subtitle": "Cloud Contact Center Platform",
       "category": "FPT / CCaaS",
+      "vendor": "FPT Telecom",
+      "status": "active",
+      "score": "9/10",
       "summary": "OncallCX là nền tảng Contact Center as a Service do FPT Telecom phát triển, hỗ trợ doanh nghiệp triển khai tổng đài chăm sóc khách hàng trên Cloud, mở rộng linh hoạt và tích hợp với CRM, ERP, AI Bot, REST API và Webhook.",
       "tags": [
         "FPT",
@@ -38,9 +41,277 @@
         "Retail",
         "Logistics",
         "Government"
+      ],
+      "website": "https://oncallcx.vn",
+      "overview": "OncallCX là nền tảng Contact Center as a Service do FPT Telecom phát triển, hỗ trợ doanh nghiệp triển khai tổng đài chăm sóc khách hàng trên Cloud, mở rộng linh hoạt và tích hợp với CRM, ERP, AI Bot, REST API và Webhook.",
+      "businessValue": [
+        "Rút ngắn thời gian tư vấn và trình bày giải pháp.",
+        "Chuẩn hóa thông tin sản phẩm cho Presales.",
+        "Kết nối bài viết, tài liệu, presentation và API trong một trang."
+      ],
+      "targetCustomers": [
+        "Enterprise",
+        "Banking",
+        "Finance",
+        "Insurance",
+        "Healthcare",
+        "Retail",
+        "Logistics",
+        "Government"
+      ],
+      "sections": [
+        {
+          "title": "Tổng quan giải pháp",
+          "content": "OncallCX là nền tảng Contact Center as a Service do FPT Telecom phát triển, hỗ trợ doanh nghiệp triển khai tổng đài chăm sóc khách hàng trên Cloud, mở rộng linh hoạt và tích hợp với CRM, ERP, AI Bot, REST API và Webhook."
+        },
+        {
+          "title": "Tính năng nổi bật",
+          "content": "Các tính năng được quản lý trong CMS và hiển thị tự động tại trang chi tiết."
+        },
+        {
+          "title": "Kịch bản tư vấn",
+          "content": "Presales có thể dùng trang này để trình bày nhanh giá trị, đối tượng phù hợp và tài liệu liên quan."
+        }
+      ],
+      "relatedAssets": [],
+      "relationships": [
+        {
+          "type": "integrates_with",
+          "target": "webex-contact-center",
+          "label": "Collaboration ecosystem"
+        },
+        {
+          "type": "compare_with",
+          "target": "zoom-contact-center",
+          "label": "Cloud CCaaS comparison"
+        }
+      ],
+      "integrations": [
+        {
+          "name": "CRM / ERP",
+          "items": [
+            "Salesforce",
+            "Microsoft Dynamics",
+            "Getfly CRM",
+            "MISA AMIS",
+            "CloudGO",
+            "Base.vn"
+          ]
+        },
+        {
+          "name": "PBX / SIP",
+          "items": [
+            "Cisco CUCM",
+            "Asterisk",
+            "3CX",
+            "Ribbon SBC",
+            "VNPT SIP Trunk"
+          ]
+        },
+        {
+          "name": "AI",
+          "items": [
+            "Voicebot",
+            "Chatbot",
+            "Call Summary",
+            "QA/QC",
+            "Sentiment Analysis"
+          ]
+        },
+        {
+          "name": "API",
+          "items": [
+            "REST API",
+            "Webhook",
+            "CDR API",
+            "Recording API",
+            "Campaign API"
+          ]
+        }
+      ],
+      "competitors": [
+        {
+          "name": "Genesys Cloud CX",
+          "position": "Enterprise global CCaaS",
+          "note": "Mạnh về enterprise CX, global deployment và analytics."
+        },
+        {
+          "name": "NICE CXone",
+          "position": "Enterprise AI-first CCaaS",
+          "note": "Mạnh về workforce engagement và AI analytics."
+        },
+        {
+          "name": "Zoom Contact Center",
+          "position": "Cloud native / video-first",
+          "note": "Phù hợp khách hàng đã dùng hệ sinh thái Zoom."
+        },
+        {
+          "name": "Webex Contact Center",
+          "position": "Cisco collaboration ecosystem",
+          "note": "Phù hợp khách hàng Cisco/Webex."
+        }
+      ],
+      "apiLinks": [
+        {
+          "name": "CDR API",
+          "method": "GET",
+          "path": "/api/cdr/list",
+          "description": "Lấy danh sách lịch sử cuộc gọi."
+        },
+        {
+          "name": "Outbound Call",
+          "method": "POST",
+          "path": "/api/call/outbound",
+          "description": "Khởi tạo cuộc gọi từ CRM."
+        },
+        {
+          "name": "Webhook Incoming",
+          "method": "POST",
+          "path": "/webhook/incoming",
+          "description": "Nhận sự kiện cuộc gọi realtime."
+        },
+        {
+          "name": "Recording API",
+          "method": "GET",
+          "path": "/api/recording/{id}",
+          "description": "Truy xuất thông tin ghi âm."
+        }
+      ],
+      "knowledgeSections": [
+        {
+          "title": "Kiến trúc triển khai",
+          "content": "OncallCX có thể triển khai theo mô hình Cloud Contact Center, BYOC/SIP trunk, tích hợp CRM/ERP và AI Bot qua API/Webhook."
+        },
+        {
+          "title": "Thông tin cần thu thập khi Presales",
+          "content": "Số agent, kênh tương tác, đầu số, CRM, kịch bản IVR, báo cáo, lưu trữ ghi âm, yêu cầu tích hợp và tiêu chí nghiệm thu."
+        },
+        {
+          "title": "Kịch bản demo đề xuất",
+          "content": "Login portal, tạo agent/extension, nhận cuộc gọi inbound, gọi outbound từ CRM, xem CDR, nghe recording và xem dashboard realtime."
+        }
       ]
+    },
+    {
+      "id": "webex-contact-center",
+      "title": "Webex Contact Center",
+      "subtitle": "Enterprise Contact Center",
+      "category": "Global CCaaS",
+      "vendor": "Cisco",
+      "status": "reference",
+      "score": "8/10",
+      "summary": "Webex Contact Center là nền tảng Contact Center cloud của Cisco, phù hợp doanh nghiệp cần tích hợp sâu hệ sinh thái Webex, collaboration và omnichannel customer experience.",
+      "tags": [
+        "Cisco",
+        "CCaaS",
+        "Global",
+        "Omnichannel"
+      ],
+      "highlights": [
+        "Cloud contact center",
+        "Omnichannel routing",
+        "Analytics",
+        "Cisco ecosystem"
+      ],
+      "useCases": [
+        "Enterprise",
+        "Global Contact Center",
+        "Collaboration"
+      ],
+      "website": "https://www.webex.com/contact-center.html",
+      "overview": "Webex Contact Center là nền tảng Contact Center cloud của Cisco, phù hợp doanh nghiệp cần tích hợp sâu hệ sinh thái Webex, collaboration và omnichannel customer experience.",
+      "businessValue": [
+        "Rút ngắn thời gian tư vấn và trình bày giải pháp.",
+        "Chuẩn hóa thông tin sản phẩm cho Presales.",
+        "Kết nối bài viết, tài liệu, presentation và API trong một trang."
+      ],
+      "targetCustomers": [
+        "Enterprise",
+        "Global Contact Center",
+        "Collaboration"
+      ],
+      "sections": [
+        {
+          "title": "Tổng quan giải pháp",
+          "content": "Webex Contact Center là nền tảng Contact Center cloud của Cisco, phù hợp doanh nghiệp cần tích hợp sâu hệ sinh thái Webex, collaboration và omnichannel customer experience."
+        },
+        {
+          "title": "Tính năng nổi bật",
+          "content": "Các tính năng được quản lý trong CMS và hiển thị tự động tại trang chi tiết."
+        },
+        {
+          "title": "Kịch bản tư vấn",
+          "content": "Presales có thể dùng trang này để trình bày nhanh giá trị, đối tượng phù hợp và tài liệu liên quan."
+        }
+      ],
+      "relatedAssets": [],
+      "relationships": [],
+      "integrations": [],
+      "competitors": [],
+      "apiLinks": [],
+      "knowledgeSections": []
+    },
+    {
+      "id": "zoom-contact-center",
+      "title": "Zoom Contact Center",
+      "subtitle": "Video-first CCaaS",
+      "category": "Global CCaaS",
+      "vendor": "Zoom",
+      "status": "reference",
+      "score": "8/10",
+      "summary": "Zoom Contact Center phù hợp khách hàng đang dùng hệ sinh thái Zoom và cần mở rộng sang chăm sóc khách hàng đa kênh.",
+      "tags": [
+        "Zoom",
+        "CCaaS",
+        "Cloud",
+        "Video"
+      ],
+      "highlights": [
+        "Zoom native",
+        "Video engagement",
+        "Queue management",
+        "Agent experience"
+      ],
+      "useCases": [
+        "SME",
+        "Cloud-first",
+        "Video Support"
+      ],
+      "website": "https://www.zoom.com/en/products/contact-center/",
+      "overview": "Zoom Contact Center phù hợp khách hàng đang dùng hệ sinh thái Zoom và cần mở rộng sang chăm sóc khách hàng đa kênh.",
+      "businessValue": [
+        "Rút ngắn thời gian tư vấn và trình bày giải pháp.",
+        "Chuẩn hóa thông tin sản phẩm cho Presales.",
+        "Kết nối bài viết, tài liệu, presentation và API trong một trang."
+      ],
+      "targetCustomers": [
+        "SME",
+        "Cloud-first",
+        "Video Support"
+      ],
+      "sections": [
+        {
+          "title": "Tổng quan giải pháp",
+          "content": "Zoom Contact Center phù hợp khách hàng đang dùng hệ sinh thái Zoom và cần mở rộng sang chăm sóc khách hàng đa kênh."
+        },
+        {
+          "title": "Tính năng nổi bật",
+          "content": "Các tính năng được quản lý trong CMS và hiển thị tự động tại trang chi tiết."
+        },
+        {
+          "title": "Kịch bản tư vấn",
+          "content": "Presales có thể dùng trang này để trình bày nhanh giá trị, đối tượng phù hợp và tài liệu liên quan."
+        }
+      ],
+      "relatedAssets": [],
+      "relationships": [],
+      "integrations": [],
+      "competitors": [],
+      "apiLinks": [],
+      "knowledgeSections": []
     }
   ],
+  "assets": [],
   "faqs": [
     {
       "question": "OnCallCX có tích hợp CRM được không?",
@@ -49,14 +320,6 @@
     {
       "question": "Có hỗ trợ ghi âm cuộc gọi không?",
       "answer": "Có. Recording có thể phục vụ tra soát, QA/QC, đào tạo agent và đối soát dịch vụ."
-    },
-    {
-      "question": "Có triển khai được AI Voicebot/Chatbot không?",
-      "answer": "Có thể tích hợp AI Bot trong luồng CSKH, phân loại yêu cầu, tạo ticket và hỗ trợ self-service."
-    },
-    {
-      "question": "Khách hàng cần chuẩn bị gì trước khi POC?",
-      "answer": "Cần thông tin số lượng agent, kênh tương tác, đầu số, CRM cần tích hợp, kịch bản IVR, báo cáo mong muốn và tiêu chí nghiệm thu."
     }
   ],
   "pricingPlans": [
@@ -98,5 +361,341 @@
     "Báo cáo, dashboard, SLA cần theo dõi",
     "Chính sách ghi âm và lưu trữ dữ liệu",
     "Tiêu chí POC/UAT/Go-live"
+  ],
+  "sidebarAlignment": [
+    {
+      "id": "overview",
+      "label": "Tổng quan",
+      "route": "#overview",
+      "type": "static-page",
+      "cmsStatus": "aligned",
+      "ownerModule": "Product Catalog",
+      "target": "Hiển thị Product Catalog sinh từ CMS.",
+      "recommendation": "Giữ làm landing page, tiếp tục dùng Product Catalog từ CMS."
+    },
+    {
+      "id": "oncallcx-product-center",
+      "label": "OnCallCX",
+      "route": "#oncallcx-product-center",
+      "type": "product-center",
+      "cmsStatus": "aligned",
+      "ownerModule": "Unified Product CMS",
+      "target": "Product Center đã gắn CMS, Asset Manager, Product Detail, Knowledge Graph.",
+      "recommendation": "Tiếp tục làm chuẩn mẫu cho các product khác."
+    },
+    {
+      "id": "cms",
+      "label": "CMS Data",
+      "route": "#cms",
+      "type": "admin",
+      "cmsStatus": "aligned",
+      "ownerModule": "CMS Framework",
+      "target": "Quản trị dữ liệu, sản phẩm, asset, graph, backup.",
+      "recommendation": "Giữ là admin hub."
+    },
+    {
+      "id": "crm-erp-vietnam",
+      "label": "CRM/ERP Việt Nam",
+      "route": "#crm-erp-vietnam",
+      "type": "category",
+      "cmsStatus": "pending",
+      "ownerModule": "Product Manager",
+      "target": "Nên chuyển thành category chứa các sản phẩm CRM/ERP Việt Nam.",
+      "recommendation": "Tạo products trong CMS với category CRM/ERP Việt Nam."
+    },
+    {
+      "id": "uc-pbx-vietnam",
+      "label": "UC / PBX — Nhà Cung Cấp Việt Nam",
+      "route": "#uc-pbx-vietnam",
+      "type": "category",
+      "cmsStatus": "pending",
+      "ownerModule": "Product Manager",
+      "target": "Nên chuyển thành category UC/PBX và liên kết với OnCallCX integrations.",
+      "recommendation": "Tạo products hoặc integrations: Cisco, Asterisk, 3CX, Ribbon, VNPT SIP."
+    },
+    {
+      "id": "ccaas-vietnam",
+      "label": "CCaaS — Đối Tác Việt Nam",
+      "route": "#ccaas-vietnam",
+      "type": "category",
+      "cmsStatus": "pending",
+      "ownerModule": "Product Manager",
+      "target": "Nên chuyển thành category CCaaS Việt Nam.",
+      "recommendation": "Đưa OnCallCX và đối tác Việt Nam vào CMS Product Manager."
+    },
+    {
+      "id": "ccaas-international",
+      "label": "CCaaS — Nền Tảng Quốc Tế",
+      "route": "#ccaas-international",
+      "type": "category",
+      "cmsStatus": "partial",
+      "ownerModule": "Product Manager",
+      "target": "Đã có seed Webex/Zoom; cần bổ sung Genesys/NICE/Twilio/Mitel nếu cần.",
+      "recommendation": "Chuẩn hóa thành CMS category Global CCaaS."
+    },
+    {
+      "id": "api-reference",
+      "label": "API Reference",
+      "route": "#api-reference",
+      "type": "knowledge-base",
+      "cmsStatus": "partial",
+      "ownerModule": "Knowledge Graph",
+      "target": "API nên đọc từ product.apiLinks và asset type API Spec.",
+      "recommendation": "Ở v9.9 nên gom API Reference vào Knowledge Graph + Asset Manager."
+    },
+    {
+      "id": "video",
+      "label": "Video",
+      "route": "#video",
+      "type": "asset-library",
+      "cmsStatus": "partial",
+      "ownerModule": "Asset Manager",
+      "target": "Video nên là asset type Demo Video gắn theo product.",
+      "recommendation": "Không tạo sidebar video tĩnh; dùng Asset Manager filter type video."
+    },
+    {
+      "id": "compliance",
+      "label": "Tuân thủ",
+      "route": "#compliance",
+      "type": "knowledge-base",
+      "cmsStatus": "pending",
+      "ownerModule": "Knowledge Graph",
+      "target": "Thông tin compliance nên là Knowledge Section hoặc Asset Case Study/Policy.",
+      "recommendation": "Tạo knowledgeSections theo product hoặc category Compliance."
+    }
+  ],
+  "operationalGuide": [
+    {
+      "task": "Thêm/sửa sản phẩm",
+      "module": "Product Manager",
+      "route": "#cms",
+      "steps": [
+        "Mở CMS",
+        "Chọn Product Manager",
+        "Thêm hoặc sửa sản phẩm",
+        "Lưu Local",
+        "Export JSON nếu muốn publish lên GitHub"
+      ]
+    },
+    {
+      "task": "Upload tài liệu/video/PDF",
+      "module": "Asset Manager",
+      "route": "#cms",
+      "steps": [
+        "Mở CMS",
+        "Chọn Asset Manager",
+        "Chọn sản phẩm",
+        "Chọn loại asset",
+        "Upload file",
+        "Kiểm tra Product Detail"
+      ]
+    },
+    {
+      "task": "Gắn API / Integration / Competitor",
+      "module": "Knowledge Graph",
+      "route": "#cms",
+      "steps": [
+        "Mở CMS",
+        "Chọn Knowledge Graph",
+        "Cập nhật API/Integration/Competitor",
+        "Lưu Knowledge Graph"
+      ]
+    },
+    {
+      "task": "Quản lý bài viết/sidebar cũ",
+      "module": "CMS Articles",
+      "route": "#cms",
+      "steps": [
+        "Mở CMS",
+        "Chọn CMS Articles",
+        "Sửa bài viết/card theo sidebar",
+        "Lưu Local hoặc Export JSON"
+      ]
+    },
+    {
+      "task": "Backup/Restore dữ liệu CMS",
+      "module": "Backup / Restore",
+      "route": "#cms",
+      "steps": [
+        "Mở CMS",
+        "Chọn Backup / Restore",
+        "Export JSON hoặc Download Backup",
+        "Import khi cần rollback"
+      ]
+    }
+  ],
+  "articles": [
+    {
+      "id": "article-crm-erp-vietnam",
+      "title": "CRM/ERP Việt Nam",
+      "sidebarId": "crm-erp-vietnam",
+      "route": "#crm-erp-vietnam",
+      "type": "category-article",
+      "status": "active",
+      "summary": "Danh mục các hệ thống CRM/ERP Việt Nam có thể tích hợp với Contact Center, phục vụ screen pop, đồng bộ khách hàng, ticket, lịch sử cuộc gọi và workflow chăm sóc khách hàng.",
+      "cards": [
+        {
+          "title": "MISA AMIS CRM",
+          "summary": "CRM/ERP phổ biến tại Việt Nam, phù hợp khách hàng SME và doanh nghiệp đang dùng hệ sinh thái MISA.",
+          "url": "https://amis.misa.vn/"
+        },
+        {
+          "title": "Getfly CRM",
+          "summary": "CRM Việt Nam hỗ trợ quản lý khách hàng, marketing automation và bán hàng.",
+          "url": "https://getfly.vn/"
+        },
+        {
+          "title": "CloudGO",
+          "summary": "Nền tảng CRM Việt Nam có thể tích hợp quy trình bán hàng và chăm sóc khách hàng.",
+          "url": "https://cloudgo.vn/"
+        },
+        {
+          "title": "Base.vn",
+          "summary": "Nền tảng quản trị doanh nghiệp có thể liên quan workflow, ticket và vận hành nội bộ.",
+          "url": "https://base.vn/"
+        }
+      ]
+    },
+    {
+      "id": "article-uc-pbx-vietnam",
+      "title": "UC / PBX — Nhà Cung Cấp Việt Nam",
+      "sidebarId": "uc-pbx-vietnam",
+      "route": "#uc-pbx-vietnam",
+      "type": "category-article",
+      "status": "active",
+      "summary": "Danh mục hệ thống UC/PBX/SIP có thể tích hợp với OnCallCX qua SIP trunk, SBC, API hoặc mô hình BYOC.",
+      "cards": [
+        {
+          "title": "Cisco CUCM",
+          "summary": "Hệ thống IP Telephony enterprise, phù hợp tích hợp SIP trunk, CUBE/SBC và contact center.",
+          "url": ""
+        },
+        {
+          "title": "Asterisk",
+          "summary": "PBX mã nguồn mở, phù hợp lab, SBC proxy, SIP integration và custom dialplan.",
+          "url": "https://www.asterisk.org/"
+        },
+        {
+          "title": "3CX",
+          "summary": "PBX/UC software hỗ trợ SIP trunk, softphone, web client và call flow.",
+          "url": "https://www.3cx.com/"
+        },
+        {
+          "title": "Ribbon SBC",
+          "summary": "Session Border Controller cho SIP interconnect, bảo mật và routing voice.",
+          "url": "https://ribboncommunications.com/"
+        }
+      ]
+    },
+    {
+      "id": "article-ccaas-vietnam",
+      "title": "CCaaS — Đối Tác Việt Nam",
+      "sidebarId": "ccaas-vietnam",
+      "route": "#ccaas-vietnam",
+      "type": "category-article",
+      "status": "active",
+      "summary": "Danh mục giải pháp Contact Center tại Việt Nam, trong đó OnCallCX là sản phẩm trọng tâm của FPT Telecom.",
+      "cards": [
+        {
+          "title": "OnCallCX",
+          "summary": "Contact Center as a Service made by FPT, hỗ trợ Omnichannel, Recording, Dashboard, API và tích hợp AI.",
+          "url": "#product-detail:oncallcx"
+        }
+      ]
+    },
+    {
+      "id": "article-ccaas-international",
+      "title": "CCaaS — Nền Tảng Quốc Tế",
+      "sidebarId": "ccaas-international",
+      "route": "#ccaas-international",
+      "type": "category-article",
+      "status": "active",
+      "summary": "Danh mục nền tảng CCaaS quốc tế dùng để tham khảo, so sánh và tư vấn khách hàng enterprise/global.",
+      "cards": [
+        {
+          "title": "Webex Contact Center",
+          "summary": "CCaaS thuộc hệ sinh thái Cisco/Webex.",
+          "url": "#product-detail:webex-contact-center"
+        },
+        {
+          "title": "Zoom Contact Center",
+          "summary": "Cloud contact center phù hợp khách hàng dùng Zoom.",
+          "url": "#product-detail:zoom-contact-center"
+        },
+        {
+          "title": "Genesys Cloud CX",
+          "summary": "Nền tảng cloud CX enterprise toàn cầu.",
+          "url": "https://www.genesys.com/"
+        },
+        {
+          "title": "NICE CXone",
+          "summary": "CCaaS enterprise mạnh về AI, WFM và analytics.",
+          "url": "https://www.nice.com/"
+        }
+      ]
+    },
+    {
+      "id": "article-api-reference",
+      "title": "API Reference",
+      "sidebarId": "api-reference",
+      "route": "#api-reference",
+      "type": "api-reference",
+      "status": "active",
+      "summary": "API Reference được chuẩn hóa theo từng product trong Knowledge Graph và asset API Spec.",
+      "cards": [
+        {
+          "title": "CDR API",
+          "summary": "Truy vấn lịch sử cuộc gọi, trạng thái, thời lượng và metadata.",
+          "url": "#product-detail:oncallcx"
+        },
+        {
+          "title": "Webhook Incoming",
+          "summary": "Nhận sự kiện cuộc gọi realtime để tích hợp CRM/ERP.",
+          "url": "#product-detail:oncallcx"
+        },
+        {
+          "title": "Recording API",
+          "summary": "Truy xuất thông tin ghi âm phục vụ QA/QC và tra soát.",
+          "url": "#product-detail:oncallcx"
+        }
+      ]
+    },
+    {
+      "id": "article-video",
+      "title": "Video Demo",
+      "sidebarId": "video",
+      "route": "#video",
+      "type": "asset-library",
+      "status": "active",
+      "summary": "Video demo nên được quản lý như asset type Demo Video và gắn theo sản phẩm trong Asset Manager.",
+      "cards": [
+        {
+          "title": "OnCallCX Demo Flow",
+          "summary": "Login portal, tạo extension, assign phone, register extension và thực hiện cuộc gọi.",
+          "url": "#product-detail:oncallcx"
+        }
+      ]
+    },
+    {
+      "id": "article-compliance",
+      "title": "Tuân thủ",
+      "sidebarId": "compliance",
+      "route": "#compliance",
+      "type": "knowledge-base",
+      "status": "active",
+      "summary": "Khu vực quản lý thông tin tuân thủ, bảo mật, lưu trữ dữ liệu, ghi âm và chính sách tích hợp theo từng sản phẩm.",
+      "cards": [
+        {
+          "title": "Data Storage",
+          "summary": "Chính sách lưu trữ dữ liệu, recording và thời gian giữ dữ liệu theo yêu cầu khách hàng.",
+          "url": "#product-detail:oncallcx"
+        },
+        {
+          "title": "Security",
+          "summary": "Vai trò truy cập, phân quyền, audit và các yêu cầu bảo mật.",
+          "url": "#product-detail:oncallcx"
+        }
+      ]
+    }
   ]
 }
