@@ -87,7 +87,7 @@ function knowledgeRows(product){
   </div>`).join('') || `<div class="cms-empty-state">Chưa có knowledge section.</div>`;
 }
 
-export function renderKnowledgeGraphManager(data){
+export function renderKnowledgeGraphManager(data, description = ''){
   const product = activeProduct(data);
   if(!product) return `<div class="cms-empty-state">Chưa có sản phẩm.</div>`;
   ensureGraphFields(product);
@@ -96,7 +96,7 @@ export function renderKnowledgeGraphManager(data){
     <div>
       <span class="eyebrow">🕸️ Product Knowledge Graph</span>
       <h2>${esc(product.title || product.id)}</h2>
-      <p>Quản lý quan hệ sản phẩm, integration, competitor, API và knowledge section cho trang chi tiết.</p>
+      <p>${esc(description || 'Quản lý các dữ liệu kỹ thuật gắn với sản phẩm như API link, integration note, competitor và knowledge section.')}</p>
     </div>
     <div class="kg-actions">
       <button class="btn btn-primary" id="kgSave">Lưu Knowledge Graph</button>

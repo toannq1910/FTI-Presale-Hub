@@ -17,12 +17,30 @@ function productIcon(product){
   return esc(text.slice(0,2).toUpperCase());
 }
 
+function productUsage(product = {}){
+  if(['oncallcx-ucaas','prod-oncallcx-uc'].includes(product.id)){
+    return {
+      className:'public',
+      short:'Đang dùng public',
+      detail:'Sản phẩm này đang điều khiển card OnCallCX UCaaS ở trang OnCallCX và phần Product Center → Overview. Sửa Summary, Highlights, Use cases tại đây để cập nhật cả hai nơi.'
+    };
+  }
+  if(product.id === 'oncallcx-as7-ucaas'){
+    return {
+      className:'draft',
+      short:'Draft, không dùng public',
+      detail:'Bản này chỉ là draft/nháp. Public đang dùng record OnCallCX UCaaS active, không dùng OnCallCX AS7 - UCaaS.'
+    };
+  }
+  return null;
+}
+
 export function normalizeProducts(data){
   data.products = Array.isArray(data.products) ? data.products : [];
   return data;
 }
 
-export function renderProductManager(data){
+export function renderProductManager(data, description = ''){
   normalizeProducts(data);
   const products = data.products || [];
   const activeId = sessionStorage.getItem('fti_active_product_id') || products[0]?.id || '';
@@ -30,9 +48,9 @@ export function renderProductManager(data){
 
   return `<section class="product-manager-hero">
     <div>
-      <span class="eyebrow">🧭 Product Manager</span>
-      <h2>Quản lý danh mục sản phẩm</h2>
-      <p>Quản lý nhiều sản phẩm trong cùng Portal: OnCallCX, Webex, Zoom, Cisco UC, Teams, Genesys, NICE...</p>
+      <span class="eyebrow">🧭 Product Data</span>
+      <h2>Quản lý dữ liệu sản phẩm</h2>
+      <p>${esc(description || 'Quản lý dữ liệu cấu trúc của sản phẩm như vendor, category, feature, tag, status và điểm tư vấn. Module này không thay thế CMS Articles.')}</p>
     </div>
     <button class="btn btn-primary" id="pmAddProduct">+ Thêm sản phẩm</button>
   </section>
@@ -54,14 +72,18 @@ export function renderProductManager(data){
 }
 
 export function renderProductList(products, activeId){
-  return products.map(p => `<button class="pm-list-item ${p.id === activeId ? 'active' : ''}" data-product-id="${esc(p.id)}">
+  return products.map(p => {
+    const usage = productUsage(p);
+    return `<button class="pm-list-item ${p.id === activeId ? 'active' : ''}" data-product-id="${esc(p.id)}">
     <div class="pm-avatar">${productIcon(p)}</div>
     <div>
       <b>${esc(p.title || 'Untitled')}</b>
       <span>${esc(p.category || p.vendor || 'No category')}</span>
+      ${usage ? `<small class="pm-usage ${usage.className}">${esc(usage.short)}</small>` : ''}
     </div>
     <em>${esc(productStatusLabel(p.status))}</em>
-  </button>`).join('') || `<div class="cms-empty-state">Chưa có sản phẩm nào.</div>`;
+  </button>`;
+  }).join('') || `<div class="cms-empty-state">Chưa có sản phẩm nào.</div>`;
 }
 
 function renderEmptyProduct(){
@@ -69,6 +91,7 @@ function renderEmptyProduct(){
 }
 
 export function renderProductForm(p){
+  const usage = productUsage(p);
   return `<div class="pm-form-card">
     <div class="pm-form-head">
       <div>
@@ -81,6 +104,8 @@ export function renderProductForm(p){
         <button class="btn btn-primary" id="pmSaveProduct">Lưu sản phẩm</button>
       </div>
     </div>
+
+    ${usage ? `<div class="pm-usage-note ${usage.className}"><b>${esc(usage.short)}</b><span>${esc(usage.detail)}</span></div>` : ''}
 
     <div class="pm-form-grid">
       <label>Product ID</label><input id="pmId" value="${esc(p.id || '')}">
@@ -171,6 +196,7 @@ export function bindProductManager(data, renderCms){
     };
     next.products.unshift(newProduct);
     sessionStorage.setItem('fti_active_product_id', newProduct.id);
+    saveCms(next);
     toast('Đã tạo sản phẩm mới.');
     renderCms(next, 'products');
   });

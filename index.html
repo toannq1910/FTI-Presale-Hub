@@ -37,6 +37,8 @@ html,body{height:100%;overflow:hidden!important}
 .auth-table{width:100%;border-collapse:collapse}.auth-table th,.auth-table td{border-bottom:1px solid rgba(148,163,184,.15);padding:10px;text-align:left;color:#c4d3ea}.auth-table th{color:#e2e8f0;background:rgba(255,255,255,.04)}
 .auth-badge{display:inline-flex;border-radius:999px;padding:3px 8px;font-size:11px;font-weight:900;background:rgba(59,130,246,.14);border:1px solid rgba(59,130,246,.28);color:#93c5fd}
 .auth-badge.locked{background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.28);color:#fca5a5}
+.auth-inline-check{display:inline-flex;align-items:center;gap:8px;margin:4px 10px 4px 0;padding:7px 10px;border:1px solid rgba(59,130,246,.22);border-radius:999px;background:rgba(15,23,42,.35);color:#dbeafe;font-size:12px;font-weight:800;white-space:nowrap}
+.auth-inline-check input{accent-color:#22c55e}
 @media(max-width:1100px){.auth-grid,.auth-form{grid-template-columns:1fr}}
 </style>
 
@@ -90,9 +92,9 @@ body:not(.cms-locked) .auth-system-group{display:block!important}
   <form class="login-card" id="loginForm">
     <img src="assets/logo-fpt.png" class="login-logo" alt="FPT"><span class="eyebrow">Enterprise Authentication</span>
     <h1>FTI Collaboration Hub</h1><p>Đăng nhập để sử dụng CMS theo phân quyền.</p>
-    <label>Username</label><input id="loginEmail" type="text" value="admin" autocomplete="username">
-    <label>Password</label><input id="loginPassword" type="password" value="Admin!@#$%2020" autocomplete="current-password">
-    <button class="btn btn-primary">Đăng nhập</button><p class="auth-hint">Default: admin / Admin!@#$%2020</p>
+    <label>Username</label><input id="loginEmail" type="text" autocomplete="username">
+    <label>Password</label><input id="loginPassword" type="password" autocomplete="current-password">
+    <button class="btn btn-primary">Đăng nhập</button><p class="auth-hint">Đăng nhập bằng tài khoản được cấp quyền CMS.</p>
   </form>
 </div>
 <div class="app-shell">
@@ -129,7 +131,7 @@ body:not(.cms-locked) .auth-system-group{display:block!important}
       <a class="nav-item" href="#demo" data-page="demo"><span>▶️</span><b>Demo sản phẩm</b><em>Live</em></a>
       <a class="nav-item" href="#compare" data-page="compare"><span>📊</span><b>Bảng so sánh</b></a>
       <a class="nav-item" href="#resources" data-page="resources"><span>📚</span><b>Nguồn tài liệu</b></a>
-      <a class="nav-item cms-only" href="#editor" data-page="editor" data-permission="articles.update"><span>✏️</span><b>Chỉnh sửa bài viết</b><em>Edit</em></a>
+      <a class="nav-item cms-only" href="#cms" data-page="cms" data-permission="cms.view"><span>🧩</span><b>CMS Data</b><em>Unified</em></a>
     </div></div>
     <div class="nav-group expanded auth-system-group"><button class="nav-group-head" data-toggle-group><span>🔐</span><div><b>SYSTEM & SECURITY</b><small>User · Role · Audit</small></div><i>⌄</i></button><div class="nav-group-body">
       <a class="nav-item" href="#users" data-page="users" data-permission="users.view"><span>👤</span><b>Quản lý User</b><em>Admin</em></a>
@@ -144,14 +146,10 @@ body:not(.cms-locked) .auth-system-group{display:block!important}
 <section id="pageRoot" class="page-root"></section>
 </main></div>
 <div id="toastRoot" class="toast-root"></div>
-<script type="module" src="js/main.js"></script>
-<script type="module" src="js/cms-portal.js"></script>
-<script type="module" src="js/unified-product-cms.js"></script>
-<script type="module" src="js/product-catalog.js"></script>
-<script type="module" src="js/product-detail.js"></script>
+<script type="module" src="js/main.js?v=20260701-4"></script>
+<script type="module" src="js/cms-portal.js?v=20260701-4"></script>
+<script type="module" src="js/product-detail.js?v=20260701-4"></script>
 <script type="module" src="js/sidebar-alignment.js"></script>
-<script type="module" src="js/cms-article-routes.js"></script>
-<script type="module" src="js/legacy-editor-cleanup.js"></script>
 <script type="module" src="js/enterprise-cms-runtime.js"></script>
 <script type="module" src="js/api-center-runtime.js"></script>
 <script type="module" src="js/document-center-runtime.js"></script>
@@ -163,4 +161,5 @@ body:not(.cms-locked) .auth-system-group{display:block!important}
 <script type="module" src="js/video-conference-complete-runtime.js"></script>
 <script type="module" src="js/cms-full-content-sync.js"></script>
 <script type="module" src="js/enterprise-auth-runtime.js"></script>
+<script type="module" src="js/oncallcx-user-guide-runtime.js?v=20260701-4"></script>
 </body></html>

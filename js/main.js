@@ -1,11 +1,38 @@
 import{CONFIG}from'./config.js';
 import{stats,solutions,vendorGroups,compareRows,complianceCards,resources,partnerProductCatalog}from'./data.js';
+import{getProductAssets,assetObjectUrl,formatBytes,assetPut,generatePresentationPages,assetGet}from'./cms/cms-assets.js?v=20260701-4';
+import{CMS_KEY}from'./cms/cms-core.js';
+import{ocxGetCurrentDoc,ocxGetDocUrl}from'./oncallcx-doc-manager.js';
 
+function isVideoConferenceHash(hash=location.hash){
+  const h=String(hash||'').replace('#','');
+  return h==='video-conferencing'||h.startsWith('vc-');
+}
+function isVideoConferencePage(page=''){
+  const p=String(page||'');
+  return p==='video'||p==='video-conferencing'||p.startsWith('vc-');
+}
+function videoHashFromPage(page=''){
+  const p=String(page||'');
+  if(p==='video'||p==='video-conferencing')return '#video-conferencing';
+  if(p.startsWith('vc-'))return `#${p}`;
+  return '';
+}
+function isSystemSecurityPage(page=''){
+  return ['users','permissions','audit-log'].includes(String(page||''));
+}
 function resolvePageFromHash(){
   const h=location.hash.replace('#','');
-  if(h.startsWith('editor:'))return 'editor';
-  if(h.startsWith('vendor-editor:'))return 'vendor-editor';
+  if(h==='editor'||h.startsWith('editor:'))return 'cms';
+  if(h==='vendor-editor'||h.startsWith('vendor-editor:'))return 'cms';
   if(h.startsWith('api-folder:'))return 'api-reference';
+  if(h==='oncallcx-product-center-ccaas'||h==='oncallcx-product-center-ucaas')return 'oncallcx-product-center';
+  if(h.startsWith('oncallcx-product-center:'))return 'oncallcx-product-center';
+  if(isVideoConferenceHash(h))return h;
+  if(h==='oncallcx-presale-ccaas'||h==='oncallcx-presale-ucaas')return 'oncallcx-presale';
+  if(h.startsWith('oncallcx-presale:'))return 'oncallcx-presale';
+  if(h==='presentation-oncallcx-ccaas'||h==='presentation-oncallcx-ucaas')return 'presentation-oncallcx';
+  if(h.startsWith('presentation-oncallcx:'))return 'presentation-oncallcx';
   return h||'overview';
 }
 
@@ -20,6 +47,7 @@ const titles={
   'ccaas-global':['CCaaS Global','Bài viết sản phẩm đối tác quốc tế'],
   'ucpbx-vn':['UC/PBX Việt Nam','Bài viết sản phẩm UC/PBX Việt Nam'],
   'api-reference':['API Reference','CONTACT CENTER/API Reference'],
+  'video-conferencing':['Video Conferencing','System · Endpoint · Global'],
   video:['Video Solutions','Room system và endpoint'],
   devices:['Thiết bị phòng họp','Yealink · Logitech · Poly · Cisco'],
   integration:['Integration Playbook','CRM · ERP · BYOC · Webhook'],
@@ -28,12 +56,18 @@ const titles={
   demo:['Demo sản phẩm','Mô phỏng luồng khách hàng thực tế'],
   compare:['Bảng so sánh','So sánh giải pháp theo capability'],
   resources:['Nguồn tài liệu','Tài liệu dành cho khách hàng'],
-  editor:['Chỉnh sửa bài viết','Content editor dùng LocalStorage'],
-  'vendor-editor':['Quản lý bài viết nhóm','Thêm / sửa / xóa product articles']
+  cms:['CMS Data','Unified content management'],
+  users:['Quản lý User','Enterprise Authentication · Users'],
+  permissions:['Phân quyền','Group-Based Access Control'],
+  'audit-log':['Audit Log','Authentication and CMS activity logs']
 };
+titles['oncallcx-presale']=['OnCallCX Presale','Architecture · Pricing · Checklist'];
 
-const $=(s,r=document)=>r.querySelector(s);
-const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+export const $=(s,r=document)=>r.querySelector(s);
+export const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const safeHtml=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const isPdfAsset=a=>a&&(a.mimeType==='application/pdf'||/\.pdf$/i.test(a.fileName||''));
+const isPowerPointAsset=a=>a&&(/powerpoint|presentation/i.test(a.mimeType||'')||/\.(ppt|pptx)$/i.test(a.fileName||''));
 
 const GROUP_PAGE_KEYS=['ccaas-vn','ccaas-global','ucpbx-vn','crm'];
 function groupKeyToPage(groupKey){return GROUP_PAGE_KEYS.includes(groupKey)?groupKey:'overview'}
@@ -43,12 +77,24 @@ function unpackVendorHash(payload=''){
   return {groupKey:decodeURIComponent(parts[0]||''),vendorId:decodeURIComponent(parts[1]||'')};
 }
 function safeHashPage(page){
+  if(page==='editor'||page==='vendor-editor')page='cms';
+  const videoHash=videoHashFromPage(page);
+  if(videoHash){
+    if(location.hash!==videoHash)location.hash=videoHash;
+    return;
+  }
   if(page==='editor'&&location.hash.includes('editor:'))return;
   if(page==='vendor-editor'&&location.hash.includes('vendor-editor:'))return;
   if(page==='api-reference'&&location.hash.includes('api-folder:'))return;
+  if(page==='oncallcx-product-center'&&/^#oncallcx-product-center-(ccaas|ucaas)$/.test(location.hash))return;
+  if(page==='oncallcx-product-center'&&location.hash.includes('oncallcx-product-center:'))return;
+  if(page==='oncallcx-presale'&&/^#oncallcx-presale-(ccaas|ucaas)$/.test(location.hash))return;
+  if(page==='oncallcx-presale'&&location.hash.includes('oncallcx-presale:'))return;
+  if(page==='presentation-oncallcx'&&/^#presentation-oncallcx-(ccaas|ucaas)$/.test(location.hash))return;
+  if(page==='presentation-oncallcx'&&location.hash.includes('presentation-oncallcx:'))return;
   location.hash=page;
 }
-function toast(m){
+export function toast(m){
   const e=document.createElement('div');
   e.className='toast';
   e.textContent=m;
@@ -57,9 +103,10 @@ function toast(m){
 }
 
 /* ========= Generic article CRUD ========= */
+const LEGACY_LOCAL_CRUD_ENABLED=false;
 const CONTENT_KEY='fti_hub_content_overrides_v1';
-function getOverrides(){try{return JSON.parse(localStorage.getItem(CONTENT_KEY)||'{}')}catch{return {}}}
-function saveOverrides(data){localStorage.setItem(CONTENT_KEY,JSON.stringify(data))}
+function getOverrides(){if(!LEGACY_LOCAL_CRUD_ENABLED)return {};try{return JSON.parse(localStorage.getItem(CONTENT_KEY)||'{}')}catch{return {}}}
+function saveOverrides(data){if(!LEGACY_LOCAL_CRUD_ENABLED)return;localStorage.setItem(CONTENT_KEY,JSON.stringify(data))}
 function createContentItem(bucket='general'){
   return {id:'custom-solution-'+Date.now(),bucket,icon:'📝',title:'Bài viết mới',type:'Nội dung mới',desc:'Nhập mô tả bài viết tại đây.',chips:['New','Draft'],apis:[['GET','/api/new','Mô tả endpoint']]};
 }
@@ -98,8 +145,8 @@ function resetContentItem(id){
 const PRODUCT_KEY='fti_hub_product_article_overrides_v8';
 const MOVED_API_KEY='fti_hub_moved_api_article_overrides_v8';
 
-function getStore(key){try{return JSON.parse(localStorage.getItem(key)||'{}')}catch{return {}}}
-function saveStore(key,data){localStorage.setItem(key,JSON.stringify(data))}
+function getStore(key){if(!LEGACY_LOCAL_CRUD_ENABLED)return {};try{return JSON.parse(localStorage.getItem(key)||'{}')}catch{return {}}}
+function saveStore(key,data){if(!LEGACY_LOCAL_CRUD_ENABLED)return;localStorage.setItem(key,JSON.stringify(data))}
 
 function baseProductGroup(groupKey){
   const c=partnerProductCatalog[groupKey];
@@ -118,10 +165,112 @@ function getProductGroup(groupKey){
 }
 function getProductArticle(groupKey,id){
   const group=getProductGroup(groupKey);
-  return group.products.find(p=>p.id===id)||group.products[0]||createProductArticle(groupKey);
+  return group.products.find(p=>p.id===id)||getVirtualProductArticle(groupKey,id,group)||group.products[0]||createProductArticle(groupKey);
 }
 function createProductArticle(groupKey){
   return {id:'custom-product-'+groupKey+'-'+Date.now(),name:'Bài viết sản phẩm mới',icon:'📝',category:'Sản phẩm / Đối tác',tags:['Product','Draft'],source:'',desc:'Nhập nội dung bài viết sản phẩm tại đây.',strengths:['Điểm nổi bật mới'],usecases:['Use case mới'],link:''};
+}
+function createInheritedOnCallCXArticle(primary){
+  if(!primary)return null;
+  const productData=getOnCallCXCmsProduct('ucaas')||ONCALLCX_UCAAS_PRODUCT_DEFAULT;
+  return cmsProductToProductArticle(productData,{
+    ...primary,
+    id:'prod-oncallcx-ucaas-inherited',
+    name:'OnCallCX UCaaS',
+    icon:'🏢',
+    category:'UCaaS / Cloud PBX Platform',
+    source:primary.source||'oncallcx.vn',
+    desc:'OnCallCX UCaaS là bài viết mở rộng từ nội dung OncallCX hiện có, tập trung vào tổng đài Cloud PBX, extension, SIP trunk, call routing và khả năng tích hợp CRM/API cho doanh nghiệp.',
+    link:primary.link||'oncallcx.vn'
+  });
+}
+function currentOnCallCXProductId(){
+  const h=location.hash.replace('#','');
+  if(h.endsWith('-ucaas'))return 'prod-oncallcx-ucaas-inherited';
+  if(h.endsWith('-ccaas'))return 'prod-oncallcx-fpt';
+  const payload=h.includes(':')?h.split(':').slice(1).join(':'):'';
+  return payload||'prod-oncallcx-fpt';
+}
+function onCallCXRouteSlug(productId=currentOnCallCXProductId()){
+  return productId==='prod-oncallcx-ucaas-inherited'?'ucaas':'ccaas';
+}
+function onCallCXProductCenterHash(productId=currentOnCallCXProductId()){
+  return `oncallcx-product-center-${onCallCXRouteSlug(productId)}`;
+}
+function onCallCXPresaleHash(productId=currentOnCallCXProductId()){
+  return `oncallcx-presale-${onCallCXRouteSlug(productId)}`;
+}
+function onCallCXPresentationHash(productId=currentOnCallCXProductId()){
+  return `presentation-oncallcx-${onCallCXRouteSlug(productId)}`;
+}
+function onCallCXPresentationConfig(productId=currentOnCallCXProductId()){
+  const isUcaas=productId==='prod-oncallcx-ucaas-inherited';
+  return isUcaas ? {
+    productId,
+    title:'OnCallCX UCaaS',
+    subtitle:'Cloud PBX Platform',
+    label:'OnCallCX UCaaS Presentation',
+    description:'Presentation riêng cho OnCallCX UCaaS. File này độc lập với OnCallCX CCaaS và sẽ được cấu hình/upload riêng.',
+    pdfPath:'assets/presentation/oncallcx-ucaas.pdf',
+    pagesDir:'assets/presentation/oncallcx-ucaas-pages',
+    pageCount:13,
+    assetProductIds:['prod-oncallcx-ucaas-inherited','oncallcx-as7-ucaas'],
+    cmsProductLabel:'OnCallCX UCaaS'
+  } : {
+    productId:'prod-oncallcx-fpt',
+    title:'OncallCX - Contact Center As A Service',
+    subtitle:'Cloud Contact Center Platform',
+    label:'OnCallCX CCaaS Presentation',
+    description:'Presentation riêng cho OnCallCX CCaaS / Contact Center as a Service.',
+    pdfPath:'assets/presentation/oncallcx.pdf',
+    pagesDir:'assets/presentation/oncallcx-pages',
+    pageCount:49,
+    assetProductIds:['oncallcx','prod-oncallcx-fpt'],
+    cmsProductLabel:'OnCallCX'
+  };
+}
+async function findOnCallCXAsset(cfg,type='presentation'){
+  const ids=cfg.assetProductIds||[cfg.productId];
+  try{
+    for(const id of ids){
+      const found=(await getProductAssets(id)).find(a=>a.type===type);
+      if(found)return found;
+    }
+  }catch(err){
+    console.warn('Cannot load product asset from CMS Asset Manager',err);
+  }
+  return null;
+}
+async function findOnCallCXPresentationAsset(cfg){
+  return findOnCallCXAsset(cfg,'presentation');
+}
+async function ensureOnCallCXAssetPages(asset){
+  if(Array.isArray(asset?.pages) && asset.pages.length) return asset;
+  if(!asset?.blob) return asset;
+  toast('Đang render file Presentation đã upload...');
+  const generated=await generatePresentationPages(asset.blob,{fileName:asset.fileName});
+  const next={
+    ...asset,
+    pages:generated.pages||[],
+    thumbnail:generated.thumbnail||'',
+    pageCount:generated.pageCount||0,
+    generatedAt:generated.generatedAt||new Date().toISOString(),
+    renderSource:generated.renderSource||asset.renderSource||'',
+    generationError:generated.error||''
+  };
+  await assetPut(next);
+  if(next.pageCount) toast(`Đã render ${next.pageCount} slide.`);
+  else if(next.generationError) toast('Chưa render được slide từ file này.');
+  return next;
+}
+function getVirtualProductArticle(groupKey,id,group=getProductGroup(groupKey)){
+  if(groupKey!=='ccaas-vn'||id!=='prod-oncallcx-ucaas-inherited')return null;
+  const store=getStore(PRODUCT_KEY);
+  const groupStore=store[groupKey]||{};
+  if((groupStore.deleted||[]).includes(id))return null;
+  const primary=(group.products||[]).find(p=>p.id==='prod-oncallcx-fpt'||/OncallCX|OnCallCX/i.test(p.name));
+  const base=createInheritedOnCallCXArticle(primary);
+  return base?{...base,...(groupStore.edited?.[id]||{})}:null;
 }
 function upsertProductArticle(groupKey,article){
   const store=getStore(PRODUCT_KEY);
@@ -152,8 +301,8 @@ function getMovedApiGroup(groupKey){
 
 /* ========= Compliance CRUD ========= */
 const COMPLIANCE_KEY='fti_hub_compliance_overrides_v1';
-function getComplianceStore(){try{return JSON.parse(localStorage.getItem(COMPLIANCE_KEY)||'{}')}catch{return {}}}
-function saveComplianceStore(data){localStorage.setItem(COMPLIANCE_KEY,JSON.stringify(data))}
+function getComplianceStore(){if(!LEGACY_LOCAL_CRUD_ENABLED)return {};try{return JSON.parse(localStorage.getItem(COMPLIANCE_KEY)||'{}')}catch{return {}}}
+function saveComplianceStore(data){if(!LEGACY_LOCAL_CRUD_ENABLED)return;localStorage.setItem(COMPLIANCE_KEY,JSON.stringify(data))}
 function getComplianceCards(){
   const store=getComplianceStore();
   const deleted=new Set(store.deleted||[]);
@@ -186,794 +335,6 @@ function promptComplianceCard(existing){
 }
 
 
-/* ========= v9.0.3 OnCallCX Document Manager ========= */
-const OCX_DOC_DB='fti_ocx_document_manager_v1';
-const OCX_DOC_STORE='files';
-const OCX_DOC_META='meta';
-let ocxDocObjectUrl=null;
-
-function ocxOpenDb(){
-  return new Promise((resolve,reject)=>{
-    const req=indexedDB.open(OCX_DOC_DB,1);
-    req.onupgradeneeded=()=>{
-      const db=req.result;
-      if(!db.objectStoreNames.contains(OCX_DOC_STORE))db.createObjectStore(OCX_DOC_STORE,{keyPath:'id'});
-      if(!db.objectStoreNames.contains(OCX_DOC_META))db.createObjectStore(OCX_DOC_META,{keyPath:'key'});
-    };
-    req.onsuccess=()=>resolve(req.result);
-    req.onerror=()=>reject(req.error);
-  });
-}
-async function ocxDbGet(store,key){
-  const db=await ocxOpenDb();
-  return new Promise((resolve,reject)=>{
-    const tx=db.transaction(store,'readonly');
-    const req=tx.objectStore(store).get(key);
-    req.onsuccess=()=>resolve(req.result);
-    req.onerror=()=>reject(req.error);
-  });
-}
-async function ocxDbPut(store,value){
-  const db=await ocxOpenDb();
-  return new Promise((resolve,reject)=>{
-    const tx=db.transaction(store,'readwrite');
-    const req=tx.objectStore(store).put(value);
-    req.onsuccess=()=>resolve(value);
-    req.onerror=()=>reject(req.error);
-  });
-}
-async function ocxDbDelete(store,key){
-  const db=await ocxOpenDb();
-  return new Promise((resolve,reject)=>{
-    const tx=db.transaction(store,'readwrite');
-    const req=tx.objectStore(store).delete(key);
-    req.onsuccess=()=>resolve(true);
-    req.onerror=()=>reject(req.error);
-  });
-}
-async function ocxDbAll(store){
-  const db=await ocxOpenDb();
-  return new Promise((resolve,reject)=>{
-    const tx=db.transaction(store,'readonly');
-    const req=tx.objectStore(store).getAll();
-    req.onsuccess=()=>resolve(req.result||[]);
-    req.onerror=()=>reject(req.error);
-  });
-}
-function ocxFormatBytes(bytes){
-  if(!bytes)return '0 B';
-  const units=['B','KB','MB','GB'];
-  let size=bytes, idx=0;
-  while(size>=1024&&idx<units.length-1){size/=1024;idx++}
-  return `${size.toFixed(size>=10||idx===0?0:1)} ${units[idx]}`;
-}
-function ocxVersionName(){
-  const d=new Date();
-  const yyyy=d.getFullYear();
-  const mm=String(d.getMonth()+1).padStart(2,'0');
-  const dd=String(d.getDate()).padStart(2,'0');
-  const hh=String(d.getHours()).padStart(2,'0');
-  const mi=String(d.getMinutes()).padStart(2,'0');
-  return `${yyyy}-${mm}-${dd}_${hh}${mi}`;
-}
-async function ocxGetCurrentDoc(){
-  const meta=await ocxDbGet(OCX_DOC_META,'current');
-  if(meta?.versionId)return await ocxDbGet(OCX_DOC_STORE,meta.versionId);
-  return null;
-}
-async function ocxSetCurrentDoc(versionId){
-  await ocxDbPut(OCX_DOC_META,{key:'current',versionId,updatedAt:new Date().toISOString()});
-}
-
-async function ocxLoadPdfJs(){
-  if(window.pdfjsLib)return window.pdfjsLib;
-  await new Promise((resolve,reject)=>{
-    const existing=document.querySelector('script[data-pdfjs]');
-    if(existing){existing.addEventListener('load',resolve);existing.addEventListener('error',reject);return}
-    const s=document.createElement('script');
-    s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-    s.dataset.pdfjs='true';
-    s.onload=resolve;
-    s.onerror=()=>reject(new Error('Không tải được PDF.js'));
-    document.head.appendChild(s);
-  });
-  window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-  return window.pdfjsLib;
-}
-async function ocxGeneratePdfPages(file,{maxWidth=1200,thumbWidth=260}={}){
-  try{
-    const pdfjs=await ocxLoadPdfJs();
-    const buffer=await file.arrayBuffer();
-    const pdf=await pdfjs.getDocument({data:buffer}).promise;
-    const pages=[];
-    let thumbnail='';
-    for(let i=1;i<=pdf.numPages;i++){
-      const page=await pdf.getPage(i);
-      const viewport=page.getViewport({scale:1});
-      const scale=maxWidth/viewport.width;
-      const canvas=document.createElement('canvas');
-      const ctx=canvas.getContext('2d');
-      const scaled=page.getViewport({scale});
-      canvas.width=Math.floor(scaled.width);
-      canvas.height=Math.floor(scaled.height);
-      await page.render({canvasContext:ctx,viewport:scaled}).promise;
-      const image=canvas.toDataURL('image/jpeg',0.82);
-      pages.push({title:`Slide ${i}`,image});
-      if(i===1){
-        const thumbScale=thumbWidth/viewport.width;
-        const thumbCanvas=document.createElement('canvas');
-        const thumbCtx=thumbCanvas.getContext('2d');
-        const thumbVp=page.getViewport({scale:thumbScale});
-        thumbCanvas.width=Math.floor(thumbVp.width);
-        thumbCanvas.height=Math.floor(thumbVp.height);
-        await page.render({canvasContext:thumbCtx,viewport:thumbVp}).promise;
-        thumbnail=thumbCanvas.toDataURL('image/jpeg',0.76);
-      }
-    }
-    return {pages,thumbnail,pageCount:pdf.numPages,generatedAt:new Date().toISOString()};
-  }catch(err){
-    console.warn('Auto thumbnail failed:',err);
-    return {pages:[],thumbnail:'',pageCount:0,error:String(err?.message||err)};
-  }
-}
-
-async function ocxUploadDoc(file,versionName,description){
-  const id='ocx-doc-'+Date.now();
-  toast('Đang upload và tự sinh thumbnail...');
-  const generated=await ocxGeneratePdfPages(file);
-  const record={
-    id,
-    product:'oncallcx',
-    docType:'presentation',
-    version:versionName||ocxVersionName(),
-    description:description||'',
-    fileName:file.name,
-    mimeType:file.type||'application/pdf',
-    size:file.size,
-    createdAt:new Date().toISOString(),
-    blob:file,
-    thumbnail:generated.thumbnail,
-    pages:generated.pages,
-    pageCount:generated.pageCount,
-    generatedAt:generated.generatedAt,
-    generationError:generated.error||''
-  };
-  await ocxDbPut(OCX_DOC_STORE,record);
-  await ocxSetCurrentDoc(id);
-  return record;
-}
-async function ocxGetDocUrl(record){
-  if(ocxDocObjectUrl)URL.revokeObjectURL(ocxDocObjectUrl);
-  ocxDocObjectUrl=URL.createObjectURL(record.blob);
-  return ocxDocObjectUrl;
-}
-async function ocxRenderDocumentManager(){
-  const root=$('#ocxDocumentManagerRoot');
-  if(!root)return;
-  const all=(await ocxDbAll(OCX_DOC_STORE)).filter(x=>x.product==='oncallcx').sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
-  const meta=await ocxDbGet(OCX_DOC_META,'current');
-  const current=meta?.versionId?all.find(x=>x.id===meta.versionId):null;
-
-  root.innerHTML=`<div class="ocx-doc-current">
-    <div>
-      <span class="eyebrow">📂 Current Document</span>
-      <h4>${current?current.version:'Chưa có file upload'}</h4>${current?.thumbnail?`<img class="ocx-doc-thumb" src="${current.thumbnail}" alt="Current thumbnail">`:''}
-      <p>${current?`${current.fileName} · ${ocxFormatBytes(current.size)} · ${new Date(current.createdAt).toLocaleString('vi-VN')}`:'Mặc định Portal đang dùng file PDF nằm trong assets/presentation/oncallcx.pdf.'}</p>
-    </div>
-    <div class="ocx-doc-actions">
-      ${current?`<button class="btn btn-primary" data-doc-view="${current.id}">Xem current</button><button class="btn btn-soft" data-doc-download="${current.id}">Download</button>`:`<button class="btn btn-soft" data-go="presentation-oncallcx">Xem file mặc định</button>`}
-    </div>
-  </div>
-
-  <div class="ocx-upload-box">
-    <h4>Upload Presentation mới</h4>
-    <div class="ocx-upload-form">
-      <input type="file" id="ocxDocFile" accept="application/pdf,.pdf">
-      <input type="text" id="ocxDocVersion" placeholder="Tên version, ví dụ v4 hoặc 2026-06-25_v4">
-      <input type="text" id="ocxDocDesc" placeholder="Mô tả thay đổi">
-      <button class="btn btn-primary" id="ocxUploadBtn">Upload & đặt làm Current</button>
-    </div>
-    <small>File upload được lưu trong IndexedDB của trình duyệt hiện tại. Dữ liệu không gửi lên server.</small>
-  </div>
-
-  <div class="ocx-version-list">
-    <div class="section-head"><div><h3>Lịch sử phiên bản</h3><p>Các file cũ vẫn được lưu lại để xem, tải hoặc restore.</p></div></div>
-    ${all.length?all.map(x=>`<div class="ocx-version-item ${meta?.versionId===x.id?'current':''}">${x.thumbnail?`<img class="ocx-version-thumb" src="${x.thumbnail}" alt="${x.version} thumbnail">`:``}
-      <div>
-        <b>${x.version}</b>
-        <span>${x.fileName} · ${ocxFormatBytes(x.size)} · ${x.pageCount?`${x.pageCount} trang · `:''}${new Date(x.createdAt).toLocaleString('vi-VN')}${x.generationError?' · Không sinh được thumbnail':''}</span>
-        ${x.description?`<em>${x.description}</em>`:''}
-      </div>
-      <div class="ocx-version-actions">
-        <button class="btn btn-soft" data-doc-view="${x.id}">Xem</button>
-        <button class="btn btn-soft" data-doc-download="${x.id}">Tải</button>
-        <button class="btn btn-primary" data-doc-restore="${x.id}">Restore</button>
-        <button class="btn btn-danger" data-doc-delete="${x.id}">Xóa</button>
-      </div>
-    </div>`).join(''):`<div class="ocx-empty-state">Chưa có version upload nào.</div>`}
-  </div>`;
-
-  $('#ocxUploadBtn')?.addEventListener('click',async()=>{
-    const file=$('#ocxDocFile').files?.[0];
-    if(!file){toast('Vui lòng chọn file PDF.');return}
-    if(file.type&&file.type!=='application/pdf'){toast('Chỉ hỗ trợ PDF ở phase này.');return}
-    await ocxUploadDoc(file,$('#ocxDocVersion').value,$('#ocxDocDesc').value);
-    toast('Đã upload và đặt làm current.');
-    ocxRenderDocumentManager();
-  });
-
-  $$('[data-doc-view]').forEach(btn=>btn.onclick=async()=>{
-    const rec=await ocxDbGet(OCX_DOC_STORE,btn.dataset.docView);
-    if(!rec)return;
-    const url=await ocxGetDocUrl(rec);
-    const frame=$('#ocxDocPreviewFrame');
-    const title=$('#ocxDocPreviewTitle');
-    if(frame){frame.src=url}
-    if(title){title.textContent=`${rec.version} — ${rec.fileName}`}
-    $('.ocx-doc-preview')?.scrollIntoView({behavior:'smooth',block:'start'});
-  });
-
-  $$('[data-doc-download]').forEach(btn=>btn.onclick=async()=>{
-    const rec=await ocxDbGet(OCX_DOC_STORE,btn.dataset.docDownload);
-    if(!rec)return;
-    const url=await ocxGetDocUrl(rec);
-    const a=document.createElement('a');
-    a.href=url;
-    a.download=rec.fileName||`${rec.version}.pdf`;
-    a.click();
-  });
-
-  $$('[data-doc-restore]').forEach(btn=>btn.onclick=async()=>{
-    await ocxSetCurrentDoc(btn.dataset.docRestore);
-    toast('Đã restore version này làm current.');
-    ocxRenderDocumentManager();
-  });
-
-  $$('[data-doc-delete]').forEach(btn=>btn.onclick=async()=>{
-    if(!confirm('Xóa version này khỏi trình duyệt?'))return;
-    const meta=await ocxDbGet(OCX_DOC_META,'current');
-    await ocxDbDelete(OCX_DOC_STORE,btn.dataset.docDelete);
-    if(meta?.versionId===btn.dataset.docDelete)await ocxDbPut(OCX_DOC_META,{key:'current',versionId:null,updatedAt:new Date().toISOString()});
-    toast('Đã xóa version.');
-    ocxRenderDocumentManager();
-  });
-}
-
-async function ocxUpdateDocMetadata(id,patch){
-  const rec=await ocxDbGet(OCX_DOC_STORE,id);
-  if(!rec)return null;
-  const next={...rec,...patch,updatedAt:new Date().toISOString()};
-  await ocxDbPut(OCX_DOC_STORE,next);
-  return next;
-}
-async function ocxToggleDocArchive(id){
-  const rec=await ocxDbGet(OCX_DOC_STORE,id);
-  if(!rec)return null;
-  return await ocxUpdateDocMetadata(id,{archived:!rec.archived});
-}
-function ocxVersionBadge(rec,currentId){
-  if(currentId===rec.id)return '<span class="ocx-v-badge current">Current</span>';
-  if(rec.archived)return '<span class="ocx-v-badge archived">Archived</span>';
-  return '<span class="ocx-v-badge saved">Saved</span>';
-}
-async function ocxRenderVersionControl(){
-  const root=$('#ocxVersionControlRoot');
-  if(!root)return;
-
-  const all=(await ocxDbAll(OCX_DOC_STORE))
-    .filter(x=>x.product==='oncallcx')
-    .sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
-
-  const meta=await ocxDbGet(OCX_DOC_META,'current');
-  const currentId=meta?.versionId||null;
-  const current=currentId?all.find(x=>x.id===currentId):null;
-  const active=all.filter(x=>!x.archived);
-  const archived=all.filter(x=>x.archived);
-
-  root.innerHTML=`<div class="ocx-version-dashboard">
-    <div class="ocx-v-stat">
-      <span>Current</span>
-      <b>${current?current.version:'Default PDF'}</b>
-      <small>${current?current.fileName:'assets/presentation/oncallcx.pdf'}</small>
-    </div>
-    <div class="ocx-v-stat">
-      <span>Total Versions</span>
-      <b>${all.length}</b>
-      <small>Uploaded in this browser</small>
-    </div>
-    <div class="ocx-v-stat">
-      <span>Active</span>
-      <b>${active.length}</b>
-      <small>Available to restore</small>
-    </div>
-    <div class="ocx-v-stat">
-      <span>Archived</span>
-      <b>${archived.length}</b>
-      <small>Hidden from normal use</small>
-    </div>
-  </div>
-
-  <div class="ocx-version-policy">
-    <h4>Version policy</h4>
-    <div class="ocx-policy-grid">
-      <span>✓ Mỗi lần upload tạo một version mới</span>
-      <span>✓ Version cũ không bị ghi đè</span>
-      <span>✓ Có thể restore version bất kỳ thành Current</span>
-      <span>✓ Có thể archive để giữ lịch sử nhưng tránh nhầm lẫn</span>
-    </div>
-  </div>
-
-  <div class="ocx-vc-list">
-    <div class="section-head"><div><h3>Version Timeline</h3><p>Quản lý current, restore, archive và ghi chú version.</p></div></div>
-    ${all.length?all.map((x,idx)=>`<div class="ocx-vc-item ${currentId===x.id?'current':''} ${x.archived?'archived':''}">
-      <div class="ocx-vc-index">${String(all.length-idx).padStart(2,'0')}</div>
-      <div class="ocx-vc-main">
-        <div class="ocx-vc-title">
-          <b>${x.version}</b>
-          ${ocxVersionBadge(x,currentId)}
-        </div>
-        <span>${x.fileName} · ${ocxFormatBytes(x.size)} · ${x.pageCount?`${x.pageCount} trang · `:''}${new Date(x.createdAt).toLocaleString('vi-VN')}${x.generationError?' · Không sinh được thumbnail':''}</span>
-        <textarea data-version-note="${x.id}" placeholder="Ghi chú version...">${x.note||x.description||''}</textarea>
-      </div>
-      <div class="ocx-vc-actions">
-        <button class="btn btn-soft" data-vc-view="${x.id}">Xem</button>
-        <button class="btn btn-primary" data-vc-current="${x.id}">Set Current</button>
-        <button class="btn btn-soft" data-vc-note="${x.id}">Lưu note</button>
-        <button class="btn btn-soft" data-vc-archive="${x.id}">${x.archived?'Unarchive':'Archive'}</button>
-        <button class="btn btn-danger" data-vc-delete="${x.id}">Xóa</button>
-      </div>
-    </div>`).join(''):`<div class="ocx-empty-state">Chưa có version upload nào. Hãy upload PDF ở tab Document Manager.</div>`}
-  </div>`;
-
-  $$('[data-vc-view]').forEach(btn=>btn.onclick=async()=>{
-    const rec=await ocxDbGet(OCX_DOC_STORE,btn.dataset.vcView);
-    if(!rec)return;
-    const url=await ocxGetDocUrl(rec);
-    window.open(url,'_blank');
-  });
-
-  $$('[data-vc-current]').forEach(btn=>btn.onclick=async()=>{
-    await ocxSetCurrentDoc(btn.dataset.vcCurrent);
-    toast('Đã đặt version này làm Current.');
-    ocxRenderVersionControl();
-    ocxRenderDocumentManager();
-  });
-
-  $$('[data-vc-note]').forEach(btn=>btn.onclick=async()=>{
-    const note=$(`[data-version-note="${btn.dataset.vcNote}"]`)?.value||'';
-    await ocxUpdateDocMetadata(btn.dataset.vcNote,{note});
-    toast('Đã lưu ghi chú version.');
-    ocxRenderVersionControl();
-  });
-
-  $$('[data-vc-archive]').forEach(btn=>btn.onclick=async()=>{
-    await ocxToggleDocArchive(btn.dataset.vcArchive);
-    toast('Đã cập nhật trạng thái archive.');
-    ocxRenderVersionControl();
-    ocxRenderDocumentManager();
-  });
-
-  $$('[data-vc-delete]').forEach(btn=>btn.onclick=async()=>{
-    if(!confirm('Xóa vĩnh viễn version này khỏi trình duyệt?'))return;
-    const meta=await ocxDbGet(OCX_DOC_META,'current');
-    await ocxDbDelete(OCX_DOC_STORE,btn.dataset.vcDelete);
-    if(meta?.versionId===btn.dataset.vcDelete)await ocxDbPut(OCX_DOC_META,{key:'current',versionId:null,updatedAt:new Date().toISOString()});
-    toast('Đã xóa version.');
-    ocxRenderVersionControl();
-    ocxRenderDocumentManager();
-  });
-}
-
-
-const OCX_DOC_TYPE_LABELS={
-  presentation:'Presentation',
-  video:'Demo Video',
-  datasheet:'Datasheet',
-  caseStudy:'Case Study',
-  apiGuide:'API Guide',
-  releaseNote:'Release Note',
-  architecture:'Architecture',
-  proposal:'Proposal'
-};
-function ocxDocTypeLabel(type){return OCX_DOC_TYPE_LABELS[type]||type||'Document'}
-function ocxAcceptByDocType(type){
-  if(type==='video')return 'video/mp4,video/webm,.mp4,.webm';
-  return 'application/pdf,.pdf';
-}
-async function ocxUploadGenericDoc({file,docType,version,description,setCurrent=false}){
-  const id='ocx-doc-'+docType+'-'+Date.now();
-  let generated={pages:[],thumbnail:'',pageCount:0};
-  if((file.type||'').includes('pdf')||file.name.toLowerCase().endsWith('.pdf')){
-    generated=await ocxGeneratePdfPages(file);
-  }
-  const record={
-    id,
-    product:'oncallcx',
-    docType,
-    version:version||ocxVersionName(),
-    description:description||'',
-    fileName:file.name,
-    mimeType:file.type||'application/octet-stream',
-    size:file.size,
-    createdAt:new Date().toISOString(),
-    blob:file,
-    thumbnail:generated.thumbnail||'',
-    pages:generated.pages||[],
-    pageCount:generated.pageCount||0,
-    generatedAt:generated.generatedAt||new Date().toISOString(),
-    generationError:generated.error||''
-  };
-  await ocxDbPut(OCX_DOC_STORE,record);
-  if(setCurrent&&docType==='presentation')await ocxSetCurrentDoc(id);
-  return record;
-}
-async function ocxGetDocsByType(docType){
-  return (await ocxDbAll(OCX_DOC_STORE))
-    .filter(x=>x.product==='oncallcx' && x.docType===docType)
-    .sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
-}
-async function ocxRenderAdminUpload(){
-  const root=$('#ocxAdminUploadRoot');
-  if(!root)return;
-  const all=(await ocxDbAll(OCX_DOC_STORE))
-    .filter(x=>x.product==='oncallcx')
-    .sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
-  const grouped=Object.keys(OCX_DOC_TYPE_LABELS).map(type=>({
-    type,
-    label:ocxDocTypeLabel(type),
-    count:all.filter(x=>x.docType===type).length
-  }));
-
-  root.innerHTML=`<div class="ocx-admin-upload-hero">
-    <div>
-      <span class="eyebrow">🛠️ Admin Upload</span>
-      <h4>Upload tài liệu cho OnCallCX</h4>
-      <p>Quản lý các loại tài liệu sản phẩm: Presentation, Demo Video, Datasheet, Case Study, API Guide, Release Note...</p>
-    </div>
-  </div>
-
-  <div class="ocx-admin-form-card">
-    <h4>Upload file mới</h4>
-    <div class="ocx-admin-form">
-      <label>Loại tài liệu</label>
-      <select id="ocxAdminDocType">
-        ${Object.entries(OCX_DOC_TYPE_LABELS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}
-      </select>
-      <label>Chọn file</label>
-      <input type="file" id="ocxAdminFile" accept="application/pdf,.pdf">
-      <label>Version</label>
-      <input type="text" id="ocxAdminVersion" placeholder="VD: v1, 2026-06-25_v1">
-      <label>Mô tả</label>
-      <input type="text" id="ocxAdminDesc" placeholder="Mô tả thay đổi / ghi chú">
-      <label class="ocx-checkline"><input type="checkbox" id="ocxAdminSetCurrent"> Đặt làm Current nếu là Presentation</label>
-      <button class="btn btn-primary" id="ocxAdminUploadBtn">Upload file</button>
-    </div>
-    <small>PDF sẽ tự sinh thumbnail/pages nếu có thể tải PDF.js. Video và file khác được lưu version nhưng không sinh slide.</small>
-  </div>
-
-  <div class="ocx-admin-type-grid">
-    ${grouped.map(g=>`<button class="ocx-admin-type-card" data-admin-type="${g.type}">
-      <b>${g.label}</b>
-      <span>${g.count} file</span>
-    </button>`).join('')}
-  </div>
-
-  <div class="ocx-admin-library">
-    <div class="section-head"><div><h3>Library</h3><p>Danh sách tài liệu đã upload theo loại.</p></div></div>
-    <div id="ocxAdminLibraryList">${ocxAdminLibraryMarkup(all)}</div>
-  </div>`;
-
-  const typeSelect=$('#ocxAdminDocType');
-  const fileInput=$('#ocxAdminFile');
-  typeSelect.onchange=()=>fileInput.accept=ocxAcceptByDocType(typeSelect.value);
-
-  $('#ocxAdminUploadBtn').onclick=async()=>{
-    const file=fileInput.files?.[0];
-    if(!file){toast('Vui lòng chọn file.');return}
-    const docType=typeSelect.value;
-    const version=$('#ocxAdminVersion').value;
-    const description=$('#ocxAdminDesc').value;
-    const setCurrent=$('#ocxAdminSetCurrent').checked;
-    await ocxUploadGenericDoc({file,docType,version,description,setCurrent});
-    toast('Đã upload tài liệu.');
-    ocxRenderAdminUpload();
-    ocxRenderDocumentManager();
-    ocxRenderVersionControl();
-  };
-
-  $$('[data-admin-type]').forEach(btn=>btn.onclick=async()=>{
-    const type=btn.dataset.adminType;
-    const docs=await ocxGetDocsByType(type);
-    $('#ocxAdminLibraryList').innerHTML=ocxAdminLibraryMarkup(docs,true);
-  });
-
-  ocxBindAdminLibraryActions();
-}
-function ocxAdminLibraryMarkup(items,filtered=false){
-  if(!items.length)return `<div class="ocx-empty-state">${filtered?'Chưa có file thuộc loại này.':'Chưa có tài liệu upload.'}</div>`;
-  return items.map(x=>`<div class="ocx-admin-file-item">
-    ${x.thumbnail?`<img class="ocx-version-thumb" src="${x.thumbnail}" alt="${x.version} thumbnail">`:`<div class="ocx-file-icon">${x.docType==='video'?'🎬':'📄'}</div>`}
-    <div class="ocx-admin-file-main">
-      <div><b>${ocxDocTypeLabel(x.docType)} · ${x.version}</b><span>${x.fileName} · ${ocxFormatBytes(x.size)} · ${x.pageCount?`${x.pageCount} trang · `:''}${new Date(x.createdAt).toLocaleString('vi-VN')}</span></div>
-      ${x.description?`<em>${x.description}</em>`:''}
-    </div>
-    <div class="ocx-admin-file-actions">
-      <button class="btn btn-soft" data-admin-view="${x.id}">Xem</button>
-      <button class="btn btn-soft" data-admin-download="${x.id}">Tải</button>
-      ${x.docType==='presentation'?`<button class="btn btn-primary" data-admin-current="${x.id}">Set Current</button>`:''}
-      <button class="btn btn-danger" data-admin-delete="${x.id}">Xóa</button>
-    </div>
-  </div>`).join('');
-}
-function ocxBindAdminLibraryActions(){
-  $$('[data-admin-view]').forEach(btn=>btn.onclick=async()=>{
-    const rec=await ocxDbGet(OCX_DOC_STORE,btn.dataset.adminView);
-    if(!rec)return;
-    const url=await ocxGetDocUrl(rec);
-    window.open(url,'_blank');
-  });
-  $$('[data-admin-download]').forEach(btn=>btn.onclick=async()=>{
-    const rec=await ocxDbGet(OCX_DOC_STORE,btn.dataset.adminDownload);
-    if(!rec)return;
-    const url=await ocxGetDocUrl(rec);
-    const a=document.createElement('a');
-    a.href=url;
-    a.download=rec.fileName||`${rec.version}`;
-    a.click();
-  });
-  $$('[data-admin-current]').forEach(btn=>btn.onclick=async()=>{
-    await ocxSetCurrentDoc(btn.dataset.adminCurrent);
-    toast('Đã đặt Presentation này làm Current.');
-    ocxRenderAdminUpload();
-    ocxRenderDocumentManager();
-    ocxRenderVersionControl();
-  });
-  $$('[data-admin-delete]').forEach(btn=>btn.onclick=async()=>{
-    if(!confirm('Xóa file này khỏi trình duyệt?'))return;
-    const meta=await ocxDbGet(OCX_DOC_META,'current');
-    await ocxDbDelete(OCX_DOC_STORE,btn.dataset.adminDelete);
-    if(meta?.versionId===btn.dataset.adminDelete)await ocxDbPut(OCX_DOC_META,{key:'current',versionId:null,updatedAt:new Date().toISOString()});
-    toast('Đã xóa file.');
-    ocxRenderAdminUpload();
-    ocxRenderDocumentManager();
-    ocxRenderVersionControl();
-  });
-}
-
-
-function ocxHistoryIcon(type){
-  const map={presentation:'📘',video:'🎬',datasheet:'📄',caseStudy:'💬',apiGuide:'📚',releaseNote:'🧾',architecture:'🏗️',proposal:'📑'};
-  return map[type]||'📎';
-}
-async function ocxRenderHistoryCenter(){
-  const root=$('#ocxHistoryRoot');
-  if(!root)return;
-
-  const all=(await ocxDbAll(OCX_DOC_STORE))
-    .filter(x=>x.product==='oncallcx')
-    .sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
-  const meta=await ocxDbGet(OCX_DOC_META,'current');
-  const currentId=meta?.versionId||null;
-
-  const types=['all',...Object.keys(OCX_DOC_TYPE_LABELS)];
-  const currentFilter=root.dataset.filter||'all';
-  const filtered=currentFilter==='all'?all:all.filter(x=>x.docType===currentFilter);
-
-  const groupedByDate=filtered.reduce((acc,item)=>{
-    const d=new Date(item.createdAt);
-    const key=d.toLocaleDateString('vi-VN');
-    acc[key]=acc[key]||[];
-    acc[key].push(item);
-    return acc;
-  },{});
-
-  root.innerHTML=`<div class="ocx-history-header">
-    <div>
-      <span class="eyebrow">🕘 History Center</span>
-      <h4>Lịch sử tài liệu OnCallCX</h4>
-      <p>Xem lại toàn bộ file đã upload theo thời gian, loại tài liệu và trạng thái Current/Archived.</p>
-    </div>
-    <div class="ocx-history-summary">
-      <span><b>${all.length}</b><small>Total</small></span>
-      <span><b>${all.filter(x=>x.id===currentId).length}</b><small>Current</small></span>
-      <span><b>${all.filter(x=>x.archived).length}</b><small>Archived</small></span>
-    </div>
-  </div>
-
-  <div class="ocx-history-filters">
-    ${types.map(t=>`<button class="${currentFilter===t?'active':''}" data-history-filter="${t}">
-      ${t==='all'?'🗂️':ocxHistoryIcon(t)} ${t==='all'?'All':ocxDocTypeLabel(t)}
-    </button>`).join('')}
-  </div>
-
-  <div class="ocx-history-timeline">
-    ${Object.keys(groupedByDate).length?Object.entries(groupedByDate).map(([date,items])=>`<section class="ocx-history-day">
-      <h4>${date}</h4>
-      <div class="ocx-history-items">
-        ${items.map(x=>`<article class="ocx-history-item ${x.id===currentId?'current':''} ${x.archived?'archived':''}">
-          <div class="ocx-history-marker">${ocxHistoryIcon(x.docType)}</div>
-          ${x.thumbnail?`<img class="ocx-history-thumb" src="${x.thumbnail}" alt="${x.version} thumbnail">`:`<div class="ocx-history-fileicon">${ocxHistoryIcon(x.docType)}</div>`}
-          <div class="ocx-history-main">
-            <div class="ocx-history-title">
-              <b>${ocxDocTypeLabel(x.docType)} · ${x.version}</b>
-              ${ocxVersionBadge(x,currentId)}
-            </div>
-            <span>${x.fileName} · ${ocxFormatBytes(x.size)} · ${x.pageCount?`${x.pageCount} trang · `:''}${new Date(x.createdAt).toLocaleTimeString('vi-VN')}</span>
-            ${x.note?`<em>${x.note}</em>`:''}
-            ${x.description&&!x.note?`<em>${x.description}</em>`:''}
-          </div>
-          <div class="ocx-history-actions">
-            <button class="btn btn-soft" data-history-view="${x.id}">Xem</button>
-            <button class="btn btn-soft" data-history-download="${x.id}">Tải</button>
-            ${x.docType==='presentation'?`<button class="btn btn-primary" data-history-restore="${x.id}">Restore</button>`:''}
-          </div>
-        </article>`).join('')}
-      </div>
-    </section>`).join(''):`<div class="ocx-empty-state">Chưa có lịch sử tài liệu. Hãy upload ở tab Admin Upload hoặc Document Manager.</div>`}
-  </div>`;
-
-  $$('[data-history-filter]').forEach(btn=>btn.onclick=()=>{
-    root.dataset.filter=btn.dataset.historyFilter;
-    ocxRenderHistoryCenter();
-  });
-
-  $$('[data-history-view]').forEach(btn=>btn.onclick=async()=>{
-    const rec=await ocxDbGet(OCX_DOC_STORE,btn.dataset.historyView);
-    if(!rec)return;
-    const url=await ocxGetDocUrl(rec);
-    window.open(url,'_blank');
-  });
-
-  $$('[data-history-download]').forEach(btn=>btn.onclick=async()=>{
-    const rec=await ocxDbGet(OCX_DOC_STORE,btn.dataset.historyDownload);
-    if(!rec)return;
-    const url=await ocxGetDocUrl(rec);
-    const a=document.createElement('a');
-    a.href=url;
-    a.download=rec.fileName||`${rec.version}`;
-    a.click();
-  });
-
-  $$('[data-history-restore]').forEach(btn=>btn.onclick=async()=>{
-    await ocxSetCurrentDoc(btn.dataset.historyRestore);
-    toast('Đã restore version này làm Current.');
-    ocxRenderHistoryCenter();
-    ocxRenderVersionControl();
-    ocxRenderDocumentManager();
-  });
-}
-
-
-function ocxNormalizeText(v){
-  return String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-}
-function ocxDocSearchText(x){
-  return [
-    x.version,
-    x.fileName,
-    x.description,
-    x.note,
-    x.docType,
-    ocxDocTypeLabel(x.docType),
-    x.pageCount?`${x.pageCount} trang`:'',
-    ...(x.pages||[]).map(p=>p.title||'')
-  ].join(' ');
-}
-function ocxHighlight(text,query){
-  if(!query)return text||'';
-  const safe=String(text||'');
-  const idx=ocxNormalizeText(safe).indexOf(ocxNormalizeText(query));
-  if(idx<0)return safe;
-  return safe.slice(0,idx)+`<mark>`+safe.slice(idx,idx+query.length)+`</mark>`+safe.slice(idx+query.length);
-}
-async function ocxRenderSearchCenter(){
-  const root=$('#ocxSearchRoot');
-  if(!root)return;
-
-  const all=(await ocxDbAll(OCX_DOC_STORE))
-    .filter(x=>x.product==='oncallcx')
-    .sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
-  const query=root.dataset.query||'';
-  const filter=root.dataset.filter||'all';
-
-  const normalized=ocxNormalizeText(query);
-  const filtered=all.filter(x=>{
-    const matchType=filter==='all'||x.docType===filter;
-    const matchText=!normalized||ocxNormalizeText(ocxDocSearchText(x)).includes(normalized);
-    return matchType&&matchText;
-  });
-
-  const typeOptions=['all',...Object.keys(OCX_DOC_TYPE_LABELS)];
-
-  root.innerHTML=`<div class="ocx-search-hero">
-    <div>
-      <span class="eyebrow">🔎 Search Center</span>
-      <h4>Tìm kiếm tài liệu OnCallCX</h4>
-      <p>Tìm theo tên file, version, loại tài liệu, mô tả, ghi chú và tiêu đề slide đã sinh.</p>
-    </div>
-  </div>
-
-  <div class="ocx-search-bar">
-    <input id="ocxSearchInput" value="${query}" placeholder="Nhập từ khóa: presentation, datasheet, v1, API, case study...">
-    <select id="ocxSearchFilter">
-      ${typeOptions.map(t=>`<option value="${t}" ${filter===t?'selected':''}>${t==='all'?'All':ocxDocTypeLabel(t)}</option>`).join('')}
-    </select>
-    <button class="btn btn-primary" id="ocxSearchBtn">Search</button>
-    <button class="btn btn-soft" id="ocxClearSearchBtn">Clear</button>
-  </div>
-
-  <div class="ocx-search-summary">
-    <span><b>${filtered.length}</b> kết quả</span>
-    <span><b>${all.length}</b> tài liệu trong thư viện</span>
-  </div>
-
-  <div class="ocx-search-results">
-    ${filtered.length?filtered.map(x=>`<article class="ocx-search-result">
-      ${x.thumbnail?`<img class="ocx-search-thumb" src="${x.thumbnail}" alt="${x.version} thumbnail">`:`<div class="ocx-search-icon">${ocxHistoryIcon(x.docType)}</div>`}
-      <div class="ocx-search-main">
-        <div class="ocx-search-title">
-          <b>${ocxHighlight(`${ocxDocTypeLabel(x.docType)} · ${x.version}`,query)}</b>
-          ${x.archived?'<span class="ocx-v-badge archived">Archived</span>':''}
-        </div>
-        <p>${ocxHighlight(x.fileName,query)} · ${ocxFormatBytes(x.size)} · ${x.pageCount?`${x.pageCount} trang · `:''}${new Date(x.createdAt).toLocaleString('vi-VN')}</p>
-        ${x.description?`<em>${ocxHighlight(x.description,query)}</em>`:''}
-        ${x.note?`<em>${ocxHighlight(x.note,query)}</em>`:''}
-      </div>
-      <div class="ocx-search-actions">
-        <button class="btn btn-soft" data-search-view="${x.id}">Xem</button>
-        <button class="btn btn-soft" data-search-download="${x.id}">Tải</button>
-        ${x.docType==='presentation'?`<button class="btn btn-primary" data-search-restore="${x.id}">Set Current</button>`:''}
-      </div>
-    </article>`).join(''):`<div class="ocx-empty-state">Không tìm thấy kết quả phù hợp.</div>`}
-  </div>`;
-
-  const runSearch=()=>{
-    root.dataset.query=$('#ocxSearchInput').value.trim();
-    root.dataset.filter=$('#ocxSearchFilter').value;
-    ocxRenderSearchCenter();
-  };
-
-  $('#ocxSearchBtn').onclick=runSearch;
-  $('#ocxSearchInput').onkeydown=e=>{if(e.key==='Enter')runSearch()};
-  $('#ocxSearchFilter').onchange=runSearch;
-  $('#ocxClearSearchBtn').onclick=()=>{
-    root.dataset.query='';
-    root.dataset.filter='all';
-    ocxRenderSearchCenter();
-  };
-
-  $$('[data-search-view]').forEach(btn=>btn.onclick=async()=>{
-    const rec=await ocxDbGet(OCX_DOC_STORE,btn.dataset.searchView);
-    if(!rec)return;
-    const url=await ocxGetDocUrl(rec);
-    window.open(url,'_blank');
-  });
-
-  $$('[data-search-download]').forEach(btn=>btn.onclick=async()=>{
-    const rec=await ocxDbGet(OCX_DOC_STORE,btn.dataset.searchDownload);
-    if(!rec)return;
-    const url=await ocxGetDocUrl(rec);
-    const a=document.createElement('a');
-    a.href=url;
-    a.download=rec.fileName||`${rec.version}`;
-    a.click();
-  });
-
-  $$('[data-search-restore]').forEach(btn=>btn.onclick=async()=>{
-    await ocxSetCurrentDoc(btn.dataset.searchRestore);
-    toast('Đã đặt Presentation này làm Current.');
-    ocxRenderSearchCenter();
-    ocxRenderVersionControl();
-    ocxRenderDocumentManager();
-  });
-}
-
-async function ocxGetPresentationPathOrDefault(){
-  const current=await ocxGetCurrentDoc();
-  if(!current)return 'assets/presentation/oncallcx.pdf';
-  return await ocxGetDocUrl(current);
-}
-
 /* ========= Auth ========= */
 function initAuth(){
   const chip=$('#permissionChip');
@@ -1005,53 +366,52 @@ function renderHero(){
 }
 function solutionCard(input){
   const i=input?.id?getContentItem(input.id):input;
-  return `<article class="solution-card" data-solution="${i.id}"><div class="solution-top"><div class="solution-icon">${i.icon}</div><div><h3>${i.title}</h3><small>${i.type}</small></div></div><div class="solution-body"><p>${i.desc}</p><div class="chips">${(i.chips||[]).map((c,n)=>`<span class="chip ${n%3===0?'orange':n%3===1?'green':'blue'}">${c}</span>`).join('')}</div><div class="api-list">${(i.apis||[]).map(a=>`<div class="api-row"><span class="method ${String(a[0]).toLowerCase()==='post'?'post':String(a[0]).toLowerCase()==='ws'?'ws':'get'}">${a[0]}</span><span class="path">${a[1]}</span><span class="api-desc">${a[2]}</span></div>`).join('')}</div><div class="card-actions"><button class="btn btn-soft" data-edit-id="${i.id}">Chỉnh sửa</button><button class="btn btn-danger" data-delete-solution="${i.id}">Xóa</button></div></div></article>`;
+  return `<article class="solution-card" data-solution="${safeHtml(i.id)}"><div class="solution-top"><div class="solution-icon">${safeHtml(i.icon)}</div><div><h3>${safeHtml(i.title)}</h3><small>${safeHtml(i.type)}</small></div></div><div class="solution-body"><p>${safeHtml(i.desc)}</p><div class="chips">${(i.chips||[]).map((c,n)=>`<span class="chip ${n%3===0?'orange':n%3===1?'green':'blue'}">${safeHtml(c)}</span>`).join('')}</div><div class="api-list">${(i.apis||[]).map(apiEndpointRow).join('')}</div></div></article>`;
 }
 function renderSolutions(filter){
-  const source=allContentItems();
-  const list=filter?source.filter(s=>s.id===filter||s.bucket===filter||s.type.toLowerCase().includes(filter)||s.title.toLowerCase().includes(filter)):source;
-  const safeFilter=filter||'general';
-  return `<div class="section-head"><div><h2>Danh mục giải pháp</h2><p>Trình bày dạng card, dùng cho các trang không thuộc nhóm API/Product Partner.</p></div><button class="btn btn-primary" data-add-solution="${safeFilter}">+ Thêm bài viết</button></div><div class="solution-grid">${list.map(solutionCard).join('')}</div>`;
+  const legacySource=allContentItems();
+  const legacyList=filter?legacySource.filter(s=>s.id===filter||s.bucket===filter||s.type.toLowerCase().includes(filter)||s.title.toLowerCase().includes(filter)):legacySource;
+  return `<div class="section-head"><div><h2>Danh mục giải pháp</h2><p>Trình bày dạng card, dùng cho các trang không thuộc nhóm API/Product Partner.</p></div></div><div class="solution-grid">${legacyList.map(solutionCard).join('')}</div>`;
 }
 
 /* ========= Product Article pages ========= */
-function productArticleCard(v,groupKey='',presentationMode=false){
+function productArticleCard(v,groupKey='',presentationMode=false,routeOverride=''){
   const features=(v.strengths&&v.strengths.length?v.strengths:(v.tags||[])).slice(0,4);
   const uses=(v.usecases||[]).slice(0,3);
   const href=(v.link||'#').startsWith('http')?(v.link||'#'):(v.link?`https://${v.link}`:'#');
+  const actionRoute=normalizePublicRoute(routeOverride||'');
+  const routeAction=actionRoute&&!actionRoute.startsWith('#product-detail:');
   return `<article class="partner-card">
     <div class="partner-head">
-      <div class="partner-icon">${v.icon}</div>
+      <div class="partner-icon">${safeHtml(v.icon)}</div>
       <div>
-        <h3>${v.name}</h3>
-        <small>${v.category||'Product'}</small>
+        <h3>${safeHtml(v.name)}</h3>
+        <small>${safeHtml(v.category||'Product')}</small>
       </div>
     </div>
     <div class="partner-body">
-      <div class="partner-meta">${[v.source||'',...(v.tags||[]).slice(0,3)].filter(Boolean).map(x=>`<span>${x}</span>`).join('')}</div>
-      <p>${v.desc}</p>
-      <div class="partner-features">${features.map(x=>`<span>✓ ${x}</span>`).join('')}</div>
-      ${uses.length?`<div class="partner-usecases"><b>Phù hợp:</b>${uses.map(x=>`<em>${x}</em>`).join('')}</div>`:''}
+      <div class="partner-meta">${[v.source||'',...(v.tags||[]).slice(0,3)].filter(Boolean).map(x=>`<span>${safeHtml(x)}</span>`).join('')}</div>
+      <p>${safeHtml(v.desc)}</p>
+      <div class="partner-features">${features.map(x=>`<span>&#10003; ${safeHtml(x)}</span>`).join('')}</div>
+      ${uses.length?`<div class="partner-usecases"><b>Phù hợp:</b>${uses.map(x=>`<em>${safeHtml(x)}</em>`).join('')}</div>`:''}
     </div>
-    <div class="partner-foot">
-      <div class="partner-actions-left">
-        <button class="btn btn-soft" data-edit-product="${groupKey}|${v.id}">Chỉnh sửa</button>
-        <button class="btn btn-danger" data-delete-product="${groupKey}|${v.id}">Xóa</button>
-      </div>
-      ${presentationMode
-        ? `<button class="btn btn-primary" data-go="oncallcx-product-center">Xem Presentation</button>`
-        : `<a class="btn btn-primary btn-link" href="${href}" target="_blank" rel="noopener">Xem chi tiết</a>`}
+      <div class="partner-foot">
+      ${routeAction
+        ? `<button class="btn btn-primary" ${publicCardAttrs(actionRoute)}>Xem chi tiết</button>`
+        : presentationMode
+          ? `<button class="btn btn-primary" data-ocx-product-center="${safeHtml(v.id)}">Xem chi tiết</button>`
+          : `<a class="btn btn-primary btn-link" href="${safeHtml(href)}" target="_blank" rel="noopener">Xem chi tiết</a>`}
     </div>
   </article>`;
 }
 function renderProductGroup(groupKey,customTitle=''){
   const g=getProductGroup(groupKey);
+  const legacyTitle=customTitle||g.productTitle||g.title;
   return `<section class="product-hero">
-    <span class="eyebrow">📰 Product Articles</span>
-    <h2>${customTitle||g.productTitle||g.title}</h2>
+    <span class="eyebrow">Product Articles</span>
+    <h2>${safeHtml(legacyTitle)}</h2>
     <p>Các bài viết tại đây là nội dung sản phẩm/đối tác dành cho khách hàng đọc hiểu. Các bài viết kỹ thuật/API cũ đã được chuyển sang khu vực API Reference.</p>
     <div class="hero-actions">
-      <button class="btn btn-primary" data-add-product="${groupKey}">+ Thêm bài viết sản phẩm</button>
       <button class="btn btn-soft" data-go="api-reference">Xem API Reference</button>
     </div>
   </section>
@@ -1069,13 +429,15 @@ const apiFolders=[
   {id:'ucaas-global',path:'CONTACT CENTER/API Reference/UCaaS/Đối tác quốc tế',title:'UCaaS / Đối tác quốc tế',groupKey:'ucaas-global',icon:'🌐'}
 ];
 function apiEndpointRow(a){
-  return `<div class="api-row"><span class="method ${String(a[0]).toLowerCase()==='post'?'post':String(a[0]).toLowerCase()==='ws'?'ws':'get'}">${a[0]}</span><span class="path">${a[1]}</span><span class="api-desc">${a[2]}</span></div>`;
+  const method=String(a?.[0]||'GET');
+  const methodClass=method.toLowerCase()==='post'?'post':method.toLowerCase()==='ws'?'ws':'get';
+  return `<div class="api-row"><span class="method ${methodClass}">${safeHtml(method)}</span><span class="path">${safeHtml(a?.[1]||'')}</span><span class="api-desc">${safeHtml(a?.[2]||'')}</span></div>`;
 }
 function apiArticleCard(v,groupKey=''){
   return `<article class="api-doc-card">
-    <header><div class="vendor-icon">${v.icon}</div><div><h3>${v.name}</h3><small>${v.category}</small></div></header>
-    <p class="api-article-desc">${v.desc}</p>
-    <div class="chips">${(v.tags||[]).map((t,i)=>`<span class="chip ${i%3===0?'green':i%3===1?'blue':'orange'}">${t}</span>`).join('')}</div>
+    <header><div class="vendor-icon">${safeHtml(v.icon)}</div><div><h3>${safeHtml(v.name)}</h3><small>${safeHtml(v.category)}</small></div></header>
+    <p class="api-article-desc">${safeHtml(v.desc)}</p>
+    <div class="chips">${(v.tags||[]).map((t,i)=>`<span class="chip ${i%3===0?'green':i%3===1?'blue':'orange'}">${safeHtml(t)}</span>`).join('')}</div>
     <h4>Endpoints / API notes</h4>
     <div class="api-list">${(v.endpoints||[]).map(apiEndpointRow).join('')}</div>
   </article>`;
@@ -1085,23 +447,239 @@ function renderApiReference(){
   const active=apiFolders.find(f=>f.id===selected)||apiFolders[0];
   const group=getMovedApiGroup(active.groupKey);
   return `<section class="api-ref-hero">
-    <span class="eyebrow">📗 API Reference</span>
+    <span class="eyebrow">API Reference</span>
     <h2>CONTACT CENTER / API Reference</h2>
     <p>Toàn bộ bài viết cũ đang hiển thị dạng API trong các mục OnCallCX, CCaaS, UC/PBX đã được chuyển về đây theo cấu trúc thư mục.</p>
     <div class="api-folder-tabs">
-      ${apiFolders.map(f=>`<button class="${f.id===active.id?'active':''}" data-api-folder="${f.id}"><span>${f.icon}</span><b>${f.title}</b></button>`).join('')}
+      ${apiFolders.map(f=>`<button class="${f.id===active.id?'active':''}" data-api-folder="${safeHtml(f.id)}"><span>${safeHtml(f.icon)}</span><b>${safeHtml(f.title)}</b></button>`).join('')}
     </div>
   </section>
   <main class="api-ref-content full">
-    <div class="breadcrumb">${active.title}</div>
-    <div class="section-head"><div><h2>${active.title}</h2><p>${group?.apiFolder||active.title}</p></div></div>
+    <div class="breadcrumb">${safeHtml(active.title)}</div>
+    <div class="section-head"><div><h2>${safeHtml(active.title)}</h2><p>${safeHtml(group?.apiFolder||active.title)}</p></div></div>
     <div class="api-doc-list">${(group?.apiDocs||[]).map(v=>apiArticleCard(v,active.groupKey)).join('')}</div>
   </main>`;
 }
 
 /* ========= Other pages ========= */
+const PUBLIC_ROUTE_ALIASES={
+  '#uc-pbx':'#ucpbx-vn',
+  '#uc-pbx-vietnam':'#ucpbx-vn',
+  '#ccaas-vietnam':'#ccaas-vn',
+  '#ccaas-international':'#ccaas-global',
+  '#video':'#video-conferencing',
+  '#integration-playbook':'#integration',
+  '#crm-erp-vietnam':'#crm',
+  '#product-detail:oncallcx':'#oncallcx-product-center-ccaas',
+  '#oncallcx-product-center:prod-oncallcx-fpt':'#oncallcx-product-center-ccaas',
+  '#oncallcx-product-center:prod-oncallcx-ucaas-inherited':'#oncallcx-product-center-ucaas'
+};
+function getLocalCmsData(){
+  try{return JSON.parse(localStorage.getItem(CMS_KEY)||'{}')}catch{return {}}
+}
+const ONCALLCX_UCAAS_PRODUCT_DEFAULT={
+  id:'oncallcx-ucaas',
+  title:'OnCallCX UCaaS',
+  subtitle:'UCaaS / Cloud PBX Platform',
+  vendor:'FPT Telecom',
+  category:'OnCallCX',
+  status:'active',
+  score:'9/10',
+  website:'https://oncallcx.vn',
+  tags:['oncallcx','ucaas','cloud-pbx','extension','sip-trunk','api-ready'],
+  summary:'OnCallCX UCaaS là bài viết mở rộng từ OnCallCX, tập trung vào tổng đài Cloud PBX, extension, SIP trunk, call routing và khả năng tích hợp CRM/API cho doanh nghiệp.',
+  highlights:['Cloud PBX','Extension / User','SIP Trunk','Call Routing / IVR','CDR / Call Log','API-ready Integration'],
+  useCases:['Enterprise','Banking','Finance']
+};
+function getCmsProductByIds(ids=[]){
+  const cms=getLocalCmsData();
+  const products=Array.isArray(cms.products)?cms.products:[];
+  const matches=ids.map(id=>products.find(p=>p.id===id)).filter(Boolean);
+  return matches.find(p=>p.status==='active')||matches[0]||null;
+}
+function getOnCallCXCmsProduct(kind='ccaas'){
+  if(kind==='ucaas')return getCmsProductByIds(['oncallcx-ucaas','prod-oncallcx-uc','oncallcx-as7-ucaas']);
+  return getCmsProductByIds(['oncallcx','prod-oncallcx-fpt']);
+}
+function cmsProductToProductArticle(product={},fallback={}){
+  return {
+    ...fallback,
+    id:fallback.id||product.id||'product',
+    name:product.title||fallback.name||'Untitled',
+    icon:fallback.icon||'📄',
+    category:product.subtitle||product.category||fallback.category||'Product',
+    source:product.vendor||fallback.source||'',
+    desc:product.summary||fallback.desc||'',
+    tags:Array.isArray(product.tags)&&product.tags.length?product.tags:(fallback.tags||[]),
+    strengths:Array.isArray(product.highlights)&&product.highlights.length?product.highlights:(fallback.strengths||[]),
+    usecases:Array.isArray(product.useCases)&&product.useCases.length?product.useCases:(fallback.usecases||[]),
+    link:product.website||fallback.link||''
+  };
+}
+function getCmsArticleById(id){
+  const cms=getLocalCmsData();
+  return (cms.articles||[]).find(a=>a.id===id)||null;
+}
+const PUBLIC_ARTICLE_ROUTE_BY_PAGE={
+  overview:'#overview',
+  oncallcx:'#oncallcx',
+  'ccaas-vn':'#ccaas-vn',
+  'ccaas-global':'#ccaas-global',
+  'ucpbx-vn':'#ucpbx-vn',
+  'api-reference':'#api-reference',
+  video:'#video-conferencing',
+  devices:'#video-conferencing',
+  integration:'#integration',
+  crm:'#crm'
+};
+function normalizePublicRoute(route=''){
+  const raw=String(route||'').trim();
+  if(!raw)return '';
+  if(PUBLIC_ROUTE_ALIASES[raw])return PUBLIC_ROUTE_ALIASES[raw];
+  if(raw.startsWith('#oncallcx-product-centerprod-oncallcx-ucaas'))return '#oncallcx-product-center-ucaas';
+  if(raw.startsWith('#oncallcx-product-centerprod-oncallcx-fpt'))return '#oncallcx-product-center-ccaas';
+  if(raw.startsWith('#oncallcx-product-center:prod-oncallcx-ucaas'))return '#oncallcx-product-center-ucaas';
+  if(raw.startsWith('#oncallcx-product-center:prod-oncallcx-fpt'))return '#oncallcx-product-center-ccaas';
+  return raw;
+}
+function getCmsArticleByRoute(route=''){
+  const target=normalizePublicRoute(route);
+  if(!target)return null;
+  const cms=getLocalCmsData();
+  return (cms.articles||[]).find(article=>{
+    const articleRoute=normalizePublicRoute(article.route||'');
+    const sidebarRoute=normalizePublicRoute(article.sidebarId?`#${article.sidebarId}`:'');
+    return articleRoute===target||sidebarRoute===target;
+  })||null;
+}
+function getCmsArticleForPage(page='overview'){
+  return getCmsArticleByRoute(PUBLIC_ARTICLE_ROUTE_BY_PAGE[page]||`#${page}`)||null;
+}
+function getCmsArticleCards(article){
+  return (Array.isArray(article?.cards)?article.cards:[])
+    .filter(card=>card&&(card.title||card.summary||card.url||card.route))
+    .map(card=>({...card,url:normalizePublicRoute(card.url||card.route||article?.route||'')}));
+}
+function textSlug(value=''){
+  return String(value||'')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9]+/g,'-')
+    .replace(/^-+|-+$/g,'');
+}
+function productsForCmsGroup(groupKey=''){
+  const group=getProductGroup(groupKey);
+  const products=[...(group.products||[])];
+  if(groupKey==='ccaas-vn'){
+    const inherited=getVirtualProductArticle('ccaas-vn','prod-oncallcx-ucaas-inherited',group);
+    if(inherited&&!products.some(p=>p.id===inherited.id))products.push(inherited);
+  }
+  return products;
+}
+function cmsRouteProductId(route=''){
+  const normalized=normalizePublicRoute(route);
+  if(normalized==='#oncallcx-product-center-ccaas')return 'prod-oncallcx-fpt';
+  if(normalized==='#oncallcx-product-center-ucaas')return 'prod-oncallcx-ucaas-inherited';
+  const detail=normalized.match(/^#product-detail:([^#]+)/);
+  if(detail)return detail[1];
+  return '';
+}
+function findProductForCmsCard(card,groupKey=''){
+  const route=normalizePublicRoute(card.url||card.route||'');
+  const routeId=cmsRouteProductId(route);
+  const routeSlug=textSlug(routeId.replace(/^prod-/,''));
+  const titleSlug=textSlug(card.title||'');
+  const products=productsForCmsGroup(groupKey);
+  return products.find(product=>{
+    const idSlug=textSlug(String(product.id||'').replace(/^prod-/,''));
+    const nameSlug=textSlug(product.name||'');
+    return (routeSlug&&(idSlug===routeSlug||nameSlug===routeSlug||nameSlug.includes(routeSlug)))||
+      (titleSlug&&(nameSlug===titleSlug||nameSlug.includes(titleSlug)||titleSlug.includes(nameSlug)));
+  })||null;
+}
+function cmsPartnerCard(card,groupKey='',presentationMode=false){
+  const route=normalizePublicRoute(card.url||card.route||'');
+  const product=findProductForCmsCard(card,groupKey);
+  if(product)return productArticleCard(product,groupKey,presentationMode,route);
+  const title=card.title||'Untitled';
+  return `<article class="partner-card cms-public-card">
+    <div class="partner-head">
+      <div class="partner-icon">${safeHtml(card.icon||overviewIcon(route,title))}</div>
+      <div><h3>${safeHtml(title)}</h3><small>${safeHtml(route||'CMS Articles')}</small></div>
+    </div>
+    <div class="partner-body"><p>${safeHtml(card.summary||'')}</p></div>
+    <div class="partner-foot"><button class="btn btn-primary" ${publicCardAttrs(route)}>Xem chi tiết</button></div>
+  </article>`;
+}
+function cmsApiCard(card){
+  const route=normalizePublicRoute(card.url||card.route||'');
+  const title=card.title||'Untitled';
+  return `<article class="api-doc-card cms-public-card">
+    <header><div class="vendor-icon">${safeHtml(card.icon||overviewIcon(route,title))}</div><div><h3>${safeHtml(title)}</h3><small>${safeHtml(route||'CMS Articles')}</small></div></header>
+    <p class="api-article-desc">${safeHtml(card.summary||'')}</p>
+    <div class="hero-actions"><button class="btn btn-primary" ${publicCardAttrs(route)}>Xem chi tiết</button></div>
+  </article>`;
+}
+function cmsSolutionCard(card){
+  const route=normalizePublicRoute(card.url||card.route||'');
+  const title=card.title||'Untitled';
+  return `<article class="solution-card cms-public-card">
+    <div class="solution-top"><div class="solution-icon">${safeHtml(card.icon||overviewIcon(route,title))}</div><div><h3>${safeHtml(title)}</h3><small>${safeHtml(route||'CMS Articles')}</small></div></div>
+    <div class="solution-body"><p>${safeHtml(card.summary||'')}</p><div class="hero-actions"><button class="btn btn-primary" ${publicCardAttrs(route)}>Xem chi tiết</button></div></div>
+  </article>`;
+}
+function getOnCallCXProductCmsArticle(productId=currentOnCallCXProductId()){
+  const route=productId==='prod-oncallcx-ucaas-inherited'?'#oncallcx-product-center-ucaas':'#oncallcx-product-center-ccaas';
+  const fallbackId=productId==='prod-oncallcx-ucaas-inherited'?'article-oncallx-ucaas':'article-oncallx-ccaas';
+  return getCmsArticleByRoute(route)||getCmsArticleById(fallbackId)||null;
+}
+function ocxCmsOverviewFeatures(article){
+  const cards=getCmsArticleCards(article);
+  if(!cards.length)return '';
+  return cards.map(card=>`<span>&#10003; ${safeHtml(card.title||'Feature')}</span>`).join('');
+}
+function overviewIcon(route='',title=''){
+  const text=`${route} ${title}`.toLowerCase();
+  if(text.includes('oncall'))return '📞';
+  if(text.includes('ccaas-vn')||text.includes('việt nam'))return '🇻🇳';
+  if(text.includes('ccaas-global')||text.includes('global'))return '☁️';
+  if(text.includes('api'))return '📗';
+  if(text.includes('video')||text.includes('vc-'))return '🎥';
+  if(text.includes('integration'))return '🔌';
+  if(text.includes('crm'))return '🧩';
+  if(text.includes('demo'))return '▶️';
+  if(text.includes('compare'))return '📊';
+  if(text.includes('resource'))return '📚';
+  return '📄';
+}
+function publicCardAttrs(route=''){
+  const safe=safeHtml(route);
+  if(/^https?:\/\//i.test(route))return `data-external-route="${safe}"`;
+  if(route.startsWith('#'))return `data-route="${safe}"`;
+  return `data-go="${safeHtml(route.replace(/^#/,'')||'overview')}"`;
+}
+function overviewResourceCards(){
+  const fallback=[
+    {title:'OnCallCX',summary:'Trang sản phẩm dạng Wordpress cho khách hàng.',url:'#oncallcx'},
+    {title:'CCaaS Việt Nam',summary:'Bài viết sản phẩm đối tác nội địa.',url:'#ccaas-vn'},
+    {title:'CCaaS Global',summary:'Bài viết sản phẩm nền tảng quốc tế.',url:'#ccaas-global'},
+    {title:'API Reference',summary:'Thư mục chứa bài viết API đã di chuyển.',url:'#api-reference'}
+  ];
+  const article=getCmsArticleById('article-overview');
+  const cards=Array.isArray(article?.cards)&&article.cards.length?article.cards:fallback;
+  return cards.map(card=>{
+    const route=normalizePublicRoute(card.url||card.route||'');
+    const title=card.title||'Untitled';
+    const summary=card.summary||'';
+    return `<div class="resource-card" ${publicCardAttrs(route)}>
+      <div class="icon">${safeHtml(card.icon||overviewIcon(route,title))}</div>
+      <div><h4>${safeHtml(title)}</h4><p>${safeHtml(summary)}</p></div>
+    </div>`;
+  }).join('');
+}
 function renderOverview(){
-  return `${renderHero()}${renderStats()}<div class="section-head"><div><h2>Trang sản phẩm & tài liệu</h2><p>Product pages hiển thị dạng bài viết; bài viết kỹ thuật/API được gom vào API Reference.</p></div></div><div class="resource-grid"><div class="resource-card" data-go="oncallcx"><div class="icon">📞</div><div><h4>OnCallCX</h4><p>Trang sản phẩm dạng Wordpress cho khách hàng.</p></div></div><div class="resource-card" data-go="ccaas-vn"><div class="icon">🇻🇳</div><div><h4>CCaaS Việt Nam</h4><p>Bài viết sản phẩm đối tác nội địa.</p></div></div><div class="resource-card" data-go="ccaas-global"><div class="icon">☁️</div><div><h4>CCaaS Global</h4><p>Bài viết sản phẩm nền tảng quốc tế.</p></div></div><div class="resource-card" data-go="api-reference"><div class="icon">📗</div><div><h4>API Reference</h4><p>Thư mục chứa bài viết API đã di chuyển.</p></div></div></div>`;
+  return `${renderHero()}${renderStats()}<div class="section-head"><div><h2>Trang sản phẩm & tài liệu</h2><p>Nội dung khu vực này lấy từ CMS Articles → bài Tổng quan → Cards nội dung.</p></div></div><div class="resource-grid">${overviewResourceCards()}</div>`;
 }
 function renderDemoStage(){
   const screens=[
@@ -1121,72 +699,50 @@ function renderCompare(){
 }
 function renderCompliance(){
   const cards=getComplianceCards();
-  return `<section class="hero"><span class="eyebrow">🛡️ Vietnam Compliance</span><h2>Quy Định & Tuân Thủ Tại Việt Nam</h2><p>Các yêu cầu pháp lý, kỹ thuật khi triển khai UC/CCaaS tại thị trường Việt Nam.</p></section><div class="alert">⚠️ Lưu ý quan trọng: Tài liệu này cung cấp thông tin chung về quy định tại Việt Nam. Doanh nghiệp cần tham vấn pháp lý chuyên nghiệp trước khi triển khai.</div><div class="section-head"><div><h2>Danh sách bài viết tuân thủ</h2><p>Có thể thêm, sửa, xóa ngay trên frontend.</p></div><button class="btn btn-primary" data-add-compliance>+ Thêm bài viết</button></div><div class="compliance-grid" style="margin-top:18px">${cards.map(c=>`<div class="compliance-card ${c.type||''}"><h3>${c.icon} ${c.title}</h3><ul class="list">${(c.bullets||[]).map(b=>`<li>${b}</li>`).join('')}</ul><div class="card-actions"><button class="btn btn-soft" data-edit-compliance="${c.id}">Chỉnh sửa</button><button class="btn btn-danger" data-delete-compliance="${c.id}">Xóa</button></div></div>`).join('')}</div>`;
+  return `<section class="hero"><span class="eyebrow">🛡️ Vietnam Compliance</span><h2>Quy Định & Tuân Thủ Tại Việt Nam</h2><p>Các yêu cầu pháp lý, kỹ thuật khi triển khai UC/CCaaS tại thị trường Việt Nam.</p></section><div class="alert">⚠️ Lưu ý quan trọng: Tài liệu này cung cấp thông tin chung về quy định tại Việt Nam. Doanh nghiệp cần tham vấn pháp lý chuyên nghiệp trước khi triển khai.</div><div class="section-head"><div><h2>Danh sách bài viết tuân thủ</h2><p>Nội dung được quản trị tập trung trong CMS Data để tránh xung đột dữ liệu.</p></div></div><div class="compliance-grid" style="margin-top:18px">${cards.map(c=>`<div class="compliance-card ${c.type||''}"><h3>${c.icon} ${c.title}</h3><ul class="list">${(c.bullets||[]).map(b=>`<li>${b}</li>`).join('')}</ul></div>`).join('')}</div>`;
 }
 function renderResources(){
   return `<div class="section-head"><div><h2>Nguồn tài liệu & bộ công cụ</h2><p>Dành cho khách hàng, presales và đội triển khai.</p></div></div><div class="resource-grid">${resources.map(r=>`<div class="resource-card"><div class="icon">${r.icon}</div><div><h4>${r.title}</h4><p>${r.desc}</p></div></div>`).join('')}</div>`;
 }
 function renderEditor(){
-  const items=allContentItems();
-  const hashPayload=location.hash.includes('editor:')?location.hash.split('editor:')[1]:'';
-  const isNew=hashPayload.startsWith('new:');
-  const newBucket=isNew?hashPayload.split('new:')[1]:'general';
-  const currentId=isNew?'':(hashPayload||items[0]?.id||'oncallcx');
-  const item=isNew?createContentItem(newBucket):getContentItem(currentId);
-  const apiText=(item.apis||[]).map(a=>a.join('|')).join('\n');
-  return `<section class="hero editor-hero"><span class="eyebrow">✏️ Content Management</span><h2>Chỉnh sửa bài viết / card nội dung</h2><p>Khu vực này dùng cho bài viết chung. Bài viết sản phẩm đối tác dùng mục “Quản lý bài viết sản phẩm đối tác”.</p><div class="hero-actions"><button class="btn btn-primary" data-go="vendor-editor">Quản lý bài viết sản phẩm đối tác</button></div></section><div class="editor-layout"><aside class="editor-list"><h3>Danh sách bài viết</h3><button class="btn btn-primary full-btn" data-add-solution="general">+ Thêm bài viết mới</button>${items.map(x=>`<button class="editor-list-item ${x.id===currentId?'active':''}" data-editor-select="${x.id}"><span>${x.icon}</span><div><b>${x.title}</b><small>${x.type}</small></div></button>`).join('')}</aside><section class="editor-panel"><div class="editor-panel-head"><div><h3>Thông tin bài viết</h3><p>Đang chỉnh: <b>${item.title}</b></p></div><div class="editor-actions">${!isNew?`<button class="btn btn-danger" id="deleteEditor">Xóa bài viết</button>`:''}<button class="btn btn-soft" id="resetEditor">Khôi phục mặc định</button><button class="btn btn-primary" id="saveEditor">Lưu thay đổi</button></div></div><div class="editor-form"><label>Bucket/Page</label><input id="editBucket" value="${item.bucket||newBucket||''}"><label>Icon</label><input id="editIcon" value="${item.icon||''}"><label>Tiêu đề</label><input id="editTitle" value="${item.title||''}"><label>Loại / Subtitle</label><input id="editType" value="${item.type||''}"><label>Mô tả bài viết</label><textarea id="editDesc">${item.desc||''}</textarea><label>Tags</label><input id="editChips" value="${(item.chips||[]).join(', ')}"><label>Endpoints</label><textarea id="editApis">${apiText}</textarea></div><div class="section-head"><div><h2>Preview</h2></div></div><div class="solution-grid one-col">${solutionCard(item)}</div></section></div>`;
+  return renderCmsPlaceholder();
 }
 function renderVendorEditor(){
-  const groupKeys=Object.keys(partnerProductCatalog);
-  const payload=location.hash.includes('vendor-editor:')?location.hash.split('vendor-editor:')[1]:'';
-  const unpacked=unpackVendorHash(payload);
-  const groupKey=unpacked.groupKey||groupKeys[0];
-  const productId=unpacked.vendorId||'';
-  const group=getProductGroup(groupKey);
-  const article=productId?getProductArticle(groupKey,productId):createProductArticle(groupKey);
-  const tagText=(article.tags||[]).join(', ');
-  const strengthText=(article.strengths||[]).join('\n');
-  const usecaseText=(article.usecases||[]).join('\n');
-  return `<section class="hero editor-hero"><span class="eyebrow">🧩 Product Article CRUD</span><h2>Thêm / sửa / xóa bài viết sản phẩm đối tác</h2><p>Các bài viết này là trang sản phẩm kiểu Wordpress. Bài viết API cũ đã được di chuyển sang API Reference.</p></section><div class="editor-layout"><aside class="editor-list"><h3>Nhóm sản phẩm</h3>${groupKeys.map(k=>`<button class="editor-list-item ${k===groupKey?'active':''}" data-product-group="${k}"><span>${partnerProductCatalog[k].products?.[0]?.icon||'📁'}</span><div><b>${partnerProductCatalog[k].title}</b><small>${getProductGroup(k).products.length} bài viết</small></div></button>`).join('')}<hr class="editor-sep"><h3>Bài viết trong nhóm</h3>${(group?.products||[]).map(v=>`<button class="editor-list-item ${v.id===article.id?'active':''}" data-product-select="${groupKey}|${v.id}"><span>${v.icon}</span><div><b>${v.name}</b><small>${v.category}</small></div></button>`).join('')}<button class="btn btn-primary full-btn" data-add-product="${groupKey}">+ Thêm bài viết mới</button></aside><section class="editor-panel"><div class="editor-panel-head"><div><h3>Form bài viết sản phẩm</h3><p>Nhóm: <b>${group?.productTitle||groupKey}</b></p></div><div class="editor-actions">${article.id?.startsWith('custom-product-')||productId?`<button class="btn btn-danger" id="deleteProductEditor">Xóa bài viết</button>`:''}<button class="btn btn-primary" id="saveProductEditor">Lưu bài viết</button></div></div><div class="editor-form"><label>Icon</label><input id="productIcon" value="${article.icon||''}"><label>Tên bài viết/card</label><input id="productName" value="${article.name||''}"><label>Category/Sub title</label><input id="productCategory" value="${article.category||''}"><label>Nguồn/tham chiếu</label><input id="productSource" value="${article.source||''}"><label>Tags</label><input id="productTags" value="${tagText}"><label>Mô tả sản phẩm</label><textarea id="productDesc">${article.desc||''}</textarea><label>Điểm nổi bật, mỗi dòng 1 ý</label><textarea id="productStrengths">${strengthText}</textarea><label>Use case, mỗi dòng 1 ý</label><textarea id="productUsecases">${usecaseText}</textarea><label>Link hiển thị</label><input id="productLink" value="${article.link||''}"></div><div class="section-head"><div><h2>Preview bài viết</h2></div></div><div class="partner-grid one-col">${productArticleCard(article,groupKey)}</div></section></div>`;
+  return renderCmsPlaceholder();
 }
 
 
 function renderOnCallCXOnly(){
+  const cmsArticle=getCmsArticleForPage('oncallcx');
+  const cmsCards=getCmsArticleCards(cmsArticle);
   const group=getProductGroup('ccaas-vn');
-  const item=(group.products||[]).find(p=>p.id==='prod-oncallcx-fpt'||/OncallCX|OnCallCX/i.test(p.name)) || (group.products||[])[0];
-  const selected=item ? [item] : [];
+  const products=group.products||[];
+  const primary=products.find(p=>p.id==='prod-oncallcx-fpt'||/OncallCX|OnCallCX/i.test(p.name));
+  const inherited=getVirtualProductArticle('ccaas-vn','prod-oncallcx-ucaas-inherited',group);
+  const selected=[
+    primary,
+    inherited
+  ].filter(Boolean);
   return `<section class="product-hero">
     <span class="eyebrow">📰 Product Articles</span>
     <h2>OncallCX</h2>
-    <p>Trang này chỉ hiển thị duy nhất sản phẩm OncallCX của FPT. Các bài viết đối tác khác được tách sang mục CCaaS Việt Nam.</p>
+    <p>Trang này hiển thị các bài viết OncallCX của FPT. Bài viết mới kế thừa nhóm tính năng, use case và hành động từ bài gốc để giữ trải nghiệm quản trị thống nhất.</p>
     <div class="hero-actions">
-      <button class="btn btn-primary" data-add-product="ccaas-vn">+ Thêm bài viết sản phẩm</button>
       <button class="btn btn-soft" data-go="api-reference">Xem API Reference</button>
     </div>
   </section>
-  <div class="partner-grid">${selected.map(v=>productArticleCard(v,'ccaas-vn',true)).join('')}</div>`;
+  <div class="partner-grid">${cmsCards.length?cmsCards.map(card=>cmsPartnerCard(card,'ccaas-vn',true)).join(''):selected.map(v=>productArticleCard(v,'ccaas-vn',true)).join('')}</div>`;
+}
+
+function renderCmsPlaceholder(){
+  return `<section class="hero editor-hero"><span class="eyebrow">🧩 CMS Data</span><h2>Unified Content CMS</h2><p>Tất cả thao tác Thêm, Chỉnh sửa và Xóa nội dung được quản lý tập trung trong CMS để tránh xung đột với dữ liệu bài viết.</p><div class="hero-actions"><a class="btn btn-primary btn-link" href="#cms">Mở CMS Data</a></div></section>`;
 }
 
 
 
 
-function renderOnCallCXPresentation(){
-  const pdfPath='assets/presentation/oncallcx.pdf';
-
-  return `<section class="presentation-hero">
-    <div>
-      <span class="eyebrow">📘 OncallCX Presentation</span>
-      <h2>OncallCX - Contact Center As A Service</h2>
-      <p>Presentation Center dạng PowerPoint: tự dùng version Current nếu đã upload trong Document Manager; nếu chưa có sẽ dùng file mặc định.</p>
-    </div>
-    <div class="presentation-actions">
-      <button class="btn btn-soft" data-go="oncallcx-product-center">← Quay lại Product Center</button>
-      <a class="btn btn-primary btn-link" href="${pdfPath}" target="_blank" rel="noopener" id="presentationOpenPdf">Mở PDF gốc</a>
-      <a class="btn btn-soft btn-link" href="${pdfPath}" download id="presentationDownloadPdf">Download PDF</a>
-    </div>
-  </section>
-
-  <section class="present-layout ppt-style" data-total-pages="0">
+function presentationViewerMarkup(){
+  return `<section class="present-layout ppt-style" data-total-pages="0">
     <aside class="present-thumbbar">
       <div class="present-thumb-head">
         <h3>Mục lục</h3>
@@ -1215,31 +771,64 @@ function renderOnCallCXPresentation(){
   </section>`;
 }
 
-async function bindOnCallCXPresentation(){
-  const layout=$('.present-layout');
-  if(!layout)return;
+function renderOnCallCXPresentation(){
+  const cfg=onCallCXPresentationConfig();
+  const pdfPath=cfg.pdfPath;
 
-  const currentDoc=await ocxGetCurrentDoc();
-  let pages=[];
-  let pdfUrl='assets/presentation/oncallcx.pdf';
-
-  if(currentDoc?.pages?.length){
-    pages=currentDoc.pages;
-    pdfUrl=await ocxGetDocUrl(currentDoc);
-  }else{
-    pages=Array.from({length:49},(_,i)=>({
-      title:`Slide ${i+1}`,
-      image:`assets/presentation/oncallcx-pages/page-${String(i+1).padStart(2,'0')}.jpg`
-    }));
+  if(!cfg.pageCount){
+    return `<section class="presentation-hero">
+      <div>
+        <span class="eyebrow">📘 ${cfg.label}</span>
+        <h2>${cfg.title}</h2>
+        <p>${cfg.description}</p>
+      </div>
+      <div class="presentation-actions">
+        <button class="btn btn-soft" data-go="overview">← Quay lại Trang chủ</button>
+        <a class="btn btn-soft btn-link" href="${pdfPath}" target="_blank" rel="noopener" id="presentationOpenStandalone">Mở file riêng</a>
+      </div>
+    </section>
+    <section class="ocx-placeholder" id="presentationAssetResolver" data-presentation-product="${cfg.productId}">
+      <div id="presentationAssetIcon">📄</div>
+      <strong id="presentationAssetTitle">Chưa cấu hình file Presentation riêng cho ${cfg.title}</strong>
+      <p id="presentationAssetGuide">Upload nhanh tại <b>CMS Data → Asset Manager</b>, chọn sản phẩm <code>${cfg.cmsProductLabel}</code> và chọn <b>Loại asset = Presentation</b>. Khi xuất bản static, đặt PDF tại <code>${pdfPath}</code> và ảnh slide tại <code>${cfg.pagesDir}/page-01.jpg</code>, <code>page-02.jpg</code>... để bài này dùng bộ tài liệu riêng.</p>
+      <p id="presentationAssetStatus">Đang kiểm tra file Presentation đã upload trong Asset Manager...</p>
+      <p><a class="btn btn-primary btn-link" href="#cms">Mở CMS Data</a></p>
+    </section>`;
   }
 
+  return `<section class="presentation-hero">
+    <div>
+      <span class="eyebrow">📘 ${cfg.label}</span>
+      <h2>${cfg.title}</h2>
+      <p>${cfg.description}</p>
+    </div>
+    <div class="presentation-actions">
+      <button class="btn btn-soft" data-go="overview">← Quay lại Trang chủ</button>
+      <a class="btn btn-primary btn-link" href="${pdfPath}" target="_blank" rel="noopener" id="presentationOpenPdf">Mở PDF gốc</a>
+      <a class="btn btn-soft btn-link" href="${pdfPath}" download id="presentationDownloadPdf">Download PDF</a>
+    </div>
+  </section>
+  ${presentationViewerMarkup()}`;
+}
+
+function bindPresentationSlides({pages,pdfUrl,fileName}){
+  const layout=$('.present-layout');
+  if(!layout)return;
   const total=pages.length;
   layout.dataset.totalPages=String(total);
   $('#presentPageTotal').textContent=total;
-  $('#presentTotalText').textContent=`${total} trang`;
-  $('#presentationOpenPdf').href=pdfUrl;
-  $('#presentationDownloadPdf').href=pdfUrl;
-  if(currentDoc?.fileName)$('#presentationDownloadPdf').download=currentDoc.fileName;
+  $('#presentTotalText').textContent=total?`${total} trang`:'Chưa có slide';
+  if($('#presentationOpenPdf'))$('#presentationOpenPdf').href=pdfUrl;
+  if($('#presentationDownloadPdf')){
+    $('#presentationDownloadPdf').href=pdfUrl;
+    if(fileName)$('#presentationDownloadPdf').download=fileName;
+  }
+
+  if(!total){
+    $('#presentThumbList').innerHTML='<div class="ocx-empty-state">Chưa render được slide từ file này.</div>';
+    $('#presentPageImage').alt='No presentation slide';
+    return;
+  }
 
   $('#presentThumbList').innerHTML=pages.map((p,i)=>`<button class="${i===0?'active':''}" data-goto-page="${i+1}">
     <span class="thumb-no">${i+1}</span>
@@ -1302,22 +891,257 @@ async function bindOnCallCXPresentation(){
   render();
 }
 
+async function bindOnCallCXPresentation(){
+  const resolver=$('#presentationAssetResolver');
+  if(resolver){
+    const cfg=onCallCXPresentationConfig();
+    const asset=await findOnCallCXPresentationAsset(cfg);
+    const status=$('#presentationAssetStatus');
+    if(asset&&status){
+      const renderedAsset=await ensureOnCallCXAssetPages(asset);
+      const url=assetObjectUrl(renderedAsset);
+      const title=$('#presentationAssetTitle');
+      const icon=$('#presentationAssetIcon');
+      const guide=$('#presentationAssetGuide');
+      const standalone=$('#presentationOpenStandalone');
+      if(title)title.textContent=`Đã gắn Presentation riêng cho ${cfg.title}`;
+      if(icon)icon.textContent=isPdfAsset(renderedAsset)?'📘':'✅';
+      if(guide)guide.innerHTML=`File đã upload trong <b>CMS Data → Asset Manager</b> và đang được gắn với sản phẩm <code>${safeHtml(renderedAsset.product)}</code>.`;
+      if(standalone){
+        standalone.href=url;
+        standalone.textContent=isPowerPointAsset(renderedAsset)?'Tải PowerPoint':'Mở file upload';
+        if(isPowerPointAsset(renderedAsset))standalone.setAttribute('download',renderedAsset.fileName||'presentation.pptx');
+      }
+      const fileMeta=`${safeHtml(renderedAsset.fileName)} · ${formatBytes(renderedAsset.size)}`;
+      if(Array.isArray(renderedAsset.pages)&&renderedAsset.pages.length){
+        resolver.outerHTML=presentationViewerMarkup();
+        bindPresentationSlides({pages:renderedAsset.pages,pdfUrl:url,fileName:renderedAsset.fileName});
+      }else if(isPdfAsset(renderedAsset)){
+        status.innerHTML=`<span class="ocx-asset-found">PDF đã sẵn sàng: <b>${fileMeta}</b></span><br><a class="btn btn-primary btn-link" href="${url}" target="_blank" rel="noopener">Mở PDF upload</a> <a class="btn btn-soft btn-link" href="${url}" download="${safeHtml(renderedAsset.fileName||'presentation.pdf')}">Download</a><iframe class="ocx-uploaded-pdf-frame" src="${url}"></iframe>`;
+      }else if(isPowerPointAsset(renderedAsset)){
+        status.innerHTML=`<span class="ocx-asset-found">PowerPoint đã sẵn sàng: <b>${fileMeta}</b></span><br><span class="ocx-asset-note">Chưa render được slide từ PPTX này. Vui lòng kiểm tra file hoặc upload bản PDF nếu cần hiển thị chính xác 100%.</span><br><a class="btn btn-primary btn-link" href="${url}" download="${safeHtml(renderedAsset.fileName||'presentation.pptx')}">Tải / mở bằng PowerPoint</a>`;
+      }else{
+        status.innerHTML=`<span class="ocx-asset-found">Đã tìm thấy file upload: <b>${fileMeta}</b></span><br><a class="btn btn-primary btn-link" href="${url}" target="_blank" rel="noopener">Mở file upload</a> <a class="btn btn-soft btn-link" href="${url}" download="${safeHtml(renderedAsset.fileName||'presentation')}">Download</a>`;
+      }
+    }else if(status){
+      status.innerHTML=`Chưa có file upload trong Asset Manager cho sản phẩm này. Hãy vào CMS Data → Asset Manager để upload Presentation.`;
+    }
+    return;
+  }
 
+  const layout=$('.present-layout');
+  if(!layout)return;
 
+  const cfg=onCallCXPresentationConfig();
+  const currentDoc=await ocxGetCurrentDoc();
+  let pages=[];
+  let pdfUrl=cfg.pdfPath;
+  let assetDoc=null;
 
+  if(cfg.productId==='prod-oncallcx-fpt'&&currentDoc?.pages?.length){
+    pages=currentDoc.pages;
+    pdfUrl=await ocxGetDocUrl(currentDoc);
+  }else{
+    assetDoc=await findOnCallCXPresentationAsset(cfg);
+    if(assetDoc && !isPowerPointAsset(assetDoc)){
+      assetDoc=await ensureOnCallCXAssetPages(assetDoc);
+      pdfUrl=assetObjectUrl(assetDoc);
+      if(Array.isArray(assetDoc.pages)&&assetDoc.pages.length) pages=assetDoc.pages;
+    }
+    if(!pages.length){
+      pages=Array.from({length:cfg.pageCount},(_,i)=>({
+        title:`Slide ${i+1}`,
+        image:`${cfg.pagesDir}/page-${String(i+1).padStart(2,'0')}.jpg`
+      }));
+    }
+  }
 
+  bindPresentationSlides({
+    pages,
+    pdfUrl,
+    fileName:currentDoc?.fileName||assetDoc?.fileName||''
+  });
+}
+
+function ocxAssetMeta(asset){
+  if(!asset)return '';
+  return `${safeHtml(asset.fileName||asset.title||'asset')} · ${formatBytes(asset.size)} · ${new Date(asset.createdAt||Date.now()).toLocaleString('vi-VN')}`;
+}
+function ocxAssetEmpty(label,type){
+  return `<div class="ocx-placeholder ocx-asset-empty">
+    <div>📄</div>
+    <strong>Chưa có ${safeHtml(label)} cho sản phẩm này</strong>
+    <p>Vào <b>CMS Data → Asset Manager</b>, chọn đúng sản phẩm <code>${safeHtml(onCallCXPresentationConfig().cmsProductLabel)}</code>, chọn <code>Loại asset = ${safeHtml(type)}</code>, rồi upload file PDF.</p>
+    <button class="btn btn-primary" data-go="cms">Mở CMS Data</button>
+  </div>`;
+}
+async function ocxOpenAssetById(id,download=false){
+  const asset=await assetGet(id);
+  if(!asset)return;
+  const url=assetObjectUrl(asset);
+  if(download){
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=asset.fileName||asset.title||'asset';
+    a.click();
+    return;
+  }
+  window.open(url,'_blank','noopener');
+}
+function bindOnCallCXAssetButtons(){
+  $$('[data-ocx-asset-open]').forEach(btn=>btn.onclick=()=>ocxOpenAssetById(btn.dataset.ocxAssetOpen,false));
+  $$('[data-ocx-asset-download]').forEach(btn=>btn.onclick=()=>ocxOpenAssetById(btn.dataset.ocxAssetDownload,true));
+  $$('[data-go]').forEach(b=>b.onclick=()=>navigate(b.dataset.go));
+}
+async function ocxRenderProductAssetDoc(type,rootSelector,label){
+  const root=$(rootSelector);
+  if(!root)return;
+  const cfg=onCallCXPresentationConfig();
+  const asset=await findOnCallCXAsset(cfg,type);
+  if(!asset){
+    root.innerHTML=ocxAssetEmpty(label,label);
+    return;
+  }
+  const url=assetObjectUrl(asset);
+  const isPdf=isPdfAsset(asset);
+  root.innerHTML=`<article class="ocx-asset-doc-card">
+    <div class="ocx-asset-doc-head">
+      <div>
+        <b>${safeHtml(asset.title||label)}</b>
+        <small>${ocxAssetMeta(asset)}</small>
+        ${asset.description?`<p>${safeHtml(asset.description)}</p>`:''}
+      </div>
+      <div class="ocx-action-row">
+        <button class="btn btn-primary" data-ocx-asset-open="${safeHtml(asset.id)}">Mở file</button>
+        <button class="btn btn-soft" data-ocx-asset-download="${safeHtml(asset.id)}">Download</button>
+      </div>
+    </div>
+    ${isPdf?`<iframe class="ocx-asset-doc-frame" src="${url}#toolbar=1&navpanes=0"></iframe>`:`<div class="ocx-placeholder"><div>📎</div><strong>File đã upload</strong><p>Định dạng này không có preview trực tiếp. Dùng nút Mở file hoặc Download.</p></div>`}
+  </article>`;
+  bindOnCallCXAssetButtons();
+}
+function ocxDownloadAssetCard(asset,label,type){
+  if(!asset){
+    return `<div class="ocx-download-card muted">
+      <div>
+        <b>${safeHtml(label)}</b>
+        <small>Chưa upload trong Asset Manager · Loại asset = ${safeHtml(type)}</small>
+      </div>
+      <button class="btn btn-soft" data-go="cms">Mở CMS</button>
+    </div>`;
+  }
+  return `<div class="ocx-download-card">
+    <div>
+      <b>${safeHtml(asset.title||label)}</b>
+      <small>${safeHtml(label)} · ${ocxAssetMeta(asset)}</small>
+    </div>
+    <div class="ocx-download-actions">
+      <button class="btn btn-soft" data-ocx-asset-open="${safeHtml(asset.id)}">Mở</button>
+      <button class="btn btn-primary" data-ocx-asset-download="${safeHtml(asset.id)}">Download</button>
+    </div>
+  </div>`;
+}
+async function ocxRenderDownloadAssets(){
+  const root=$('#ocxDownloadAssetsRoot');
+  if(!root)return;
+  const cfg=onCallCXPresentationConfig();
+  const [userGuide,datasheet]=await Promise.all([
+    findOnCallCXAsset(cfg,'userGuide'),
+    findOnCallCXAsset(cfg,'datasheet')
+  ]);
+  root.innerHTML=[
+    ocxDownloadAssetCard(userGuide,'User Guide','User Guide'),
+    ocxDownloadAssetCard(datasheet,'Datasheet','Datasheet')
+  ].join('');
+  bindOnCallCXAssetButtons();
+}
+const OCX_PRODUCT_MODULES={
+  demo:{enabled:false,hasContent:false},
+  caseStudy:{enabled:false,hasContent:false},
+  faq:{enabled:true,hasContent:true},
+  presaleInternal:{enabled:true,hasContent:true}
+};
+function ocxModuleVisible(key){
+  const module=OCX_PRODUCT_MODULES[key];
+  return Boolean(module?.enabled&&module?.hasContent);
+}
+async function ocxResolvePresentationBundle(cfg){
+  const currentDoc=await ocxGetCurrentDoc();
+  let pages=[];
+  let pdfUrl=cfg.pdfPath;
+  let fileName='';
+  let assetDoc=null;
+
+  if(cfg.productId==='prod-oncallcx-fpt'&&currentDoc?.pages?.length){
+    pages=currentDoc.pages;
+    pdfUrl=await ocxGetDocUrl(currentDoc);
+    fileName=currentDoc.fileName||'';
+  }else{
+    assetDoc=await findOnCallCXPresentationAsset(cfg);
+    if(assetDoc && !isPowerPointAsset(assetDoc)){
+      assetDoc=await ensureOnCallCXAssetPages(assetDoc);
+      pdfUrl=assetObjectUrl(assetDoc);
+      fileName=assetDoc.fileName||'';
+      if(Array.isArray(assetDoc.pages)&&assetDoc.pages.length)pages=assetDoc.pages;
+    }
+    if(!pages.length&&cfg.pageCount){
+      pages=Array.from({length:cfg.pageCount},(_,i)=>({
+        title:`Slide ${i+1}`,
+        image:`${cfg.pagesDir}/page-${String(i+1).padStart(2,'0')}.jpg`
+      }));
+    }
+  }
+
+  return {pages,pdfUrl,fileName,assetDoc,currentDoc};
+}
+async function ocxRenderProductPresentation(){
+  const root=$('#ocxProductPresentationRoot');
+  if(!root)return;
+  const cfg=onCallCXPresentationConfig();
+  root.innerHTML=`<section class="presentation-hero ocx-inline-presentation-hero">
+    <div>
+      <span class="eyebrow">📘 ${cfg.label}</span>
+      <h2>${cfg.title}</h2>
+      <p>${cfg.description}</p>
+    </div>
+    <div class="presentation-actions">
+      <button class="btn btn-soft" data-go="overview">← Quay lại Trang chủ</button>
+      <a class="btn btn-primary btn-link" href="${cfg.pdfPath}" target="_blank" rel="noopener" id="presentationOpenPdf">Mở PDF gốc</a>
+      <a class="btn btn-soft btn-link" href="${cfg.pdfPath}" download id="presentationDownloadPdf">Download PDF</a>
+    </div>
+  </section>
+  ${presentationViewerMarkup()}`;
+  const bundle=await ocxResolvePresentationBundle(cfg);
+  bindPresentationSlides(bundle);
+  bindOnCallCXAssetButtons();
+}
+function ocxRenderDynamicTab(tab){
+  if(tab==='presentation')ocxRenderProductPresentation();
+  if(tab==='user-guide')ocxRenderProductAssetDoc('userGuide','#ocxUserGuideRoot','User Guide');
+  if(tab==='datasheet')ocxRenderProductAssetDoc('datasheet','#ocxDatasheetRoot','Datasheet');
+  if(tab==='downloads')ocxRenderDownloadAssets();
+}
 
 function renderOnCallCXProductCenter(){
-  const pdfPath='assets/presentation/oncallcx.pdf';
+  const cfg=onCallCXPresentationConfig();
+  const cmsArticle=getOnCallCXProductCmsArticle(cfg.productId);
+  const productKind=cfg.productId==='prod-oncallcx-ucaas-inherited'?'ucaas':'ccaas';
+  const cmsProduct=getOnCallCXCmsProduct(productKind)||(productKind==='ucaas'?ONCALLCX_UCAAS_PRODUCT_DEFAULT:null);
+  const productOverviewFeatures=Array.isArray(cmsProduct?.highlights)&&cmsProduct.highlights.length
+    ? cmsProduct.highlights.map(item=>`<span>&#10003; ${safeHtml(item)}</span>`).join('')
+    : '';
+  const cmsOverviewFeatures=productOverviewFeatures||ocxCmsOverviewFeatures(cmsArticle);
+  const overviewSummary=cmsProduct?.summary||cmsArticle?.summary||(cfg.productId==='prod-oncallcx-ucaas-inherited'?'OnCallCX UCaaS tập trung vào tổng đài Cloud PBX, extension, SIP trunk, call routing và tích hợp CRM/API cho doanh nghiệp.':'OncallCX là nền tảng Contact Center as a Service do FPT Telecom phát triển, hỗ trợ doanh nghiệp triển khai tổng đài chăm sóc khách hàng trên Cloud, mở rộng linh hoạt và tích hợp với CRM, ERP, AI Bot, REST API và Webhook.');
+  const pdfPath=cfg.pdfPath;
   return `<section class="ocx-product-hero">
     <div>
       <span class="eyebrow">📦 Product Center</span>
-      <h2>OncallCX - Contact Center As A Service</h2>
-      <p>Trung tâm nội dung sản phẩm OnCallCX. Khu vực này chỉ áp dụng cho sidebar OnCallCX, không ảnh hưởng các module khác.</p>
+      <h2>${cfg.title}</h2>
+      <p>Trung tâm nội dung sản phẩm ${cfg.title}. Mỗi sản phẩm có bộ file Presentation, User Guide, Datasheet và nội dung quản trị riêng.</p>
     </div>
     <div class="presentation-actions">
       <button class="btn btn-soft" data-go="oncallcx">← Quay lại OnCallCX</button>
-      <button class="btn btn-primary" data-ocx-tab="presentation">Xem Presentation</button>
+      ${ocxModuleVisible('presaleInternal')?`<button class="btn btn-soft" data-ocx-presale="${cfg.productId}">Presale nội bộ</button>`:''}
     </div>
   </section>
 
@@ -1325,47 +1149,33 @@ function renderOnCallCXProductCenter(){
     <aside class="ocx-product-menu">
       <button class="active" data-ocx-tab="overview">📑 Overview</button>
       <button data-ocx-tab="presentation">📘 Presentation</button>
-      <button data-ocx-tab="demo">🎬 Demo Video</button>
+      <button data-ocx-tab="user-guide">📖 User Guide</button>
       <button data-ocx-tab="datasheet">📄 Datasheet</button>
       <button data-ocx-tab="api">📚 API Reference</button>
-      <button data-ocx-tab="case-study">💬 Case Study</button>
+      ${ocxModuleVisible('demo')?`<button data-ocx-tab="demo">🎬 Demo Video</button>`:''}
+      ${ocxModuleVisible('caseStudy')?`<button data-ocx-tab="case-study">💬 Case Study</button>`:''}
+      ${ocxModuleVisible('faq')?`<button data-ocx-tab="faq">❓ FAQ</button>`:''}
       <button data-ocx-tab="downloads">⬇ Download</button>
-      <button data-ocx-tab="documents">🗂️ Document Manager</button>
-      <button data-ocx-tab="version-control">🧬 Version Control</button>
-      <button data-ocx-tab="admin-upload">🛠️ Admin Upload</button>
-      <button data-ocx-tab="history">🕘 History</button>
-      <button data-ocx-tab="search">🔎 Search</button>
-      <button data-ocx-tab="architecture">🏗️ Architecture</button>
-      <button data-ocx-tab="pricing">💰 Pricing</button>
-      <button data-ocx-tab="faq">❓ FAQ</button>
-      <button data-ocx-tab="presales">✅ Presales Checklist</button>
-      <button data-ocx-tab="release-notes">🧾 Release Notes</button>
     </aside>
 
     <main class="ocx-product-content">
       <div class="ocx-panel active" id="ocx-overview">
         <h3>Overview</h3>
-        <p>OncallCX là nền tảng Contact Center as a Service do FPT Telecom phát triển, hỗ trợ doanh nghiệp triển khai tổng đài chăm sóc khách hàng trên Cloud, mở rộng linh hoạt và tích hợp với CRM, ERP, AI Bot, REST API và Webhook.</p>
+        <p>${safeHtml(overviewSummary)}</p>
         <div class="ocx-feature-grid">
-          <span>✓ Omnichannel Contact Center</span>
+          ${cmsOverviewFeatures||`<span>✓ Omnichannel Contact Center</span>
           <span>✓ Voice / Chat / Email / Social</span>
           <span>✓ AI Voicebot & Chatbot</span>
           <span>✓ Call Recording</span>
           <span>✓ Dashboard & Realtime Report</span>
           <span>✓ CRM / ERP Integration</span>
           <span>✓ Workflow Automation</span>
-          <span>✓ Open REST API & Webhook</span>
+          <span>✓ Open REST API & Webhook</span>`}
         </div>
       </div>
 
       <div class="ocx-panel" id="ocx-presentation">
-        <h3>Presentation</h3>
-        <p>Xem tài liệu trình chiếu OnCallCX trực tiếp trên Portal.</p>
-        <div class="ocx-action-row">
-          <button class="btn btn-primary" data-go="presentation-oncallcx">Mở Presentation Center</button>
-          <a class="btn btn-soft btn-link" href="${pdfPath}" download>Download PDF</a>
-        </div>
-        <iframe class="ocx-pdf-preview" src="${pdfPath}#toolbar=1&navpanes=0"></iframe>
+        <div id="ocxProductPresentationRoot"></div>
       </div>
 
       <div class="ocx-panel" id="ocx-demo">
@@ -1379,11 +1189,14 @@ function renderOnCallCXProductCenter(){
 
       <div class="ocx-panel" id="ocx-datasheet">
         <h3>Datasheet</h3>
-        <p>Tạm thời sử dụng file PDF presentation hiện tại như datasheet. Phase sau sẽ tách riêng upload Datasheet.</p>
-        <div class="ocx-action-row">
-          <a class="btn btn-primary btn-link" href="${pdfPath}" target="_blank" rel="noopener">Mở Datasheet</a>
-          <a class="btn btn-soft btn-link" href="${pdfPath}" download>Download</a>
-        </div>
+        <p>Datasheet dùng file riêng theo từng sản phẩm và được upload tại CMS Data → Asset Manager.</p>
+        <div id="ocxDatasheetRoot" class="ocx-asset-doc-root"></div>
+      </div>
+
+      <div class="ocx-panel" id="ocx-user-guide">
+        <h3>User Guide</h3>
+        <p>Tài liệu hướng dẫn sử dụng được gắn theo sản phẩm. Upload tại CMS Data → Asset Manager với <code>Loại asset = User Guide</code>.</p>
+        <div id="ocxUserGuideRoot" class="ocx-asset-doc-root"></div>
       </div>
 
       <div class="ocx-panel" id="ocx-api">
@@ -1403,97 +1216,18 @@ function renderOnCallCXProductCenter(){
 
       <div class="ocx-panel" id="ocx-downloads">
         <h3>Download</h3>
-        <div class="ocx-download-card">
-          <div>
-            <b>OnCallCX Presentation</b>
-            <small>PDF · Current version</small>
+        <div class="ocx-download-list">
+          <div class="ocx-download-card">
+            <div>
+              <b>${cfg.label}</b>
+              <small>PDF · ${cfg.productId==='prod-oncallcx-ucaas-inherited'?'UCaaS riêng':'CCaaS riêng'}</small>
+            </div>
+            <a class="btn btn-primary btn-link" href="${pdfPath}" download>Download</a>
           </div>
-          <a class="btn btn-primary btn-link" href="${pdfPath}" download>Download</a>
+          <div id="ocxDownloadAssetsRoot" class="ocx-download-list"></div>
         </div>
       </div>
 
-
-      <div class="ocx-panel" id="ocx-documents">
-        <h3>Document Manager</h3>
-        <p>Upload và quản lý các phiên bản Presentation của OnCallCX. File cũ được lưu lại trong trình duyệt để xem lại, tải xuống hoặc restore.</p>
-        <div id="ocxDocumentManagerRoot" class="ocx-doc-manager"></div>
-        <div class="ocx-doc-preview">
-          <div class="ocx-doc-preview-head">
-            <strong id="ocxDocPreviewTitle">Preview</strong>
-            <small>PDF preview từ file đã upload</small>
-          </div>
-          <iframe id="ocxDocPreviewFrame" class="ocx-doc-preview-frame"></iframe>
-        </div>
-      </div>
-
-
-      <div class="ocx-panel" id="ocx-version-control">
-        <h3>Version Control</h3>
-        <p>Quản lý vòng đời các phiên bản Presentation: Current, Restore, Archive, Note và Delete.</p>
-        <div id="ocxVersionControlRoot" class="ocx-version-control-root"></div>
-      </div>
-
-
-      <div class="ocx-panel" id="ocx-admin-upload">
-        <h3>Admin Upload</h3>
-        <p>Upload và quản lý nhiều loại tài liệu cho OnCallCX. Đây là bước mở rộng từ Document Manager sang Product Library.</p>
-        <div id="ocxAdminUploadRoot"></div>
-      </div>
-
-
-      <div class="ocx-panel" id="ocx-history">
-        <h3>History</h3>
-        <p>Lịch sử toàn bộ tài liệu OnCallCX đã upload, có thể lọc theo loại tài liệu và restore Presentation cũ.</p>
-        <div id="ocxHistoryRoot" class="ocx-history-root"></div>
-      </div>
-
-
-      <div class="ocx-panel" id="ocx-search">
-        <h3>Search</h3>
-        <p>Tìm kiếm toàn bộ tài liệu đã upload trong OnCallCX Product Center.</p>
-        <div id="ocxSearchRoot" class="ocx-search-root"></div>
-      </div>
-
-
-      <div class="ocx-panel" id="ocx-architecture">
-        <h3>Architecture</h3>
-        <p>Mô hình kiến trúc tham khảo cho OnCallCX trong tư vấn Presales.</p>
-        <div class="ocx-arch-diagram">
-          <div class="ocx-arch-node orange">Khách hàng<br><small>Voice / Chat / Email / Social</small></div>
-          <div class="ocx-arch-arrow">→</div>
-          <div class="ocx-arch-node blue">OnCallCX Cloud<br><small>Routing · Queue · IVR · Recording</small></div>
-          <div class="ocx-arch-arrow">→</div>
-          <div class="ocx-arch-node green">Agent / Supervisor<br><small>Desktop · Dashboard · Report</small></div>
-        </div>
-        <div class="ocx-arch-grid">
-          <div><b>Integration Layer</b><span>REST API, Webhook, CTI, CRM Screen Pop</span></div>
-          <div><b>AI Layer</b><span>Voicebot, Chatbot, Call Summary, QA/QC</span></div>
-          <div><b>Data Layer</b><span>Call Detail, Recording, Ticket, Campaign Report</span></div>
-          <div><b>Security</b><span>Role-based access, audit log, data policy</span></div>
-        </div>
-      </div>
-
-      <div class="ocx-panel" id="ocx-pricing">
-        <h3>Pricing</h3>
-        <p>Khu vực tham khảo cấu trúc giá để Presales chuẩn hóa tư vấn. Giá thực tế cần cập nhật theo chính sách kinh doanh.</p>
-        <div class="ocx-pricing-grid">
-          <div class="ocx-price-card">
-            <h4>Starter</h4>
-            <p>Phù hợp pilot hoặc đội CSKH nhỏ.</p>
-            <ul><li>Voice channel</li><li>Basic report</li><li>Small agent team</li></ul>
-          </div>
-          <div class="ocx-price-card highlight">
-            <h4>Business</h4>
-            <p>Phù hợp doanh nghiệp cần Omnichannel và CRM.</p>
-            <ul><li>Omnichannel</li><li>CRM Integration</li><li>Recording + Dashboard</li></ul>
-          </div>
-          <div class="ocx-price-card">
-            <h4>Enterprise</h4>
-            <p>Phù hợp khách hàng quy mô lớn, yêu cầu tích hợp/AI.</p>
-            <ul><li>AI Bot</li><li>Advanced API</li><li>Custom workflow</li></ul>
-          </div>
-        </div>
-      </div>
 
       <div class="ocx-panel" id="ocx-faq">
         <h3>FAQ</h3>
@@ -1506,40 +1240,82 @@ function renderOnCallCXProductCenter(){
         </div>
       </div>
 
-      <div class="ocx-panel" id="ocx-presales">
-        <h3>Presales Checklist</h3>
-        <p>Checklist đầu vào để đội Presales thu thập thông tin trước khi xây dựng SOW/POC.</p>
-        <div class="ocx-checklist-grid">
-          <label><input type="checkbox"> Số lượng agent / supervisor / admin</label>
-          <label><input type="checkbox"> Kênh cần triển khai: Voice, Chat, Email, Social</label>
-          <label><input type="checkbox"> Đầu số hotline và SIP trunk/BYOC</label>
-          <label><input type="checkbox"> Kịch bản IVR và routing</label>
-          <label><input type="checkbox"> CRM/ERP cần tích hợp</label>
-          <label><input type="checkbox"> Báo cáo, dashboard, SLA cần theo dõi</label>
-          <label><input type="checkbox"> Chính sách ghi âm và lưu trữ dữ liệu</label>
-          <label><input type="checkbox"> Tiêu chí POC/UAT/Go-live</label>
+    </main>
+  </section>`;
+}
+
+function renderOnCallCXPresale(){
+  const cfg=onCallCXPresentationConfig();
+  return `<section class="ocx-product-hero">
+    <div>
+      <span class="eyebrow">🔒 Presale nội bộ</span>
+      <h2>${cfg.title} Presale</h2>
+      <p>Khu vực nội bộ cho đội tư vấn: architecture, pricing tham khảo và checklist đầu vào. Nội dung này được tách khỏi Product Center công khai.</p>
+    </div>
+    <div class="presentation-actions">
+      <button class="btn btn-primary" data-ocx-product-center="${cfg.productId}">Chuyển sang Product Center</button>
+      <button class="btn btn-soft" data-go="overview">Trang chủ</button>
+    </div>
+  </section>
+
+  <section class="ocx-product-content ocx-presale-page">
+    <div class="ocx-panel active">
+      <h3>Architecture</h3>
+      <p>Mô hình kiến trúc tham khảo cho OnCallCX trong tư vấn Presales.</p>
+      <div class="ocx-arch-diagram">
+        <div class="ocx-arch-node orange">Khách hàng<br><small>Voice / Chat / Email / Social</small></div>
+        <div class="ocx-arch-arrow">→</div>
+        <div class="ocx-arch-node blue">OnCallCX Cloud<br><small>Routing · Queue · IVR · Recording</small></div>
+        <div class="ocx-arch-arrow">→</div>
+        <div class="ocx-arch-node green">Agent / Supervisor<br><small>Desktop · Dashboard · Report</small></div>
+      </div>
+      <div class="ocx-arch-grid">
+        <div><b>Integration Layer</b><span>REST API, Webhook, CTI, CRM Screen Pop</span></div>
+        <div><b>AI Layer</b><span>Voicebot, Chatbot, Call Summary, QA/QC</span></div>
+        <div><b>Data Layer</b><span>Call Detail, Recording, Ticket, Campaign Report</span></div>
+        <div><b>Security</b><span>Role-based access, audit log, data policy</span></div>
+      </div>
+
+      <h3>Pricing</h3>
+      <p>Khu vực tham khảo cấu trúc giá để Presales chuẩn hóa tư vấn. Giá thực tế cần cập nhật theo chính sách kinh doanh.</p>
+      <div class="ocx-pricing-grid">
+        <div class="ocx-price-card">
+          <h4>Starter</h4>
+          <p>Phù hợp pilot hoặc đội CSKH nhỏ.</p>
+          <ul><li>Voice channel</li><li>Basic report</li><li>Small agent team</li></ul>
+        </div>
+        <div class="ocx-price-card highlight">
+          <h4>Business</h4>
+          <p>Phù hợp doanh nghiệp cần Omnichannel và CRM.</p>
+          <ul><li>Omnichannel</li><li>CRM Integration</li><li>Recording + Dashboard</li></ul>
+        </div>
+        <div class="ocx-price-card">
+          <h4>Enterprise</h4>
+          <p>Phù hợp khách hàng quy mô lớn, yêu cầu tích hợp/AI.</p>
+          <ul><li>AI Bot</li><li>Advanced API</li><li>Custom workflow</li></ul>
         </div>
       </div>
 
-      <div class="ocx-panel" id="ocx-release-notes">
-        <h3>Release Notes</h3>
-        <div class="ocx-release-list">
-          <div><b>v9.1.0</b><span>Nâng Product Center thành Product Portal với Architecture, Pricing, FAQ, Presales Checklist.</span></div><div><b>v9.0.8</b><span>Thêm Search Center tìm kiếm tài liệu OnCallCX.</span></div><div><b>v9.0.7</b><span>Thêm History Center lọc và xem lại tài liệu.</span></div><div><b>v9.0.6</b><span>Thêm Admin Upload cho nhiều loại tài liệu.</span></div><div><b>v9.0.5</b><span>Tự sinh thumbnail/slide từ PDF upload.</span></div><div><b>v9.0.4</b><span>Thêm Version Control dashboard, archive, note và set current.</span></div><div><b>v9.0.3</b><span>Thêm Document Manager upload/restore/version history.</span></div><div><b>v9.0.2</b><span>Thêm Presentation Center dạng PowerPoint.</span></div><div><b>v9.0.1</b><span>Thêm Product Center cho OnCallCX.</span></div>
-          <div><b>v8.3</b><span>OnCallCX Presentation PDF viewer.</span></div>
-        </div>
+      <h3>Presales Checklist</h3>
+      <p>Checklist đầu vào để đội Presales thu thập thông tin trước khi xây dựng SOW/POC.</p>
+      <div class="ocx-checklist-grid">
+        <label><input type="checkbox"> Số lượng agent / supervisor / admin</label>
+        <label><input type="checkbox"> Kênh cần triển khai: Voice, Chat, Email, Social</label>
+        <label><input type="checkbox"> Đầu số hotline và SIP trunk/BYOC</label>
+        <label><input type="checkbox"> Kịch bản IVR và routing</label>
+        <label><input type="checkbox"> CRM/ERP cần tích hợp</label>
+        <label><input type="checkbox"> Báo cáo, dashboard, SLA cần theo dõi</label>
+        <label><input type="checkbox"> Chính sách ghi âm và lưu trữ dữ liệu</label>
+        <label><input type="checkbox"> Tiêu chí POC/UAT/Go-live</label>
       </div>
-    </main>
+    </div>
   </section>`;
 }
 
 function bindOnCallCXProductCenter(){
   const tabs=$$('[data-ocx-tab]');
   if(!tabs.length)return;
-  if($('#ocx-documents')?.classList.contains('active'))ocxRenderDocumentManager();
-  if($('#ocx-version-control')?.classList.contains('active'))ocxRenderVersionControl();
-  if($('#ocx-admin-upload')?.classList.contains('active'))ocxRenderAdminUpload();
-  if($('#ocx-history')?.classList.contains('active'))ocxRenderHistoryCenter();
-  if($('#ocx-search')?.classList.contains('active'))ocxRenderSearchCenter();
+  ocxRenderDynamicTab($('.ocx-panel.active')?.id?.replace('ocx-','')||'overview');
   tabs.forEach(btn=>{
     btn.onclick=()=>{
       const tab=btn.dataset.ocxTab;
@@ -1548,11 +1324,7 @@ function bindOnCallCXProductCenter(){
       $$('.ocx-panel').forEach(panel=>panel.classList.remove('active'));
       const panel=$('#ocx-'+tab);
       if(panel)panel.classList.add('active');
-      if(tab==='documents')ocxRenderDocumentManager();
-      if(tab==='version-control')ocxRenderVersionControl();
-      if(tab==='admin-upload')ocxRenderAdminUpload();
-      if(tab==='history')ocxRenderHistoryCenter();
-      if(tab==='search')ocxRenderSearchCenter();
+      ocxRenderDynamicTab(tab);
     };
   });
 }
@@ -1564,10 +1336,10 @@ function renderPage(p){
   if(p==='compare')return renderCompare();
   if(p==='compliance')return renderCompliance();
   if(p==='resources')return renderResources();
-  if(p==='editor')return renderEditor();
-  if(p==='vendor-editor')return renderVendorEditor();
+  if(p==='cms'||p==='editor'||p==='vendor-editor')return renderCmsPlaceholder();
   if(p==='oncallcx')return renderOnCallCXOnly();
   if(p==='oncallcx-product-center')return renderOnCallCXProductCenter();
+  if(p==='oncallcx-presale')return renderOnCallCXPresale();
   if(p==='presentation-oncallcx')return renderOnCallCXPresentation();
   if(p==='ccaas-vn')return renderProductGroup('ccaas-vn','CCaaS — Đối Tác Việt Nam');
   if(p==='ccaas-global')return renderProductGroup('ccaas-global','CCaaS — Nền Tảng Quốc Tế');
@@ -1581,64 +1353,65 @@ function renderPage(p){
 function navigate(p){
   state.page=p;
   safeHashPage(p);
-  $$('.nav-item').forEach(a=>a.classList.toggle('active',a.dataset.page===p));
-  const [t,s]=titles[p]||titles.overview;
+  $$('.nav-item').forEach(a=>{
+    const href=a.getAttribute('href')||'';
+    const isActive=a.dataset.page===p||((isVideoConferencePage(p)||isSystemSecurityPage(p))&&href===location.hash);
+    a.classList.toggle('active',isActive);
+  });
+  const [t,s]=isVideoConferencePage(p)?(titles['video-conferencing']||titles.video):(titles[p]||titles.overview);
   $('#pageTitle').textContent=t;
   $('#pageSubtitle').textContent=s;
+  if(isVideoConferencePage(p)||isSystemSecurityPage(p)){
+    bindPage();
+    return;
+  }
   $('#pageRoot').innerHTML=renderPage(p);
   bindPage();
   window.scrollTo({top:0,behavior:'smooth'});
 }
+function openPublicRoute(route=''){
+  const target=normalizePublicRoute(route);
+  if(!target)return;
+  if(/^https?:\/\//i.test(target)){
+    window.open(target,'_blank','noopener');
+    return;
+  }
+  if(target.startsWith('#')){
+    location.hash=target;
+    navigate(resolvePageFromHash());
+    return;
+  }
+  navigate(target);
+}
 function bindPage(){
+  $$('[data-ocx-product-center]').forEach(b=>b.onclick=()=>{
+    const productId=b.dataset.ocxProductCenter||'prod-oncallcx-fpt';
+    location.hash=onCallCXProductCenterHash(productId);
+    navigate('oncallcx-product-center');
+  });
+  $$('[data-ocx-presale]').forEach(b=>b.onclick=()=>{
+    const productId=b.dataset.ocxPresale||currentOnCallCXProductId();
+    location.hash=onCallCXPresaleHash(productId);
+    navigate('oncallcx-presale');
+  });
+  $$('[data-ocx-open-presentation]').forEach(b=>b.onclick=()=>{
+    const productId=b.dataset.ocxOpenPresentation||currentOnCallCXProductId();
+    location.hash=onCallCXPresentationHash(productId);
+    navigate('presentation-oncallcx');
+  });
   $$('[data-go]').forEach(b=>b.onclick=()=>navigate(b.dataset.go));
+  $$('[data-route]').forEach(b=>b.onclick=()=>openPublicRoute(b.dataset.route));
+  $$('[data-external-route]').forEach(b=>b.onclick=()=>openPublicRoute(b.dataset.externalRoute));
   $$('[data-solution]').forEach(c=>c.onclick=()=>toast('Mở chi tiết: '+c.dataset.solution));
-  $$('[data-edit-id]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();location.hash='editor:'+b.dataset.editId;navigate('editor')});
-  $$('[data-editor-select]').forEach(b=>b.onclick=()=>{location.hash='editor:'+b.dataset.editorSelect;navigate('editor')});
-  $$('[data-add-solution]').forEach(b=>b.onclick=()=>{location.hash='editor:new:'+b.dataset.addSolution;navigate('editor')});
-  $$('[data-delete-solution]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();if(confirm('Xóa bài viết/card này?')){deleteContentItem(b.dataset.deleteSolution);toast('Đã xóa bài viết.');navigate(state.page)}});
-
-  $$('[data-add-product]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();location.hash='vendor-editor:'+packVendorHash(b.dataset.addProduct,'');navigate('vendor-editor')});
-  $$('[data-edit-product]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();const [g,id]=b.dataset.editProduct.split('|');location.hash='vendor-editor:'+packVendorHash(g,id);navigate('vendor-editor')});
-  $$('[data-delete-product]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();const [g,id]=b.dataset.deleteProduct.split('|');if(confirm('Xóa bài viết sản phẩm này?')){deleteProductArticle(g,id);toast('Đã xóa bài viết.');navigate(groupKeyToPage(g))}});
-  $$('[data-product-group]').forEach(b=>b.onclick=()=>{location.hash='vendor-editor:'+packVendorHash(b.dataset.productGroup,'');navigate('vendor-editor')});
-  $$('[data-product-select]').forEach(b=>b.onclick=()=>{const [g,id]=b.dataset.productSelect.split('|');location.hash='vendor-editor:'+packVendorHash(g,id);navigate('vendor-editor')});
+  const routeLegacyCrudToCms=e=>{
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
+    location.hash='cms';
+    navigate('cms');
+    toast('Quan tri noi dung tai CMS Data.');
+  };
+  $$('[data-edit-id],[data-editor-select],[data-add-solution],[data-delete-solution],[data-add-product],[data-edit-product],[data-delete-product],[data-product-group],[data-product-select],[data-add-compliance],[data-edit-compliance],[data-delete-compliance]').forEach(b=>b.onclick=routeLegacyCrudToCms);
   $$('[data-api-folder]').forEach(b=>b.onclick=()=>{location.hash='api-folder:'+b.dataset.apiFolder;navigate('api-reference')});
-
-  const saveProduct=$('#saveProductEditor');
-  if(saveProduct)saveProduct.onclick=()=>{
-    const payload=location.hash.includes('vendor-editor:')?location.hash.split('vendor-editor:')[1]:'';
-    const unpacked=unpackVendorHash(payload);
-    const groupKey=unpacked.groupKey||Object.keys(partnerProductCatalog)[0];
-    const productId=unpacked.vendorId||createProductArticle(groupKey).id;
-    const article={id:productId,icon:$('#productIcon').value||'📝',name:$('#productName').value||'Bài viết sản phẩm mới',category:$('#productCategory').value||'Sản phẩm / Đối tác',source:$('#productSource').value||'',tags:$('#productTags').value.split(',').map(x=>x.trim()).filter(Boolean),desc:$('#productDesc').value,strengths:$('#productStrengths').value.split('\n').map(x=>x.trim()).filter(Boolean),usecases:$('#productUsecases').value.split('\n').map(x=>x.trim()).filter(Boolean),link:$('#productLink').value||''};
-    upsertProductArticle(groupKey,article);
-    toast('Đã lưu bài viết sản phẩm.');
-    location.hash='vendor-editor:'+packVendorHash(groupKey,article.id);
-    navigate('vendor-editor');
-  };
-  const delProduct=$('#deleteProductEditor');
-  if(delProduct)delProduct.onclick=()=>{const payload=location.hash.split('vendor-editor:')[1]||'';const unpacked=unpackVendorHash(payload);if(unpacked.vendorId&&confirm('Xóa bài viết sản phẩm này?')){deleteProductArticle(unpacked.groupKey,unpacked.vendorId);toast('Đã xóa bài viết.');location.hash='vendor-editor:'+packVendorHash(unpacked.groupKey,'');navigate('vendor-editor')}};
-
-  const save=$('#saveEditor');
-  if(save)save.onclick=()=>{
-    const hashPayload=location.hash.includes('editor:')?location.hash.split('editor:')[1]:'';
-    const isNew=hashPayload.startsWith('new:');
-    const existingId=isNew?'':(hashPayload||'oncallcx');
-    const id=isNew?'custom-solution-'+Date.now():existingId;
-    const apis=$('#editApis').value.split('\n').map(x=>x.trim()).filter(Boolean).map(x=>{const p=x.split('|');return [p[0]||'GET',p[1]||'/api',p.slice(2).join('|')||'Mô tả']});
-    updateContentItem(id,{bucket:$('#editBucket').value||'general',icon:$('#editIcon').value,title:$('#editTitle').value,type:$('#editType').value,desc:$('#editDesc').value,chips:$('#editChips').value.split(',').map(x=>x.trim()).filter(Boolean),apis});
-    toast('Đã lưu nội dung bài viết vào LocalStorage.');
-    location.hash='editor:'+id;
-    navigate('editor');
-  };
-  const delEditor=$('#deleteEditor');
-  if(delEditor)delEditor.onclick=()=>{const id=location.hash.includes('editor:')?location.hash.split('editor:')[1]:'';if(id&&confirm('Xóa bài viết này?')){deleteContentItem(id);toast('Đã xóa bài viết.');location.hash='editor';navigate('editor')}};
-  const reset=$('#resetEditor');
-  if(reset)reset.onclick=()=>{const id=location.hash.includes('editor:')?location.hash.split('editor:')[1]:'oncallcx';resetContentItem(id);toast('Đã khôi phục nội dung mặc định.');navigate('editor')};
-
-  $$('[data-add-compliance]').forEach(b=>b.onclick=()=>{const card=promptComplianceCard();if(card){upsertComplianceCard(card);toast('Đã thêm bài viết tuân thủ.');navigate('compliance')}});
-  $$('[data-edit-compliance]').forEach(b=>b.onclick=()=>{const card=getComplianceCards().find(x=>x.id===b.dataset.editCompliance);const next=promptComplianceCard(card);if(next){upsertComplianceCard(next);toast('Đã cập nhật bài viết tuân thủ.');navigate('compliance')}});
-  $$('[data-delete-compliance]').forEach(b=>b.onclick=()=>{if(confirm('Xóa bài viết tuân thủ này?')){deleteComplianceCard(b.dataset.deleteCompliance);toast('Đã xóa bài viết tuân thủ.');navigate('compliance')}});
 
   $$('[data-demo-step]').forEach(s=>s.onclick=()=>{state.demoStep=Number(s.dataset.demoStep);navigate('demo')});
   const n=$('#nextDemo');if(n)n.onclick=()=>{state.demoStep=(state.demoStep+1)%4;navigate('demo')};
@@ -1646,7 +1419,21 @@ function bindPage(){
   bindOnCallCXPresentation();
 }
 function bindGlobal(){
-  $$('[data-page]').forEach(a=>a.onclick=e=>{e.preventDefault();navigate(a.dataset.page);$('#sidebar').classList.remove('open')});
+  $$('[data-page]').forEach(a=>a.onclick=e=>{
+    const href=a.getAttribute('href')||'';
+    const wasHandled=e.defaultPrevented;
+    if(isVideoConferenceHash(href)){
+      e.preventDefault();
+      e.stopPropagation();
+      if(!wasHandled&&location.hash!==href)location.hash=href;
+      $$('.nav-item').forEach(x=>x.classList.toggle('active',(x.getAttribute('href')||'')===href));
+      $('#sidebar').classList.remove('open');
+      return;
+    }
+    e.preventDefault();
+    navigate(a.dataset.page);
+    $('#sidebar').classList.remove('open');
+  });
   $$('[data-toggle-group]').forEach(b=>b.onclick=()=>b.closest('.nav-group').classList.toggle('expanded'));
   $('#mobileMenu').onclick=()=>$('#sidebar').classList.toggle('open');
   $('#themeToggle').onclick=()=>{document.documentElement.dataset.theme=document.documentElement.dataset.theme==='light'?'dark':'light'};
@@ -1654,5 +1441,18 @@ function bindGlobal(){
   $('#loginForm').onsubmit=e=>{e.preventDefault();login($('#loginEmail').value)};
   $('#logoutBtn').onclick=logout;
 }
-window.addEventListener('hashchange',()=>{const p=resolvePageFromHash();if(p!==state.page)navigate(p)});
+window.addEventListener('hashchange',()=>{
+  if(isVideoConferenceHash()){
+    state.page=resolvePageFromHash();
+    $$('.nav-item').forEach(a=>a.classList.toggle('active',(a.getAttribute('href')||'')===location.hash));
+    return;
+  }
+  const p=resolvePageFromHash();
+  if(isSystemSecurityPage(p)){
+    state.page=p;
+    $$('.nav-item').forEach(a=>a.classList.toggle('active',(a.getAttribute('href')||'')===location.hash));
+    return;
+  }
+  if(p!==state.page||p==='presentation-oncallcx'||p==='oncallcx-product-center'||p==='oncallcx-presale')navigate(p);
+});
 initAuth();bindGlobal();navigate(state.page);

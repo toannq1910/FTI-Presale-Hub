@@ -330,6 +330,9 @@
   border-radius:8px;
   padding:2px 6px;
 }
+.ocx-asset-found{display:inline-block;color:#86efac;margin-bottom:10px}
+.ocx-asset-note{display:inline-block;color:#c4d3ea;max-width:820px;line-height:1.55;margin-bottom:12px}
+.ocx-uploaded-pdf-frame{display:block;width:min(980px,100%);height:620px;border:1px solid var(--line);border-radius:16px;background:#020817;margin:18px auto 0}
 .ocx-download-card{
   display:flex;
   justify-content:space-between;
@@ -342,6 +345,35 @@
 }
 .ocx-download-card b{display:block}
 .ocx-download-card small{display:block;color:var(--muted);margin-top:4px}
+.ocx-download-card.muted{opacity:.82}
+.ocx-download-list{display:grid;gap:12px}
+.ocx-download-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.ocx-asset-doc-root{display:grid;gap:14px;margin-top:14px}
+.ocx-asset-doc-card{
+  display:grid;
+  gap:14px;
+  background:rgba(255,255,255,.04);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:16px;
+}
+.ocx-asset-doc-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:14px;
+  flex-wrap:wrap;
+}
+.ocx-asset-doc-head b{display:block;font-size:18px}
+.ocx-asset-doc-head small{display:block;color:var(--muted);margin-top:5px}
+.ocx-asset-doc-head p{margin:8px 0 0}
+.ocx-asset-doc-frame{
+  width:100%;
+  height:680px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#020817;
+}
 .ocx-release-list{display:grid;gap:10px}
 .ocx-release-list div{
   display:flex;
@@ -1102,4 +1134,98 @@
   .ocx-arch-diagram{grid-template-columns:1fr}
   .ocx-arch-arrow{transform:rotate(90deg);text-align:center}
   .ocx-pricing-grid,.ocx-checklist-grid,.ocx-arch-grid{grid-template-columns:1fr}
+}
+
+/* OnCallCX CCaaS user guide */
+.ocx-guide-shell{display:grid;gap:16px}
+.ocx-guide-switcher{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ocx-guide-switcher button{
+  position:relative;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;
+  min-height:58px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;
+  background:#172238;color:var(--text);text-align:left;cursor:pointer
+}
+.ocx-guide-switcher button span{grid-row:1/3;width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:rgba(59,130,246,.16)}
+.ocx-guide-switcher button b{font-size:13px;letter-spacing:.02em}
+.ocx-guide-switcher button small{grid-column:2;color:var(--muted);font-size:11px}
+.ocx-guide-switcher button em{grid-row:1/3;grid-column:3;font-style:normal;font-size:11px;color:#b6c5df;background:rgba(59,130,246,.18);padding:4px 8px;border-radius:999px}
+.ocx-guide-switcher button.active.orange{border-color:#f59e0b;box-shadow:inset 3px 0 0 #f59e0b;background:linear-gradient(135deg,rgba(245,158,11,.16),#172238)}
+.ocx-guide-switcher button.active.blue{border-color:#60a5fa;box-shadow:inset 3px 0 0 #60a5fa;background:linear-gradient(135deg,rgba(59,130,246,.18),#172238)}
+.ocx-guide-hero{
+  display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;
+  padding:18px 20px;border-radius:12px;border:1px solid rgba(249,115,22,.28);
+  background:linear-gradient(135deg,rgba(249,115,22,.85),rgba(239,68,68,.75))
+}
+.ocx-guide-shell.blue .ocx-guide-hero{border-color:rgba(96,165,250,.34);background:linear-gradient(135deg,rgba(37,99,235,.78),rgba(14,165,233,.58))}
+.ocx-guide-doc-icon{width:54px;height:54px;border-radius:14px;display:grid;place-items:center;background:rgba(255,255,255,.16);font-size:24px}
+.ocx-guide-hero h3{margin:0;font-size:22px;color:white}
+.ocx-guide-hero p{margin:4px 0 8px;color:#fff7ed;line-height:1.55}
+.ocx-guide-meta{display:flex;gap:10px;flex-wrap:wrap;color:#fff7ed;font-size:12px;font-weight:800}
+.ocx-guide-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.ocx-guide-layout{display:grid;grid-template-columns:190px minmax(0,1fr);gap:18px;align-items:start}
+.ocx-guide-toc{
+  position:sticky;top:12px;display:grid;gap:7px;padding:14px;border:1px solid var(--line);
+  border-radius:10px;background:#172238
+}
+.ocx-guide-toc b{color:#93a4bd;text-transform:uppercase;font-size:11px;letter-spacing:.08em}
+.ocx-guide-toc button{display:grid;grid-template-columns:24px 1fr;gap:8px;align-items:center;padding:7px;border:0;border-radius:8px;background:transparent;color:#cbd7ea;text-align:left;font:inherit;font-size:12px;cursor:pointer}
+.ocx-guide-toc button:hover{background:rgba(59,130,246,.14);color:white}
+.ocx-guide-toc span{display:grid;place-items:center;width:22px;height:22px;border-radius:7px;background:#253454;color:#bfdbfe;font-size:11px;font-weight:900}
+.ocx-guide-content{display:grid;gap:16px}
+.ocx-guide-section{overflow:hidden;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.ocx-guide-section>header{display:flex;gap:12px;align-items:center;padding:16px 18px;border-bottom:1px solid var(--line)}
+.ocx-guide-section-icon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.35);color:#fbbf24;font-weight:900}
+.ocx-guide-section header span{display:block;color:#fbbf24;text-transform:uppercase;font-size:11px;font-weight:900}
+.ocx-guide-section h3{margin:2px 0 0;font-size:18px}
+.ocx-guide-body{display:grid;gap:14px;padding:18px}
+.ocx-guide-body>p,.ocx-guide-subsection>p{margin:0;color:#b8c5dc;line-height:1.65}
+.ocx-guide-steps{display:grid;gap:8px}
+.ocx-guide-step{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:center;padding:10px 12px;border:1px solid #2d3e5d;border-radius:9px;background:#111927}
+.ocx-guide-step span{width:24px;height:24px;border-radius:999px;display:grid;place-items:center;background:rgba(245,158,11,.13);border:1px solid rgba(245,158,11,.4);color:#fbbf24;font-size:12px;font-weight:900}
+.ocx-guide-steps.tone-red .ocx-guide-step span{background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.44);color:#fca5a5}
+.ocx-guide-steps.tone-blue .ocx-guide-step span{background:rgba(59,130,246,.14);border-color:rgba(59,130,246,.42);color:#93c5fd}
+.ocx-guide-step p{margin:0;color:#dbe7f7;font-size:13px}
+.ocx-guide-table-wrap{overflow:auto;border:1px solid #2d3e5d;border-radius:10px}
+.ocx-guide-table{width:100%;border-collapse:collapse;min-width:720px}
+.ocx-guide-table th,.ocx-guide-table td{padding:10px 12px;border-bottom:1px solid rgba(148,163,184,.18);text-align:left;font-size:12px;color:#cbd7ea}
+.ocx-guide-table th{background:#263655;color:#93a4bd;text-transform:uppercase;font-size:11px;letter-spacing:.05em}
+.ocx-guide-table td:first-child{color:#93c5fd;font-family:var(--mono);font-weight:800}
+.ocx-guide-table td:last-child{color:#86efac;font-weight:800}
+.ocx-guide-mini-grid,.ocx-guide-callouts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.ocx-guide-mini-grid article,.ocx-guide-callouts article{padding:12px;border:1px solid #2d3e5d;border-radius:9px;background:#111927}
+.ocx-guide-mini-grid b,.ocx-guide-callouts b{display:block;color:#fbbf24;margin-bottom:5px}
+.ocx-guide-mini-grid p,.ocx-guide-callouts p{margin:0;color:#93a4bd;font-size:12px;line-height:1.5}
+.ocx-guide-callouts{grid-template-columns:repeat(3,minmax(0,1fr))}
+.ocx-guide-status{display:flex;gap:8px;flex-wrap:wrap;padding:10px;border:1px solid #2d3e5d;border-radius:9px;background:#111927}
+.ocx-guide-status span{display:flex;align-items:center;gap:6px;color:#dbeafe;font-size:12px}
+.ocx-guide-status b{color:#fbbf24}
+.ocx-guide-status small{color:#93a4bd}
+.ocx-guide-note{padding:10px 12px;border-radius:9px;border:1px solid rgba(16,185,129,.28);background:rgba(16,185,129,.12);color:#bbf7d0;font-size:12px}
+.ocx-guide-note.warning{border-color:rgba(239,68,68,.32);background:rgba(239,68,68,.12);color:#fecaca}
+.ocx-guide-subsection{display:grid;gap:12px;padding:14px;border-radius:11px;background:#202c47;border:1px solid rgba(96,165,250,.18)}
+.ocx-guide-subsection h4{margin:0;color:#fbbf24;font-size:15px}
+@media(max-width:1100px){
+  .ocx-guide-layout{grid-template-columns:1fr}
+  .ocx-guide-toc{position:relative;top:0;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ocx-guide-toc b{grid-column:1/-1}
+  .ocx-guide-hero{grid-template-columns:1fr}
+  .ocx-guide-actions{justify-content:flex-start}
+  .ocx-guide-mini-grid,.ocx-guide-callouts{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:720px){
+  .ocx-guide-switcher,.ocx-guide-mini-grid,.ocx-guide-callouts,.ocx-guide-toc{grid-template-columns:1fr}
+}
+
+/* Product Center nav is a horizontal module switcher under the hero. */
+.ocx-product-layout{display:block}
+.ocx-product-menu{
+  position:relative;
+  top:0;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:8px;
+  margin:0 0 16px;
+}
+.ocx-product-menu button{
+  min-height:52px;
+  justify-content:flex-start;
 }

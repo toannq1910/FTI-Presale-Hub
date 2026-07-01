@@ -1,6 +1,6 @@
-/* v10.0.0 Enterprise CMS Runtime
-   Adds Enterprise CMS inside #cms without modifying existing cms-app.js.
-   Safe: no routing override, no data overwrite, no Reset Local CMS required.
+/* v10.8.2 Enterprise CMS Runtime
+   Keeps the standalone #enterprise-cms dashboard only.
+   It no longer injects an extra tab into #cms, so CMS Data remains the single editor surface.
 */
 import { loadCms, esc } from './cms/cms-core.js';
 
@@ -19,7 +19,7 @@ const modules = [
   ['🔌','Integrations','Quản lý CRM/ERP, PBX/SBC/SIP, AI, API/Webhook và hệ thống liên quan.','Knowledge Graph','#integration-playbook','ready'],
   ['💬','Case Study','Quản lý use case, industry story, customer scenario và reference architecture.','Articles / Assets','#cms','planned'],
   ['🛡️','Compliance','Quản lý tuân thủ, bảo mật, dữ liệu cá nhân, recording và audit.','Articles / Knowledge Graph','#compliance','partial'],
-  ['🏷️','Version Control','Theo dõi version, release note, backup, rollback và lịch sử thay đổi.','Backup / Restore','#cms','ready'],
+  ['🏷️','Version Control','Theo dõi version, release note, backup và lịch sử thay đổi.','Backup / Restore','#cms','ready'],
   ['🚀','Publish Workflow','Local edit → Export JSON → Git commit → GitHub Pages deployment.','Operational Guide','#cms','ready'],
   ['🔎','Search Index','Chuẩn bị tìm kiếm toàn cục trên product, article, API, demo và asset.','Enterprise CMS','#cms','planned']
 ];
@@ -97,19 +97,7 @@ async function showEnterprise(){
 }
 
 function injectCmsTab(){
-  if(location.hash !== '#cms') return;
-  const tabs = document.querySelector('.cms-tabs');
-  if(!tabs || document.querySelector('[data-enterprise-runtime-tab]')) return;
-  const btn = document.createElement('button');
-  btn.textContent = 'Enterprise CMS';
-  btn.dataset.enterpriseRuntimeTab = 'true';
-  btn.onclick = () => {
-    tabs.querySelectorAll('button').forEach(x => x.classList.remove('active'));
-    btn.classList.add('active');
-    document.querySelectorAll('.cms-panel').forEach(x => x.classList.remove('active'));
-    showEnterprise();
-  };
-  tabs.insertBefore(btn, tabs.children[1] || null);
+  return;
 }
 
 async function route(){

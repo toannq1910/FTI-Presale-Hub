@@ -1,9 +1,14 @@
 /* v9.4.0 CMS Preview */
 import { esc } from './cms-core.js';
 
-export function renderPreview(data){
+export function renderPreview(data, description = ''){
   const product = (data.products || [])[0] || {};
-  return `<div class="cms-summary">
+  return `<section class="cms-module-intro">
+      <span class="eyebrow">Preview</span>
+      <h2>Kiểm tra nhanh dữ liệu CMS</h2>
+      <p>${esc(description || 'Xem nhanh dữ liệu hiện có trong CMS để kiểm tra tổng quan trước khi chỉnh sửa.')}</p>
+    </section>
+    <div class="cms-summary">
       <span><b>${data.products?.length||0}</b><small>Products</small></span>
       <span><b>${data.assets?.length||0}</b><small>CMS Assets</small></span>
       <span><b>${data.faqs?.length||0}</b><small>FAQ</small></span>

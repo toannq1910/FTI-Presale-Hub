@@ -580,10 +580,17 @@ function mergeById(existing = [], seeds = [], mode = 'upsert') {
       map.set(seed.id, seed);
       return;
     }
-    // Complete/refresh known CMS fields but keep custom user fields not in seed.
+    // Complete/refresh known CMS fields but keep custom user-managed cards.
     map.set(seed.id, {
       ...current,
       ...seed,
+      title: current.title || seed.title,
+      sidebarId: current.sidebarId || seed.sidebarId,
+      route: current.route || seed.route,
+      type: current.type || seed.type,
+      status: current.status || seed.status,
+      summary: current.summary || seed.summary,
+      cards: Array.isArray(current.cards) ? current.cards : seed.cards,
       customFields: current.customFields || seed.customFields,
       userNotes: current.userNotes || seed.userNotes
     });

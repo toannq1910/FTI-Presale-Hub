@@ -36,7 +36,7 @@ export function renderOperationalGuide(data){
       <span><b>PDF / Video / Image</b> → Asset Manager</span>
       <span><b>API / Integration / Competitor</b> → Knowledge Graph</span>
       <span><b>Sidebar cũ</b> → CMS Articles</span>
-      <span><b>Backup / Rollback</b> → Backup / Restore</span>
+      <span><b>Backup</b> → Backup / Restore</span>
       <span><b>Publish GitHub</b> → Export JSON + Commit</span>
     </div>
   </section>`;

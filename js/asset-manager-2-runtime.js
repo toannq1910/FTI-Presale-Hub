@@ -19,7 +19,7 @@ function render(){
     ['🏷️','Version History','Chuẩn bị versioning cho tài liệu: v1.0, v1.1, v2.0, deprecated, latest.'],
     ['🔗','Multi-place Publishing','Upload một lần, xuất hiện ở Product, Document Center, Download Center, Search.'],
     ['⬇️','Download Center','Chuẩn bị UI phân phối tài liệu cho khách hàng/presales.'],
-    ['🛡️','Governance','Owner, status, review, publish workflow và rollback.']
+    ['🛡️','Governance','Owner, status, review, publish workflow và publish checklist.']
   ];
   return `<section class="asset2-hero"><div><span class="eyebrow">📂 Asset Manager 2.0 v10.4</span><h2>Asset Manager 2.0</h2><p>Nâng cấp Asset Manager theo hướng SharePoint/Confluence: metadata-first, versioning, preview, download và governance.</p></div><a class="btn btn-primary" href="#document-center">Document Center</a></section>
   <section class="asset2-grid">${cards.map(c=>`<article class="asset2-card"><div class="asset2-icon">${c[0]}</div><h3>${esc(c[1])}</h3><p>${esc(c[2])}</p></article>`).join('')}</section>

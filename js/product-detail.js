@@ -1,6 +1,6 @@
 /* v9.6.0 Product Detail Pages */
 import { loadCms, esc } from './cms/cms-core.js';
-import { getProductAssets, assetObjectUrl, assetTypeLabel, formatBytes, assetIcon } from './cms/cms-assets.js';
+import { getProductAssets, assetObjectUrl, assetTypeLabel, formatBytes, assetIcon } from './cms/cms-assets.js?v=20260701-4';
 
 function parseDetailRoute(){
   const hash = location.hash || '';
