@@ -66,6 +66,7 @@
 .asset-icon{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:rgba(249,115,22,.14);font-size:26px}
 .asset-replace-notice{border:1px solid rgba(96,165,250,.35);background:rgba(37,99,235,.12);color:#dbeafe;border-radius:14px;padding:10px 12px;line-height:1.45}.asset-replace-notice b{display:block;color:#bfdbfe}.asset-replace-notice small{display:block;color:#c4d3ea;margin-top:3px}
 .asset-modal{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:24px}
+.asset-modal[hidden]{display:none}
 .asset-modal-backdrop{position:absolute;inset:0;background:rgba(2,8,23,.78)}
 .asset-modal-panel{position:relative;width:min(920px,100%);max-height:88vh;overflow:auto;background:#0b1220;border:1px solid var(--line,#263754);border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
 .asset-preview-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line,#263754);background:rgba(15,23,42,.72);position:sticky;top:0}
