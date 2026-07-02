@@ -49,8 +49,7 @@ const ARTICLE_SEEDS = [
     cards: [
       {title:'Product Center', summary:'Thông tin tổng quan, presentation, datasheet, demo và tài liệu sản phẩm.', url:'#product-detail:oncallcx'},
       {title:'API Reference', summary:'CDR API, Outbound Call API, Webhook Incoming và Recording API.', url:'#api-center'},
-      {title:'Document Center', summary:'Presentation, datasheet, demo script, SOW template và checklist.', url:'#document-center'},
-      {title:'AI Assistant', summary:'Trợ lý nội bộ đọc CMS data để hỗ trợ tư vấn Presales.', url:'#ai-assistant'}
+      {title:'Document Center', summary:'Presentation, datasheet, demo script, SOW template và checklist.', url:'#document-center'}
     ]
   },
   {
@@ -400,23 +399,6 @@ const ARTICLE_SEEDS = [
     ]
   },
   {
-    id: 'article-asset-manager-2',
-    title: 'Asset Manager 2.0',
-    sidebarId: 'asset-manager-2',
-    route: '#asset-manager-2',
-    type: 'cms-module',
-    status: 'active',
-    module: 'Enterprise CMS',
-    summary: 'Asset Manager 2.0 theo hướng metadata-first asset governance: Product, Type, Sidebar, Tag, Version, Owner, Status, Preview và Download.',
-    tags: ['asset','metadata','version','governance'],
-    cards: [
-      {title:'Metadata-first Asset', summary:'Mỗi asset có product, type, sidebar, tag, version, owner, status.', url:'#asset-manager-2'},
-      {title:'Preview / Thumbnail', summary:'Chuẩn bị nền cho preview PDF, image, video và thumbnail.', url:'#asset-manager-2'},
-      {title:'Version History', summary:'Quản lý v1.0, v1.1, latest, deprecated.', url:'#asset-manager-2'},
-      {title:'Multi-place Publishing', summary:'Upload một lần, xuất hiện ở Product, Document Center, Search.', url:'#asset-manager-2'}
-    ]
-  },
-  {
     id: 'article-relationship-graph',
     title: 'Product Relationship Graph',
     sidebarId: 'relationship-graph',
@@ -448,23 +430,6 @@ const ARTICLE_SEEDS = [
       {title:'Article Knowledge', summary:'Bài viết và summary được gom vào Knowledge Base.', url:'#knowledge-base'},
       {title:'Integration Knowledge', summary:'Tổng hợp CRM/ERP/SIP/API integration notes.', url:'#knowledge-base'},
       {title:'Best Practices', summary:'Nền tảng cho tài liệu hướng dẫn và AI Assistant.', url:'#knowledge-base'}
-    ]
-  },
-  {
-    id: 'article-ai-assistant',
-    title: 'AI Assistant',
-    sidebarId: 'ai-assistant',
-    route: '#ai-assistant',
-    type: 'cms-module',
-    status: 'active',
-    module: 'Enterprise CMS',
-    summary: 'AI Assistant hiện tại là local rule-based assistant đọc CMS data để trả lời nhanh về product, API, document, article và compliance.',
-    tags: ['ai','assistant','cms','presales'],
-    cards: [
-      {title:'CMS Powered', summary:'Đọc products, apiLinks, articles và knowledge sections từ CMS.', url:'#ai-assistant'},
-      {title:'Question Suggestions', summary:'Gợi ý câu hỏi: OnCallCX là gì, API ở đâu, tài liệu ở đâu.', url:'#ai-assistant'},
-      {title:'Local Mode', summary:'Chưa gọi backend AI, không gửi dữ liệu ra ngoài.', url:'#ai-assistant'},
-      {title:'Future RAG-ready', summary:'Nền tảng cho semantic search và AI Copilot sau này.', url:'#ai-assistant'}
     ]
   }
 ];
@@ -647,7 +612,7 @@ async function runSync(force = false) {
       '#video-conferencing','#vc-yealink','#vc-logitech','#vc-poly','#vc-cisco','#vc-jabra','#vc-crestron','#vc-huddle-room','#vc-medium-large-room'
     ],
     enterpriseRoutes: [
-      '#enterprise-cms','#api-center','#document-center','#global-search','#asset-manager-2','#relationship-graph','#knowledge-base','#ai-assistant'
+      '#enterprise-cms','#api-center','#document-center','#global-search','#relationship-graph','#knowledge-base'
     ]
   };
 
