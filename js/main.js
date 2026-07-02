@@ -931,7 +931,7 @@ async function bindOnCallCXPresentation(){
         resolver.outerHTML=presentationViewerMarkup();
         bindPresentationSlides({pages:renderedAsset.pages,pdfUrl:url,fileName:renderedAsset.fileName});
       }else if(isPdfAsset(renderedAsset)){
-        status.innerHTML=`<span class="ocx-asset-found">PDF đã sẵn sàng: <b>${fileMeta}</b></span><br><a class="btn btn-primary btn-link" href="${url}" target="_blank" rel="noopener">Mở PDF upload</a> <a class="btn btn-soft btn-link" href="${url}" download="${safeHtml(renderedAsset.fileName||'presentation.pdf')}">Download</a><iframe class="ocx-uploaded-pdf-frame" src="${url}"></iframe>`;
+        status.innerHTML=`<span class="ocx-asset-found">PDF đã sẵn sàng: <b>${fileMeta}</b></span><br><a class="btn btn-primary btn-link" href="${url}" target="_blank" rel="noopener">Mở PDF upload</a> <a class="btn btn-soft btn-link" href="${url}" download="${safeHtml(renderedAsset.fileName||'presentation.pdf')}">Download</a><iframe class="ocx-uploaded-pdf-frame" src="${url}#toolbar=1&navpanes=0&zoom=page-width"></iframe>`;
       }else if(isPowerPointAsset(renderedAsset)){
         status.innerHTML=`<span class="ocx-asset-found">PowerPoint đã sẵn sàng: <b>${fileMeta}</b></span><br><span class="ocx-asset-note">Chưa render được slide từ PPTX này. Vui lòng kiểm tra file hoặc upload bản PDF nếu cần hiển thị chính xác 100%.</span><br><a class="btn btn-primary btn-link" href="${url}" download="${safeHtml(renderedAsset.fileName||'presentation.pptx')}">Tải / mở bằng PowerPoint</a>`;
       }else{
@@ -1030,7 +1030,7 @@ async function ocxRenderProductAssetDoc(type,rootSelector,label){
         <button class="btn btn-soft" data-ocx-asset-download="${safeHtml(asset.id)}">Download</button>
       </div>
     </div>
-    ${isPdf?`<iframe class="ocx-asset-doc-frame" src="${url}#toolbar=1&navpanes=0"></iframe>`:`<div class="ocx-placeholder"><div>📎</div><strong>File đã upload</strong><p>Định dạng này không có preview trực tiếp. Dùng nút Mở file hoặc Download.</p></div>`}
+    ${isPdf?`<iframe class="ocx-asset-doc-frame" src="${url}#toolbar=1&navpanes=0&zoom=page-width"></iframe>`:`<div class="ocx-placeholder"><div>📎</div><strong>File đã upload</strong><p>Định dạng này không có preview trực tiếp. Dùng nút Mở file hoặc Download.</p></div>`}
   </article>`;
   bindOnCallCXAssetButtons();
 }
@@ -1058,7 +1058,7 @@ async function ocxRenderProductApiDocs(rootSelector){
         <button class="btn btn-soft" data-ocx-asset-download="${safeHtml(asset.id)}">Download</button>
       </div>
     </div>
-    ${isPdf?`<iframe class="ocx-asset-doc-frame" src="${url}#toolbar=1&navpanes=0"></iframe>`:`<div class="ocx-placeholder"><div>📎</div><strong>File đã upload</strong><p>Định dạng này không có preview trực tiếp. Dùng nút Mở file hoặc Download.</p></div>`}
+    ${isPdf?`<iframe class="ocx-asset-doc-frame" src="${url}#toolbar=1&navpanes=0&zoom=page-width"></iframe>`:`<div class="ocx-placeholder"><div>📎</div><strong>File đã upload</strong><p>Định dạng này không có preview trực tiếp. Dùng nút Mở file hoặc Download.</p></div>`}
   </article>`;
   }).join('');
   bindOnCallCXAssetButtons();
@@ -1247,8 +1247,8 @@ function renderOnCallCXProductCenter(){
         <h3>API Reference</h3>
         <p>Tài liệu API đã upload cho sản phẩm này (loại asset = API Spec), gắn tại CMS Data → Asset Manager.</p>
         <div id="ocxApiRoot" class="ocx-asset-doc-root"></div>
-        <p class="ocx-api-secondary">Ngoài ra có thể xem thêm bài viết API/partner đối tác đã gom theo thư mục:</p>
-        <button class="btn btn-soft" data-go="api-reference">Mở API Reference (thư mục đối tác)</button>
+        <p class="ocx-api-secondary">Ngoài file gốc, có thể xem tài liệu API dạng tra cứu nhanh (endpoint, request/response mẫu, dữ liệu đã verify thật):</p>
+        <button class="btn btn-primary" data-go="api-reference">Mở API Reference (tra cứu nhanh)</button>
       </div>
 
       <div class="ocx-panel" id="ocx-case-study">

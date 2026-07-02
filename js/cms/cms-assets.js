@@ -479,7 +479,7 @@ function previewMarkup(record,u){
   }
   if(record.mimeType?.startsWith('image/')) return `<img class="asset-preview-img" src="${u}" alt="${esc(record.title)}">`;
   if(record.mimeType?.startsWith('video/')) return `<video class="asset-preview-video" src="${u}" controls></video>`;
-  if(record.mimeType === 'application/pdf' || record.fileName.toLowerCase().endsWith('.pdf')) return `<iframe class="asset-preview-frame" src="${u}"></iframe>`;
+  if(record.mimeType === 'application/pdf' || record.fileName.toLowerCase().endsWith('.pdf')) return `<iframe class="asset-preview-frame" src="${u}#toolbar=1&navpanes=0&zoom=page-width"></iframe>`;
   if(/\.(ppt|pptx)$/i.test(record.fileName || '') || /powerpoint|presentation/i.test(record.mimeType || '')){
     return `<div class="asset-code-note asset-powerpoint-note">
       <b>File PowerPoint đã được upload và gắn vào sản phẩm.</b>
