@@ -272,7 +272,7 @@ const OFFICIAL_ASSETS = [
   {
     id: 'official-oncallcx-ucaas-api-rest',
     replacementSlot: 'oncallcx-ucaas-api-rest',
-    product: 'oncallcx',
+    product: 'prod-oncallcx-ucaas-inherited',
     type: 'api',
     title: 'OnCallCX UCaaS - REST API',
     description: 'Tài liệu REST API OnCallCX UCaaS: Extension, Call Queue, Conference, Contact và CDR (lịch sử cuộc gọi).',
@@ -286,7 +286,7 @@ const OFFICIAL_ASSETS = [
   {
     id: 'official-oncallcx-ucaas-api-overview',
     replacementSlot: 'oncallcx-ucaas-api-overview',
-    product: 'oncallcx',
+    product: 'prod-oncallcx-ucaas-inherited',
     type: 'api',
     title: 'OnCallCX UCaaS - API Overview',
     description: 'Tài liệu tổng quan Document API OnCallCX UCaaS v1.0 (FPT Telecom - Software Solution Technology).',
@@ -300,7 +300,7 @@ const OFFICIAL_ASSETS = [
   {
     id: 'official-oncallcx-ucaas-api-cti',
     replacementSlot: 'oncallcx-ucaas-api-cti',
-    product: 'oncallcx',
+    product: 'prod-oncallcx-ucaas-inherited',
     type: 'api',
     title: 'OnCallCX UCaaS - CTI API',
     description: 'Tài liệu CTI API OnCallCX UCaaS: makeCall, event response (EstablishedEvent, TransferredEvent...) qua anCTI SDK.',
@@ -314,7 +314,7 @@ const OFFICIAL_ASSETS = [
   {
     id: 'official-oncallcx-ucaas-api-webhook',
     replacementSlot: 'oncallcx-ucaas-api-webhook',
-    product: 'oncallcx',
+    product: 'prod-oncallcx-ucaas-inherited',
     type: 'api',
     title: 'OnCallCX UCaaS - Webhook Events',
     description: 'Tài liệu cấu hình Webhook OnCallCX UCaaS và danh sách event: CDR, DTMF, Extension Status.',

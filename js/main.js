@@ -241,6 +241,20 @@ async function findOnCallCXAsset(cfg,type='presentation'){
   }
   return null;
 }
+async function findOnCallCXAssets(cfg,type='api'){
+  const ids=cfg.assetProductIds||[cfg.productId];
+  const seen=new Set();
+  const results=[];
+  try{
+    for(const id of ids){
+      const list=(await getProductAssets(id)).filter(a=>a.type===type);
+      list.forEach(a=>{ if(!seen.has(a.id)){ seen.add(a.id); results.push(a); } });
+    }
+  }catch(err){
+    console.warn('Cannot load product assets from CMS Asset Manager',err);
+  }
+  return results;
+}
 async function findOnCallCXPresentationAsset(cfg){
   return findOnCallCXAsset(cfg,'presentation');
 }
@@ -1020,6 +1034,35 @@ async function ocxRenderProductAssetDoc(type,rootSelector,label){
   </article>`;
   bindOnCallCXAssetButtons();
 }
+async function ocxRenderProductApiDocs(rootSelector){
+  const root=$(rootSelector);
+  if(!root)return;
+  const cfg=onCallCXPresentationConfig();
+  const assets=await findOnCallCXAssets(cfg,'api');
+  if(!assets.length){
+    root.innerHTML=ocxAssetEmpty('API Spec','API Spec');
+    return;
+  }
+  root.innerHTML=assets.map(asset=>{
+    const url=assetObjectUrl(asset);
+    const isPdf=isPdfAsset(asset);
+    return `<article class="ocx-asset-doc-card">
+    <div class="ocx-asset-doc-head">
+      <div>
+        <b>${safeHtml(asset.title||asset.fileName)}</b>
+        <small>${ocxAssetMeta(asset)}</small>
+        ${asset.description?`<p>${safeHtml(asset.description)}</p>`:''}
+      </div>
+      <div class="ocx-action-row">
+        <button class="btn btn-primary" data-ocx-asset-open="${safeHtml(asset.id)}">Mở file</button>
+        <button class="btn btn-soft" data-ocx-asset-download="${safeHtml(asset.id)}">Download</button>
+      </div>
+    </div>
+    ${isPdf?`<iframe class="ocx-asset-doc-frame" src="${url}#toolbar=1&navpanes=0"></iframe>`:`<div class="ocx-placeholder"><div>📎</div><strong>File đã upload</strong><p>Định dạng này không có preview trực tiếp. Dùng nút Mở file hoặc Download.</p></div>`}
+  </article>`;
+  }).join('');
+  bindOnCallCXAssetButtons();
+}
 function ocxDownloadAssetCard(asset,label,type){
   if(!asset){
     return `<div class="ocx-download-card muted">
@@ -1119,6 +1162,7 @@ function ocxRenderDynamicTab(tab){
   if(tab==='presentation')ocxRenderProductPresentation();
   if(tab==='user-guide')ocxRenderProductAssetDoc('userGuide','#ocxUserGuideRoot','User Guide');
   if(tab==='datasheet')ocxRenderProductAssetDoc('datasheet','#ocxDatasheetRoot','Datasheet');
+  if(tab==='api')ocxRenderProductApiDocs('#ocxApiRoot');
   if(tab==='downloads')ocxRenderDownloadAssets();
 }
 
@@ -1201,8 +1245,10 @@ function renderOnCallCXProductCenter(){
 
       <div class="ocx-panel" id="ocx-api">
         <h3>API Reference</h3>
-        <p>Chuyển sang khu API Reference để xem tài liệu kỹ thuật/API đã được gom theo thư mục.</p>
-        <button class="btn btn-primary" data-go="api-reference">Mở API Reference</button>
+        <p>Tài liệu API đã upload cho sản phẩm này (loại asset = API Spec), gắn tại CMS Data → Asset Manager.</p>
+        <div id="ocxApiRoot" class="ocx-asset-doc-root"></div>
+        <p class="ocx-api-secondary">Ngoài ra có thể xem thêm bài viết API/partner đối tác đã gom theo thư mục:</p>
+        <button class="btn btn-soft" data-go="api-reference">Mở API Reference (thư mục đối tác)</button>
       </div>
 
       <div class="ocx-panel" id="ocx-case-study">

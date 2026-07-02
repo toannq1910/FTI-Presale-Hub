@@ -349,6 +349,7 @@
 .ocx-download-list{display:grid;gap:12px}
 .ocx-download-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .ocx-asset-doc-root{display:grid;gap:14px;margin-top:14px}
+.ocx-api-secondary{margin-top:18px;color:var(--muted,#94a3b8);font-size:13px}
 .ocx-asset-doc-card{
   display:grid;
   gap:14px;
