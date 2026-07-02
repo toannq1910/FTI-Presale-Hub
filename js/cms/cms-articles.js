@@ -354,14 +354,25 @@ function cardRows(article){
   const cards = Array.isArray(article.cards) ? article.cards : [];
   return cards.map((c,i) => {
     const state = routeState(c.url);
-    return `<div class="article-card-row" data-article-card="${i}">
-    <input data-card-title="${i}" value="${esc(c.title || '')}" placeholder="Tiêu đề card">
-    <input data-card-summary="${i}" value="${esc(c.summary || '')}" placeholder="Mô tả card">
-    <input class="${state.className === 'invalid' ? 'route-invalid' : ''}" data-card-url="${i}" list="articleRouteOptions" value="${esc(c.url || '')}" placeholder="URL hoặc #route" title="${esc(state.label)}">
-    <span class="article-route-state ${esc(state.className)}">${esc(state.label)}</span>
-    <button class="btn btn-danger" data-remove-card="${i}">Xóa</button>
+    return `<div class="article-card-tile" data-article-card="${i}">
+    <div class="article-card-tile-preview">
+      <b>${esc(c.title || 'Card chưa có tiêu đề')}</b>
+      <p>${esc(c.summary || 'Chưa có mô tả — khách hàng sẽ không thấy nội dung ở đây.')}</p>
+    </div>
+    <div class="article-card-tile-fields">
+      <label>Tiêu đề card</label>
+      <input data-card-title="${i}" value="${esc(c.title || '')}" placeholder="VD: Omnichannel Contact Center">
+      <label>Mô tả ngắn</label>
+      <input data-card-summary="${i}" value="${esc(c.summary || '')}" placeholder="1 câu mô tả ngắn gọn cho khách hàng đọc">
+      <label>Bấm vào card sẽ mở trang nào?</label>
+      <div class="article-route-input">
+        <input class="${state.className === 'invalid' ? 'route-invalid' : ''}" data-card-url="${i}" list="articleRouteOptions" value="${esc(c.url || '')}" placeholder="Chọn từ danh sách hoặc dán URL">
+        <span class="article-route-state ${esc(state.className)}">${esc(state.label)}</span>
+      </div>
+    </div>
+    <button class="btn btn-danger article-card-tile-remove" data-remove-card="${i}">Xóa card này</button>
   </div>`;
-  }).join('') || `<div class="cms-empty-state">Chưa có card nội dung.</div>`;
+  }).join('') || `<div class="cms-empty-state">Chưa có card nội dung. Bấm “+ Thêm card” để tạo card đầu tiên.</div>`;
 }
 
 function renderArticleForm(article){
@@ -372,7 +383,7 @@ function renderArticleForm(article){
     <div class="article-editor-head">
       <div>
         <h3>${esc(article.title || 'Bài viết')}</h3>
-        <p>ID: <code>${esc(article.id || '')}</code></p>
+        <p>Đang sửa bài viết này. Nhớ bấm “Lưu bài viết” sau khi chỉnh xong.</p>
       </div>
       <div class="article-actions">
         <button class="btn btn-soft" id="duplicateArticle">Nhân bản</button>
@@ -382,27 +393,40 @@ function renderArticleForm(article){
     </div>
 
     <div class="pm-form-grid">
-      <label>ID</label><input id="articleId" value="${esc(article.id || '')}">
-      <label>Title</label><input id="articleTitle" value="${esc(article.title || '')}">
-      <label>Sidebar ID</label><input id="articleSidebarId" value="${esc(article.sidebarId || '')}">
-      <label>Route</label><div class="article-route-input"><input id="articleRoute" class="${articleRouteState.className === 'invalid' ? 'route-invalid' : ''}" list="articleRouteOptions" value="${esc(article.route || '')}"><span class="article-route-state ${esc(articleRouteState.className)}">${esc(articleRouteState.label)}</span></div>
-      <label>Type</label>
-      <select id="articleType">${Object.entries(ARTICLE_TYPES).map(([k,v]) => `<option value="${k}" ${article.type === k ? 'selected' : ''}>${v}</option>`).join('')}</select>
-      <label>Status</label>
+      <label>Tên bài viết</label><input id="articleTitle" value="${esc(article.title || '')}" placeholder="Tên hiển thị cho khách hàng đọc">
+      <label>Trạng thái</label>
       <select id="articleStatus">
-        <option value="active" ${article.status === 'active' ? 'selected' : ''}>Active</option>
-        <option value="draft" ${article.status === 'draft' ? 'selected' : ''}>Draft</option>
-        <option value="archived" ${article.status === 'archived' ? 'selected' : ''}>Archived</option>
+        <option value="active" ${article.status === 'active' ? 'selected' : ''}>Active — đang hiển thị cho khách hàng</option>
+        <option value="draft" ${article.status === 'draft' ? 'selected' : ''}>Draft — bản nháp, chưa công khai</option>
+        <option value="archived" ${article.status === 'archived' ? 'selected' : ''}>Archived — đã ẩn, lưu trữ</option>
       </select>
-      <label>Summary</label><textarea id="articleSummary">${esc(article.summary || '')}</textarea>
+      <label>Mô tả tổng quan</label><textarea id="articleSummary" placeholder="Đoạn mô tả ngắn hiển thị đầu trang">${esc(article.summary || '')}</textarea>
     </div>
+
+    <details class="article-advanced">
+      <summary>⚙️ Cài đặt kỹ thuật (chỉ sửa khi chắc chắn)</summary>
+      <div class="pm-form-grid">
+        <label>ID bài viết</label><input id="articleId" value="${esc(article.id || '')}">
+        <p class="article-field-hint">Mã định danh nội bộ, dùng để hệ thống nhận diện bài viết. Đổi ID có thể làm mất liên kết ở nơi khác — chỉ đổi khi chắc chắn.</p>
+        <label>Mã sidebar</label><input id="articleSidebarId" value="${esc(article.sidebarId || '')}">
+        <p class="article-field-hint">Mã dùng để nối bài viết với mục tương ứng trên thanh điều hướng bên trái.</p>
+        <label>Đường dẫn trang</label><div class="article-route-input"><input id="articleRoute" class="${articleRouteState.className === 'invalid' ? 'route-invalid' : ''}" list="articleRouteOptions" value="${esc(article.route || '')}"><span class="article-route-state ${esc(articleRouteState.className)}">${esc(articleRouteState.label)}</span></div>
+        <p class="article-field-hint">Đường dẫn (route) sẽ mở khi bấm vào bài viết này ở menu chính. Để trống nếu bài viết này chỉ chứa card, không phải trang riêng.</p>
+        <label>Loại bài viết</label>
+        <select id="articleType">${Object.entries(ARTICLE_TYPES).map(([k,v]) => `<option value="${k}" ${article.type === k ? 'selected' : ''}>${v}</option>`).join('')}</select>
+        <p class="article-field-hint">Chỉ ảnh hưởng cách hệ thống phân loại nội bộ, không hiển thị cho khách hàng.</p>
+      </div>
+    </details>
 
     <div class="article-card-editor">
       <div class="article-editor-head">
-        <h3>Cards nội dung</h3>
+        <div>
+          <h3>Các card nội dung</h3>
+          <p>Mỗi card là 1 ô sẽ hiện trên trang này để khách hàng bấm vào xem tiếp.</p>
+        </div>
         <button class="btn btn-soft" id="addArticleCard">+ Thêm card</button>
       </div>
-      <div id="articleCardRows">${cardRows(article)}</div>
+      <div id="articleCardRows" class="article-card-tile-list">${cardRows(article)}</div>
     </div>
   </div>`;
 }

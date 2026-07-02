@@ -50,7 +50,7 @@ export function renderProductManager(data, description = ''){
     <div>
       <span class="eyebrow">🧭 Product Data</span>
       <h2>Quản lý dữ liệu sản phẩm</h2>
-      <p>${esc(description || 'Quản lý dữ liệu cấu trúc của sản phẩm như vendor, category, feature, tag, status và điểm tư vấn. Module này không thay thế CMS Articles.')}</p>
+      <p>${esc(description || 'Quản lý hồ sơ sản phẩm/đối thủ dạng có cấu trúc (Vendor, Category, Score, Highlights, Use case). Đây KHÔNG phải danh sách toàn bộ bài viết — bài viết và card ngoài portal được quản lý riêng ở tab CMS Articles.')}</p>
     </div>
     <button class="btn btn-primary" id="pmAddProduct">+ Thêm sản phẩm</button>
   </section>

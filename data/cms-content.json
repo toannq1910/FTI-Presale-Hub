@@ -1,8 +1,8 @@
 {
   "meta": {
-    "version": "v9.8.2",
+    "version": "v10.8.3",
     "name": "Unified Product CMS",
-    "updatedAt": "2026-06-26",
+    "updatedAt": "2026-07-02",
     "description": "Operational CMS Guide and Sidebar Articles migration."
   },
   "products": [
@@ -175,6 +175,66 @@
           "method": "GET",
           "path": "/api/recording/{id}",
           "description": "Truy xuất thông tin ghi âm."
+        },
+        {
+          "name": "UCaaS - Danh sách Extension",
+          "method": "GET",
+          "path": "/rest/addresses",
+          "description": "Lấy danh sách tất cả extension hoặc theo PBX/orgUnit. Xem chi tiết trong REST API PDF."
+        },
+        {
+          "name": "UCaaS - Trạng thái Extension",
+          "method": "GET",
+          "path": "/rest/terminals + /rest/locations",
+          "description": "Lấy trạng thái online/offline, IP đăng ký của extension (2 bước)."
+        },
+        {
+          "name": "UCaaS - Quota / Billing Limit",
+          "method": "GET",
+          "path": "/rest/billingLimits",
+          "description": "Lấy giới hạn cước (TopStop) hiện tại của 1 extension."
+        },
+        {
+          "name": "UCaaS - Thực hiện cuộc gọi ra (CTI)",
+          "method": "JS SDK",
+          "path": "anCti.newAgent() / webphone.makeCall()",
+          "description": "Gọi ra từ extension qua CTI SDK, trả về các event: OriginatedEvent, EstablishedEvent, TransferredEvent..."
+        },
+        {
+          "name": "UCaaS - Call Queue (ACD)",
+          "method": "GET",
+          "path": "/rest/acdMembers",
+          "description": "Lấy danh sách call queue và thành viên trong queue."
+        },
+        {
+          "name": "UCaaS - Conference Room",
+          "method": "GET",
+          "path": "/rest/conferences",
+          "description": "Lấy danh sách phòng họp, PIN, room number."
+        },
+        {
+          "name": "UCaaS - Contact / Danh bạ",
+          "method": "GET",
+          "path": "/rest/contacts",
+          "description": "Lấy danh sách contact group và số điện thoại liên hệ."
+        },
+        {
+          "name": "UCaaS - CDR (lịch sử cuộc gọi)",
+          "method": "GET",
+          "path": "/rest/cdrs?where=accOrgUnitId.eq(OU_Id)",
+          "description": "Lấy lịch sử cuộc gọi theo tổ chức, khoảng thời gian hoặc theo Call ID (~40 trường dữ liệu)."
+        },
+        {
+          "name": "UCaaS - Audio Recording (S3)",
+          "method": "GET",
+          "path": "/bucket/pbx-stg/PBX_CRM/{namefile}/link",
+          "description": "Lấy link tải file ghi âm cuộc gọi lưu trên S3."
+        },
+        {
+          "name": "UCaaS - Webhook Config Portal",
+          "method": "POST",
+          "path": "https://<pbx>:8892 / :8893",
+          "description": "Đăng ký CRM URL để nhận CDR Webhook và Extension Webhook realtime."
         }
       ],
       "knowledgeSections": [
@@ -189,6 +249,18 @@
         {
           "title": "Kịch bản demo đề xuất",
           "content": "Login portal, tạo agent/extension, nhận cuộc gọi inbound, gọi outbound từ CRM, xem CDR, nghe recording và xem dashboard realtime."
+        },
+        {
+          "title": "UCaaS API - Tài liệu gốc",
+          "content": "Bộ tài liệu API đầy đủ cho OnCallCX UCaaS đã được upload trong Asset Manager (loại API Spec): REST API (Extension/Queue/Conference/Contact/CDR), CTI API (makeCall + event), Webhook (cấu hình + 8 loại event), và API Overview. Bảng bên trên chỉ là mục lục tra nhanh, xem file PDF để lấy đầy đủ tham số/response schema."
+        },
+        {
+          "title": "UCaaS Webhook - Các loại event",
+          "content": "CDR Events: call_start, cdr_target_ringing, cdr_target_answer, cdr_target_noanswer, cdr_target_end, cdr_target_fail, call_cdr (bản ghi đầy đủ 1 cuộc gọi kèm end_reason). DTMF Events: dtmf_event (phím bấm trong cuộc gọi). Extension Events: extension_status (trạng thái online/offline, busy, dnd của extension)."
+        },
+        {
+          "title": "UCaaS Webhook - Cách kích hoạt",
+          "content": "Bước 1: Gán role 'REST API' + attribute ctiDeviceId cho user webhook admin trong PBX Portal. Bước 2: Đăng nhập Webhook Config Portal (cổng 8892), nhập CTI Device ID + CRM URL của khách hàng, bật CDR Webhook và/hoặc Extension Webhook."
         }
       ]
     },

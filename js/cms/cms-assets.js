@@ -23,7 +23,7 @@ export function assetAccept(t){
   if(t === 'userGuide' || t === 'datasheet' || t === 'caseStudy') return 'application/pdf,.pdf';
   if(t === 'video') return 'video/mp4,video/webm,.mp4,.webm';
   if(t === 'image' || t === 'logo') return 'image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp';
-  if(t === 'api') return 'application/json,.json,.yaml,.yml';
+  if(t === 'api') return 'application/pdf,.pdf,application/json,.json,.yaml,.yml';
   return 'application/pdf,.pdf';
 }
 
@@ -268,6 +268,62 @@ const OFFICIAL_ASSETS = [
     createdAt: '2026-07-01T00:00:01.000Z',
     url: 'assets/user-guide/oncallcx/OnCallCX-UserGuide-Inbound-2025.pdf',
     official: true
+  },
+  {
+    id: 'official-oncallcx-ucaas-api-rest',
+    replacementSlot: 'oncallcx-ucaas-api-rest',
+    product: 'oncallcx',
+    type: 'api',
+    title: 'OnCallCX UCaaS - REST API',
+    description: 'Tài liệu REST API OnCallCX UCaaS: Extension, Call Queue, Conference, Contact và CDR (lịch sử cuộc gọi).',
+    fileName: 'REST_API_OncallCX_UCaaS.pdf',
+    mimeType: 'application/pdf',
+    size: 2650522,
+    createdAt: '2026-07-02T00:00:00.000Z',
+    url: 'assets/api/oncallcx-ucaas/REST_API_OncallCX_UCaaS.pdf',
+    official: true
+  },
+  {
+    id: 'official-oncallcx-ucaas-api-overview',
+    replacementSlot: 'oncallcx-ucaas-api-overview',
+    product: 'oncallcx',
+    type: 'api',
+    title: 'OnCallCX UCaaS - API Overview',
+    description: 'Tài liệu tổng quan Document API OnCallCX UCaaS v1.0 (FPT Telecom - Software Solution Technology).',
+    fileName: 'API_OnCallCX_UCaaS_v2.pdf',
+    mimeType: 'application/pdf',
+    size: 1201687,
+    createdAt: '2026-07-02T00:00:01.000Z',
+    url: 'assets/api/oncallcx-ucaas/API_OnCallCX_UCaaS_v2.pdf',
+    official: true
+  },
+  {
+    id: 'official-oncallcx-ucaas-api-cti',
+    replacementSlot: 'oncallcx-ucaas-api-cti',
+    product: 'oncallcx',
+    type: 'api',
+    title: 'OnCallCX UCaaS - CTI API',
+    description: 'Tài liệu CTI API OnCallCX UCaaS: makeCall, event response (EstablishedEvent, TransferredEvent...) qua anCTI SDK.',
+    fileName: 'CTI_API_OncallCX_UCaaS.pdf',
+    mimeType: 'application/pdf',
+    size: 3192553,
+    createdAt: '2026-07-02T00:00:02.000Z',
+    url: 'assets/api/oncallcx-ucaas/CTI_API_OncallCX_UCaaS.pdf',
+    official: true
+  },
+  {
+    id: 'official-oncallcx-ucaas-api-webhook',
+    replacementSlot: 'oncallcx-ucaas-api-webhook',
+    product: 'oncallcx',
+    type: 'api',
+    title: 'OnCallCX UCaaS - Webhook Events',
+    description: 'Tài liệu cấu hình Webhook OnCallCX UCaaS và danh sách event: CDR, DTMF, Extension Status.',
+    fileName: 'Webhook_OncallCX_UCaaS.pdf',
+    mimeType: 'application/pdf',
+    size: 448327,
+    createdAt: '2026-07-02T00:00:03.000Z',
+    url: 'assets/api/oncallcx-ucaas/Webhook_OncallCX_UCaaS.pdf',
+    official: true
   }
 ];
 
@@ -355,17 +411,26 @@ export function renderAssetManager(data = null, description = ''){
         <button class="btn btn-soft" id="assetRefresh">Refresh</button>
       </div>
 
-      <div id="assetList" class="asset-list"></div>
-
-      <div class="asset-preview">
-        <div class="asset-preview-head">
-          <strong id="assetPreviewTitle">Preview</strong>
-          <small>Chọn một asset để xem trước</small>
-        </div>
-        <div id="assetPreviewBody" class="asset-preview-body"></div>
-      </div>
+      <div id="assetList" class="asset-grid"></div>
     </main>
-  </section>`;
+  </section>
+
+  <div class="asset-modal" id="assetPreviewModal" hidden>
+    <div class="asset-modal-backdrop" data-modal-close></div>
+    <div class="asset-modal-panel">
+      <div class="asset-preview-head">
+        <strong id="assetPreviewTitle">Preview</strong>
+        <button class="btn btn-soft" data-modal-close>✕ Đóng</button>
+      </div>
+      <div id="assetPreviewBody" class="asset-preview-body"></div>
+    </div>
+  </div>`;
+}
+
+function assetThumb(a){
+  if(a.thumbnail) return `<img class="asset-card-thumb-img" src="${a.thumbnail}" alt="${esc(a.title)}" loading="lazy">`;
+  if(a.mimeType?.startsWith('image/') && a.url) return `<img class="asset-card-thumb-img" src="${esc(a.url)}" alt="${esc(a.title)}" loading="lazy">`;
+  return `<span class="asset-card-thumb-icon">${assetIcon(a.type)}</span>`;
 }
 
 export async function renderAssetList(){
@@ -382,18 +447,23 @@ export async function renderAssetList(){
     .filter(a => productFilter === 'all' || a.product === productFilter)
     .filter(a => !q || [a.title,a.description,a.fileName,a.product,assetTypeLabel(a.type)].join(' ').toLowerCase().includes(q));
 
-  root.innerHTML = assets.length ? assets.map(a => `<article class="asset-item">
-    <div class="asset-icon">${assetIcon(a.type)}</div>
-    <div class="asset-info">
-      <b>${esc(a.title)}</b>
-      <span>${esc(assetTypeLabel(a.type))} · ${esc(a.fileName)} · ${formatBytes(a.size)}${a.official ? ' · Mặc định' : ''}</span>
-      <small>Product: <code>${esc(a.product || 'oncallcx')}</code> · ${new Date(a.createdAt).toLocaleString('vi-VN')}</small>
-      ${a.description ? `<em>${esc(a.description)}</em>` : ''}
+  root.innerHTML = assets.length ? assets.map(a => `<article class="asset-card">
+    <div class="asset-card-open" data-asset-view="${a.id}">
+      <div class="asset-card-thumb">
+        ${assetThumb(a)}
+        <span class="asset-card-type">${esc(assetTypeLabel(a.type))}</span>
+        ${a.official ? '<span class="asset-card-official">Mặc định</span>' : ''}
+      </div>
+      <div class="asset-card-body">
+        <b title="${esc(a.title)}">${esc(a.title)}</b>
+        <small>${esc(a.fileName)} · ${formatBytes(a.size)}</small>
+        <small>Product: <code>${esc(a.product || 'oncallcx')}</code></small>
+      </div>
     </div>
-    <div class="asset-actions">
+    <div class="asset-card-actions">
       <button class="btn btn-soft" data-asset-view="${a.id}">Xem</button>
       <button class="btn btn-soft" data-asset-download="${a.id}">Tải</button>
-      ${a.official ? `<button class="btn btn-soft" data-asset-replace="${a.id}">Thay thế</button><span class="auth-badge">Mặc định</span>` : `<button class="btn btn-danger" data-asset-delete="${a.id}">Xóa</button>`}
+      ${a.official ? `<button class="btn btn-soft" data-asset-replace="${a.id}">Thay thế</button>` : `<button class="btn btn-danger" data-asset-delete="${a.id}">Xóa</button>`}
     </div>
   </article>`).join('') : `<div class="cms-empty-state">Chưa có asset nào.</div>`;
 
@@ -420,6 +490,16 @@ function previewMarkup(record,u){
   return `<div class="asset-code-note">Không có preview. Vui lòng tải file.</div>`;
 }
 
+function openAssetModal(){
+  const modal = $('#assetPreviewModal');
+  if(modal) modal.hidden = false;
+}
+
+function closeAssetModal(){
+  const modal = $('#assetPreviewModal');
+  if(modal) modal.hidden = true;
+}
+
 function bindAssetActions(){
   $$('[data-asset-view]').forEach(btn => btn.onclick = async () => {
     const rec = await assetGet(btn.dataset.assetView);
@@ -427,8 +507,10 @@ function bindAssetActions(){
     const u = assetObjectUrl(rec);
     $('#assetPreviewTitle').textContent = `${rec.title} — ${rec.fileName}`;
     $('#assetPreviewBody').innerHTML = previewMarkup(rec, u);
-    $('.asset-preview')?.scrollIntoView({behavior:'smooth',block:'start'});
+    openAssetModal();
   });
+
+  $$('[data-modal-close]').forEach(el => el.onclick = closeAssetModal);
 
   $$('[data-asset-download]').forEach(btn => btn.onclick = async () => {
     const rec = await assetGet(btn.dataset.assetDownload);
@@ -472,6 +554,7 @@ function bindAssetActions(){
       notice.innerHTML = `<b>Đang thay thế:</b> ${esc(rec.title || rec.fileName)}<small>Upload file mới, bản mới sẽ ưu tiên hiển thị. Xóa bản upload mới thì file Official sẽ tự hiện lại.</small>`;
     }
 
+    closeAssetModal();
     $('.asset-upload-card')?.scrollIntoView({behavior:'smooth',block:'start'});
     toast('Đã chọn tài liệu cần thay thế. Vui lòng chọn file mới và upload.');
   });
@@ -536,6 +619,14 @@ export function bindAssetManager(data = null){
   $('#assetFilter')?.addEventListener('change', renderAssetList);
   $('#assetProductFilter')?.addEventListener('change', renderAssetList);
   $('#assetRefresh')?.addEventListener('click', renderAssetList);
+
+  if(!window.__ftiAssetModalEscBound){
+    window.__ftiAssetModalEscBound = true;
+    document.addEventListener('keydown', e => {
+      if(e.key === 'Escape') closeAssetModal();
+    });
+  }
+
   renderAssetList();
 }
 
