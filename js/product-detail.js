@@ -98,7 +98,7 @@ function knowledgeBlocks(product){
 }
 
 function renderDetail(product, data){
-  const root = document.querySelector('#pageRoot');
+  const root = document.querySelector('#productDetailRoot');
   if(!root || !product) return;
 
   const title = document.querySelector('#pageTitle');
@@ -231,23 +231,26 @@ async function renderProductAssets(product){
   }
 }
 
-export async function openProductDetail(){
+export function productDetailSkeleton(){
+  return `<div id="productDetailRoot" class="cms-empty-state">Đang tải thông tin sản phẩm...</div>`;
+}
+
+export async function fillProductDetail(){
   const id = parseDetailRoute();
   if(!id) return;
+  const root = document.querySelector('#productDetailRoot');
+  if(!root) return;
   try{
     const data = await loadCms();
     const product = getProduct(data, id);
+    if(!product){
+      root.innerHTML = `<div class="cms-empty-state">Không tìm thấy sản phẩm.</div>`;
+      return;
+    }
     renderDetail(product, data);
     renderProductAssets(product);
   }catch(err){
     console.error('Cannot render product detail', err);
+    root.innerHTML = `<div class="cms-empty-state">Không tải được thông tin sản phẩm.</div>`;
   }
 }
-
-window.addEventListener('hashchange', () => {
-  if((location.hash || '').startsWith('#product-detail')) setTimeout(openProductDetail, 50);
-});
-
-window.addEventListener('DOMContentLoaded', () => {
-  if((location.hash || '').startsWith('#product-detail')) setTimeout(openProductDetail, 120);
-});

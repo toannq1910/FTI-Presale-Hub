@@ -3,6 +3,7 @@ import{stats,solutions,vendorGroups,compareRows,complianceCards,resources,partne
 import{getProductAssets,assetObjectUrl,formatBytes,assetPut,generatePresentationPages,assetGet}from'./cms/cms-assets.js?v=20260701-4';
 import{CMS_KEY}from'./cms/cms-core.js';
 import{ocxGetCurrentDoc,ocxGetDocUrl}from'./oncallcx-doc-manager.js';
+import{productDetailSkeleton,fillProductDetail}from'./product-detail.js?v=20260701-4';
 
 function isVideoConferenceHash(hash=location.hash){
   const h=String(hash||'').replace('#','');
@@ -26,6 +27,7 @@ function resolvePageFromHash(){
   if(h==='editor'||h.startsWith('editor:'))return 'cms';
   if(h==='vendor-editor'||h.startsWith('vendor-editor:'))return 'cms';
   if(h.startsWith('api-folder:'))return 'api-reference';
+  if(h.startsWith('product-detail'))return 'product-detail';
   if(h==='oncallcx-product-center-ccaas'||h==='oncallcx-product-center-ucaas')return 'oncallcx-product-center';
   if(h.startsWith('oncallcx-product-center:'))return 'oncallcx-product-center';
   if(isVideoConferenceHash(h))return h;
@@ -40,6 +42,7 @@ const state={page:resolvePageFromHash(),demoStep:0};
 
 const titles={
   overview:['Tổng quan','Customer-facing Collaboration Portal'],
+  'product-detail':['Product Detail','Chi tiết sản phẩm'],
   oncallcx:['OnCallCX','Trang sản phẩm OnCallCX'],
   'presentation-oncallcx':['OncallCX Presentation','Trình chiếu tài liệu OncallCX'],
   'oncallcx-product-center':['OnCallCX Product Center','Overview · Presentation · Demo · Datasheet'],
@@ -1378,6 +1381,7 @@ function bindOnCallCXProductCenter(){
 
 function renderPage(p){
   if(p==='overview')return renderOverview();
+  if(p==='product-detail')return productDetailSkeleton();
   if(p==='demo')return renderDemo();
   if(p==='compare')return renderCompare();
   if(p==='compliance')return renderCompliance();
@@ -1413,6 +1417,7 @@ function navigate(p){
   }
   $('#pageRoot').innerHTML=renderPage(p);
   bindPage();
+  if(p==='product-detail')fillProductDetail();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function openPublicRoute(route=''){
@@ -1499,6 +1504,6 @@ window.addEventListener('hashchange',()=>{
     $$('.nav-item').forEach(a=>a.classList.toggle('active',(a.getAttribute('href')||'')===location.hash));
     return;
   }
-  if(p!==state.page||p==='presentation-oncallcx'||p==='oncallcx-product-center'||p==='oncallcx-presale')navigate(p);
+  if(p!==state.page||p==='presentation-oncallcx'||p==='oncallcx-product-center'||p==='oncallcx-presale'||p==='product-detail')navigate(p);
 });
 initAuth();bindGlobal();navigate(state.page);
