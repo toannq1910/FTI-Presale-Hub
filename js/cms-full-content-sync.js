@@ -31,8 +31,7 @@ const ARTICLE_SEEDS = [
     cards: [
       {title:'Contact Center', summary:'Khu vực quản lý OnCallCX, CCaaS Việt Nam, CCaaS Global, API Reference và UC/PBX.', url:'#oncallcx'},
       {title:'Video Conference', summary:'Catalog thiết bị hội nghị theo thương hiệu và loại phòng họp.', url:'#video-conferencing'},
-      {title:'Enterprise CMS', summary:'Trung tâm quản trị nội dung, sản phẩm, API, document, knowledge và publish workflow.', url:'#enterprise-cms'},
-      {title:'Global Search', summary:'Tìm kiếm xuyên suốt Product, Article, API, Document, Knowledge và Video Conference.', url:'#global-search'}
+      {title:'Enterprise CMS', summary:'Trung tâm quản trị nội dung, sản phẩm, API, document, knowledge và publish workflow.', url:'#enterprise-cms'}
     ]
   },
   {
@@ -48,8 +47,7 @@ const ARTICLE_SEEDS = [
     productRefs: ['oncallcx'],
     cards: [
       {title:'Product Center', summary:'Thông tin tổng quan, presentation, datasheet, demo và tài liệu sản phẩm.', url:'#product-detail:oncallcx'},
-      {title:'API Reference', summary:'CDR API, Outbound Call API, Webhook Incoming và Recording API.', url:'#api-center'},
-      {title:'Document Center', summary:'Presentation, datasheet, demo script, SOW template và checklist.', url:'#document-center'}
+      {title:'API Reference', summary:'CDR API, Outbound Call API, Webhook Incoming và Recording API.', url:'#api-center'}
     ]
   },
   {
@@ -65,8 +63,7 @@ const ARTICLE_SEEDS = [
     cards: [
       {title:'OnCallCX Full CC', summary:'Contact Center made by FPT, hỗ trợ CRM integration, ticket, campaign, dashboard và API.', url:'#product-detail:oncallcx'},
       {title:'VNPT Contact Center', summary:'Giải pháp tổng đài hosted từ VNPT, phù hợp khách hàng cần tích hợp SIP trunk và đầu số.', url:'#ccaas-vn'},
-      {title:'Mitek Contact Center', summary:'Giải pháp Contact Center cho enterprise, tài chính, ngân hàng và bảo hiểm.', url:'#ccaas-vn'},
-      {title:'CCaaS Presales Playbook', summary:'Checklist tư vấn CCaaS Việt Nam.', url:'#document-center'}
+      {title:'Mitek Contact Center', summary:'Giải pháp Contact Center cho enterprise, tài chính, ngân hàng và bảo hiểm.', url:'#ccaas-vn'}
     ]
   },
   {
@@ -167,8 +164,7 @@ const ARTICLE_SEEDS = [
     cards: [
       {title:'Data Protection', summary:'Kiểm soát dữ liệu cá nhân, mục đích xử lý, lưu trữ và quyền truy cập.', url:'#compliance'},
       {title:'Recording Policy', summary:'Thông báo ghi âm, lưu trữ an toàn và khả năng tra soát.', url:'#compliance'},
-      {title:'API Security', summary:'Token, signature, rate limit, audit log và quyền truy cập API.', url:'#api-center'},
-      {title:'Compliance Checklist', summary:'Checklist tuân thủ cho dự án Contact Center.', url:'#document-center'}
+      {title:'API Security', summary:'Token, signature, rate limit, audit log và quyền truy cập API.', url:'#api-center'}
     ]
   },
   {
@@ -202,7 +198,6 @@ const ARTICLE_SEEDS = [
     cards: [
       {title:'AI Features', summary:'IntelliFocus, Auto-Framing, Speaker Tracking và People Counting.', url:'#vc-yealink'},
       {title:'Room Bundle', summary:'A40 + CTP25 + WPP30 + wireless mic cho Huddle/Small/Medium room.', url:'#vc-yealink'},
-      {title:'Documents', summary:'Datasheet, quick start, manual và presales checklist.', url:'#document-center'},
       {title:'Official Website', summary:'Trang sản phẩm chính thức Yealink.', url:'https://www.yealink.com/'}
     ]
   },
@@ -364,74 +359,6 @@ const ARTICLE_SEEDS = [
       {title:'CMS API Data', summary:'Đọc product.apiLinks từ CMS data.', url:'#cms'}
     ]
   },
-  {
-    id: 'article-document-center',
-    title: 'Document Center',
-    sidebarId: 'document-center',
-    route: '#document-center',
-    type: 'cms-module',
-    status: 'active',
-    module: 'Enterprise CMS',
-    summary: 'Enterprise Document Center quản lý tài liệu theo Product, Type, Category, Sidebar, Version, Owner, Tags và Status.',
-    tags: ['document','asset','metadata','download'],
-    cards: [
-      {title:'Metadata', summary:'Product, Type, Category, Sidebar, Version, Owner, Tags và Status.', url:'#document-center'},
-      {title:'Search / Filter', summary:'Tìm tài liệu theo title, product, tag, owner, type và status.', url:'#document-center'},
-      {title:'IndexedDB Assets', summary:'Đọc asset từ Asset Manager nếu có.', url:'#document-center'},
-      {title:'Document Taxonomy', summary:'Một tài liệu upload một lần có thể xuất hiện ở nhiều khu vực.', url:'#document-center'}
-    ]
-  },
-  {
-    id: 'article-global-search',
-    title: 'Global Search',
-    sidebarId: 'global-search',
-    route: '#global-search',
-    type: 'cms-module',
-    status: 'active',
-    module: 'Enterprise CMS',
-    summary: 'Global Search Engine tìm kiếm xuyên suốt Product, Article, API, Integration, Knowledge, Compliance và Document.',
-    tags: ['search','index','global-search'],
-    cards: [
-      {title:'Indexed Items', summary:'Product, Article, API, Integration và Knowledge được gom vào search index.', url:'#global-search'},
-      {title:'Type Filter', summary:'Lọc theo content type như Product, API, Article, Knowledge.', url:'#global-search'},
-      {title:'Related Routes', summary:'Kết quả search dẫn về product detail hoặc module liên quan.', url:'#global-search'},
-      {title:'Future Semantic Search', summary:'Nền tảng chuẩn bị cho semantic search/RAG.', url:'#global-search'}
-    ]
-  },
-  {
-    id: 'article-relationship-graph',
-    title: 'Product Relationship Graph',
-    sidebarId: 'relationship-graph',
-    route: '#relationship-graph',
-    type: 'cms-module',
-    status: 'active',
-    module: 'Enterprise CMS',
-    summary: 'Relationship Graph hiển thị quan hệ giữa Product, Integration, API, Competitor, Knowledge Sections và Related Documents.',
-    tags: ['relationship','graph','product','integration'],
-    cards: [
-      {title:'Product Node', summary:'Mỗi product là một node trung tâm.', url:'#relationship-graph'},
-      {title:'API Relationship', summary:'Liên kết product với API endpoint.', url:'#relationship-graph'},
-      {title:'Integration Relationship', summary:'Liên kết product với CRM/ERP/PBX/SBC/AI.', url:'#relationship-graph'},
-      {title:'Competitor Relationship', summary:'Lưu battle card, đối thủ và điểm khác biệt.', url:'#relationship-graph'}
-    ]
-  },
-  {
-    id: 'article-knowledge-base',
-    title: 'Enterprise Knowledge Base',
-    sidebarId: 'knowledge-base',
-    route: '#knowledge-base',
-    type: 'cms-module',
-    status: 'active',
-    module: 'Enterprise CMS',
-    summary: 'Knowledge Base gom tri thức Presales từ Products, Articles, Integrations, API và Compliance để hỗ trợ tư vấn và triển khai.',
-    tags: ['knowledge','kb','presales','best-practice'],
-    cards: [
-      {title:'Product Knowledge', summary:'Knowledge Sections được lấy từ product data.', url:'#knowledge-base'},
-      {title:'Article Knowledge', summary:'Bài viết và summary được gom vào Knowledge Base.', url:'#knowledge-base'},
-      {title:'Integration Knowledge', summary:'Tổng hợp CRM/ERP/SIP/API integration notes.', url:'#knowledge-base'},
-      {title:'Best Practices', summary:'Nền tảng cho tài liệu hướng dẫn và AI Assistant.', url:'#knowledge-base'}
-    ]
-  }
 ];
 
 const VIDEO_PRODUCTS = [
@@ -601,8 +528,7 @@ async function runSync(force = false) {
   data.cmsModules = mergeById(Array.isArray(data.cmsModules) ? data.cmsModules : [], [
     {id:'module-video-conference', title:'Video Conference CMS', route:'#video-conferencing', status:'active', collection:'articles/products', description:'Brand, product, room, feature, battle card and CMS relationship data.'},
     {id:'module-enterprise-cms', title:'Enterprise CMS', route:'#enterprise-cms', status:'active', collection:'articles/products/assets', description:'Enterprise knowledge platform CMS modules.'},
-    {id:'module-api-center', title:'API Center', route:'#api-center', status:'active', collection:'products.apiLinks', description:'Structured API catalog.'},
-    {id:'module-document-center', title:'Document Center', route:'#document-center', status:'active', collection:'documents/assets', description:'Document metadata and asset relationship.'}
+    {id:'module-api-center', title:'API Center', route:'#api-center', status:'active', collection:'products.apiLinks', description:'Structured API catalog.'}
   ]);
 
   data.navigationCoverage = {
@@ -612,7 +538,7 @@ async function runSync(force = false) {
       '#video-conferencing','#vc-yealink','#vc-logitech','#vc-poly','#vc-cisco','#vc-jabra','#vc-crestron','#vc-huddle-room','#vc-medium-large-room'
     ],
     enterpriseRoutes: [
-      '#enterprise-cms','#api-center','#document-center','#global-search','#relationship-graph','#knowledge-base'
+      '#enterprise-cms','#api-center'
     ]
   };
 
