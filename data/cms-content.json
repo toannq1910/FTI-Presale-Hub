@@ -671,7 +671,7 @@
         {
           "title": "OnCallCX",
           "summary": "Contact Center as a Service made by FPT, hỗ trợ Omnichannel, Recording, Dashboard, API và tích hợp AI.",
-          "url": "#product-detail:oncallcx"
+          "url": "https://oncallcx.vn"
         }
       ]
     },
@@ -687,12 +687,12 @@
         {
           "title": "Webex Contact Center",
           "summary": "CCaaS thuộc hệ sinh thái Cisco/Webex.",
-          "url": "#product-detail:webex-contact-center"
+          "url": "https://www.webex.com/contact-center.html"
         },
         {
           "title": "Zoom Contact Center",
           "summary": "Cloud contact center phù hợp khách hàng dùng Zoom.",
-          "url": "#product-detail:zoom-contact-center"
+          "url": "https://www.zoom.com/en/products/contact-center/"
         },
         {
           "title": "Genesys Cloud CX",
@@ -718,17 +718,17 @@
         {
           "title": "CDR API",
           "summary": "Truy vấn lịch sử cuộc gọi, trạng thái, thời lượng và metadata.",
-          "url": "#product-detail:oncallcx"
+          "url": "https://oncallcx.vn"
         },
         {
           "title": "Webhook Incoming",
           "summary": "Nhận sự kiện cuộc gọi realtime để tích hợp CRM/ERP.",
-          "url": "#product-detail:oncallcx"
+          "url": "https://oncallcx.vn"
         },
         {
           "title": "Recording API",
           "summary": "Truy xuất thông tin ghi âm phục vụ QA/QC và tra soát.",
-          "url": "#product-detail:oncallcx"
+          "url": "https://oncallcx.vn"
         }
       ]
     },
@@ -744,7 +744,7 @@
         {
           "title": "OnCallCX Demo Flow",
           "summary": "Login portal, tạo extension, assign phone, register extension và thực hiện cuộc gọi.",
-          "url": "#product-detail:oncallcx"
+          "url": "https://oncallcx.vn"
         }
       ]
     },
@@ -760,12 +760,12 @@
         {
           "title": "Data Storage",
           "summary": "Chính sách lưu trữ dữ liệu, recording và thời gian giữ dữ liệu theo yêu cầu khách hàng.",
-          "url": "#product-detail:oncallcx"
+          "url": "https://oncallcx.vn"
         },
         {
           "title": "Security",
           "summary": "Vai trò truy cập, phân quyền, audit và các yêu cầu bảo mật.",
-          "url": "#product-detail:oncallcx"
+          "url": "https://oncallcx.vn"
         }
       ]
     }

@@ -100,7 +100,6 @@ export function renderKnowledgeGraphManager(data, description = ''){
     </div>
     <div class="kg-actions">
       <button class="btn btn-primary" id="kgSave">Lưu Knowledge Graph</button>
-      <a class="btn btn-soft" href="#product-detail:${esc(product.id)}">Xem trang chi tiết</a>
     </div>
   </section>
 

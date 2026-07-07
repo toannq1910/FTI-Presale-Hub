@@ -46,7 +46,7 @@ const ARTICLE_SEEDS = [
     tags: ['oncallcx','ccaas','contact-center','fpt'],
     productRefs: ['oncallcx'],
     cards: [
-      {title:'Product Center', summary:'Thông tin tổng quan, presentation, datasheet, demo và tài liệu sản phẩm.', url:'#product-detail:oncallcx'},
+      {title:'Product Center', summary:'Thông tin tổng quan, presentation, datasheet, demo và tài liệu sản phẩm.', url:'https://oncallcx.vn'},
       {title:'API Reference', summary:'CDR API, Outbound Call API, Webhook Incoming và Recording API.', url:'#api-center'}
     ]
   },
@@ -61,7 +61,7 @@ const ARTICLE_SEEDS = [
     summary: 'Danh mục giải pháp Contact Center tại Việt Nam, đối tác CCaaS, use case, API, demo và checklist tư vấn khách hàng.',
     tags: ['ccaas','vietnam','partner','contact-center'],
     cards: [
-      {title:'OnCallCX Full CC', summary:'Contact Center made by FPT, hỗ trợ CRM integration, ticket, campaign, dashboard và API.', url:'#product-detail:oncallcx'},
+      {title:'OnCallCX Full CC', summary:'Contact Center made by FPT, hỗ trợ CRM integration, ticket, campaign, dashboard và API.', url:'https://oncallcx.vn'},
       {title:'VNPT Contact Center', summary:'Giải pháp tổng đài hosted từ VNPT, phù hợp khách hàng cần tích hợp SIP trunk và đầu số.', url:'#ccaas-vn'},
       {title:'Mitek Contact Center', summary:'Giải pháp Contact Center cho enterprise, tài chính, ngân hàng và bảo hiểm.', url:'#ccaas-vn'}
     ]
@@ -79,8 +79,8 @@ const ARTICLE_SEEDS = [
     cards: [
       {title:'Genesys Cloud CX', summary:'Nền tảng cloud CX enterprise toàn cầu.', url:'https://developer.genesys.cloud/'},
       {title:'NICE CXone', summary:'CCaaS enterprise mạnh về AI, WFM và analytics.', url:'https://developer.niceincontact.com/'},
-      {title:'Webex Contact Center', summary:'Cloud contact center thuộc hệ sinh thái Cisco/Webex.', url:'#product-detail:webex-contact-center'},
-      {title:'Zoom Contact Center', summary:'Cloud contact center phù hợp khách hàng đang dùng Zoom.', url:'#product-detail:zoom-contact-center'}
+      {title:'Webex Contact Center', summary:'Cloud contact center thuộc hệ sinh thái Cisco/Webex.', url:'https://www.webex.com/contact-center.html'},
+      {title:'Zoom Contact Center', summary:'Cloud contact center phù hợp khách hàng đang dùng Zoom.', url:'https://www.zoom.com/en/products/contact-center/'}
     ]
   },
   {

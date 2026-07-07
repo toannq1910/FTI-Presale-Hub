@@ -226,7 +226,7 @@ function routeState(value){
   const route = String(value || '').trim();
   if(!route) return {className:'empty', label:'Chưa có route'};
   if(/^https?:\/\//i.test(route) || route.startsWith('mailto:') || route.startsWith('tel:')) return {className:'valid', label:'External'};
-  if(VALID_ROUTE_SET.has(route) || route.startsWith('#product-detail:') || route.startsWith('#presentation-oncallcx:')) return {className:'valid', label:'Route hợp lệ'};
+  if(VALID_ROUTE_SET.has(route) || route.startsWith('#presentation-oncallcx:')) return {className:'valid', label:'Route hợp lệ'};
   return {className:'invalid', label:'Cần kiểm tra'};
 }
 
