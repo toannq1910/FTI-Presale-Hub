@@ -7,7 +7,7 @@ import { renderAssetManager, bindAssetManager } from './cms-assets.js?v=20260701
 import { renderProductManager, bindProductManager } from './cms-products.js';
 import { renderKnowledgeGraphManager, bindKnowledgeGraphManager } from './cms-graph.js';
 import { renderCmsArticles, bindCmsArticles } from './cms-articles.js';
-import { renderOperationalGuide } from './cms-ops.js';
+import { renderOperationalGuide, bindOperationalGuide } from './cms-ops.js';
 
 let currentCms = null;
 
@@ -92,6 +92,7 @@ function bindActiveCmsPanel(activeTab){
   if(activeTab === 'graph') bindKnowledgeGraphManager(currentCms, renderCms);
   if(activeTab === 'assets') bindAssetManager(currentCms);
   if(activeTab === 'backup') bindBackupPanel(currentCms, renderCms);
+  if(activeTab === 'ops') bindOperationalGuide(currentCms, renderCms);
 }
 
 export async function openCms(){
