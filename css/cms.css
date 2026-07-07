@@ -757,6 +757,50 @@
   padding:12px;
   color:#cbd5e1;
 }
+
+/* v11.0 Sidebar Icon Manager */
+.sidebar-icon-groups{display:flex;flex-direction:column;gap:16px}
+.sidebar-icon-section{
+  background:var(--card,#111c31);
+  border:1px solid var(--line,#263754);
+  border-radius:20px;
+  padding:18px;
+}
+.sidebar-icon-section h4{margin:0 0 12px;color:#93c5fd;font-size:13px;text-transform:uppercase;letter-spacing:.04em}
+.sidebar-icon-rows{display:flex;flex-direction:column;gap:8px}
+.sidebar-icon-row{
+  display:flex;align-items:center;gap:14px;
+  background:rgba(255,255,255,.03);
+  border:1px solid var(--line,#263754);
+  border-radius:14px;
+  padding:10px 14px;
+}
+.sidebar-icon-preview{
+  width:40px;height:40px;flex:0 0 40px;
+  display:grid;place-items:center;
+  font-size:20px;
+  background:rgba(34,197,94,.12);
+  border-radius:12px;
+}
+.sidebar-icon-meta{display:flex;flex-direction:column;flex:1;min-width:0}
+.sidebar-icon-meta b{font-size:14px}
+.sidebar-icon-meta small{color:#8296b8;font-size:11px}
+.sidebar-icon-input{
+  width:84px;flex:0 0 84px;
+  background:rgba(0,0,0,.2);
+  border:1px solid var(--line,#263754);
+  border-radius:10px;
+  color:#fff;
+  padding:8px 10px;
+  font-size:16px;
+  text-align:center;
+}
+.sidebar-icon-input:focus{outline:2px solid rgba(34,197,94,.5);outline-offset:1px}
+@media(max-width:700px){
+  .sidebar-icon-row{flex-wrap:wrap}
+  .sidebar-icon-input{margin-left:54px}
+}
+
 .article-layout{
   display:grid;
   grid-template-columns:320px minmax(0,1fr);

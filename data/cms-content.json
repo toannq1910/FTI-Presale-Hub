@@ -769,5 +769,37 @@
         }
       ]
     }
-  ]
+  ],
+  "sidebarIcons": {
+    "overview": "🏠",
+    "group-contact-center": "🎧",
+    "oncallcx": "📞",
+    "ccaas-vn": "🇻🇳",
+    "ccaas-global": "☁️",
+    "api-reference": "📗",
+    "ucpbx-vn": "🏁",
+    "group-video": "🎥",
+    "video-conferencing": "📹",
+    "vc-yealink": "🖥️",
+    "vc-logitech": "📷",
+    "vc-poly": "🎙️",
+    "vc-cisco": "🗄️",
+    "vc-jabra": "🎧",
+    "vc-crestron": "🎛️",
+    "vc-huddle-room": "👥",
+    "vc-medium-large-room": "🏢",
+    "group-integration": "🔌",
+    "integration": "🔁",
+    "crm": "🧩",
+    "compliance": "🛡️",
+    "group-demo": "🚀",
+    "demo": "▶️",
+    "compare": "📊",
+    "resources": "📚",
+    "cms": "🧩",
+    "group-system": "🔐",
+    "users": "👤",
+    "permissions": "🛡️",
+    "audit-log": "📜"
+  }
 }

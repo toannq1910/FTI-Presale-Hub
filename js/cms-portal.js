@@ -1,5 +1,7 @@
 /* v9.4.0 Unified CMS entry */
 import { openCms, ensureCmsMenu } from './cms/cms-app.js?v=20260701-4';
+import { loadCms } from './cms/cms-core.js';
+import { applySidebarIcons } from './cms/cms-sidebar-icons.js';
 
 function hasCmsSession(){
   try{return !!JSON.parse(localStorage.getItem('fti_auth_session')||'null')}catch{return false}
@@ -15,5 +17,6 @@ window.addEventListener('hashchange', () => {
 
 window.addEventListener('DOMContentLoaded', () => {
   ensureCmsMenu();
+  loadCms().then(data => applySidebarIcons(data.sidebarIcons)).catch(() => {});
   if (location.hash === '#cms') setTimeout(openCmsIfAllowed, 80);
 });

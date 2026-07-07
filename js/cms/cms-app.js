@@ -8,16 +8,18 @@ import { renderProductManager, bindProductManager } from './cms-products.js';
 import { renderKnowledgeGraphManager, bindKnowledgeGraphManager } from './cms-graph.js';
 import { renderCmsArticles, bindCmsArticles } from './cms-articles.js';
 import { renderOperationalGuide, bindOperationalGuide } from './cms-ops.js';
+import { renderSidebarIconManager, bindSidebarIconManager } from './cms-sidebar-icons.js';
 
 let currentCms = null;
 
-const CMS_TABS = new Set(['preview','articles','products','graph','assets','ops','backup']);
+const CMS_TABS = new Set(['preview','articles','products','graph','assets','icons','ops','backup']);
 const MODULE_DESCRIPTIONS = {
   preview: 'Xem nhanh dữ liệu hiện có trong CMS để kiểm tra tổng quan trước khi chỉnh sửa. Module này không tạo, sửa hoặc xóa nội dung.',
   articles: 'Nơi quản lý tất cả bài viết và card hiển thị ngoài portal. Khi tạo bài viết mới, dùng Route hoặc URL card để quyết định nội dung sẽ mở ở trang nào.',
   products: 'Quản lý hồ sơ sản phẩm/đối thủ dạng có cấu trúc (Vendor, Category, Score, Highlights, Use case). Đây KHÔNG phải danh sách toàn bộ bài viết — bài viết và card ngoài portal được quản lý riêng ở tab CMS Articles.',
   graph: 'Quản lý các dữ liệu kỹ thuật gắn với sản phẩm như API link, integration note, competitor và knowledge section.',
   assets: 'Upload và gắn file theo sản phẩm: Presentation, User Guide, Datasheet, Demo Video, Image, API Spec (PDF/JSON/YAML), Case Study. Presentation và tài liệu hướng dẫn sử dụng đều upload tại đây.',
+  icons: 'Đổi icon (emoji) hiển thị cho từng mục và từng nhóm trong menu bên trái (sidebar).',
   ops: 'Hướng dẫn vận hành CMS dành cho admin/presales — nên vào module nào để sửa nội dung gì.',
   backup: 'Xuất hoặc nhập lại file JSON CMS để sao lưu dữ liệu và chuyển dữ liệu giữa các máy/trình duyệt.'
 };
@@ -54,6 +56,7 @@ export function renderCms(data, activeTab = 'preview'){
     <button class="${activeTab === 'products' ? 'active' : ''}" data-cms-tab="products">Product Data</button>
     <button class="${activeTab === 'graph' ? 'active' : ''}" data-cms-tab="graph">API / Knowledge</button>
     <button class="${activeTab === 'assets' ? 'active' : ''}" data-cms-tab="assets">Asset Manager</button>
+    <button class="${activeTab === 'icons' ? 'active' : ''}" data-cms-tab="icons">Sidebar Icons</button>
     <button class="${activeTab === 'ops' ? 'active' : ''}" data-cms-tab="ops">Operational Guide</button>
     <button class="${activeTab === 'backup' ? 'active' : ''}" data-cms-tab="backup">Backup / Restore</button>
   </section>
@@ -63,6 +66,7 @@ export function renderCms(data, activeTab = 'preview'){
   <section class="cms-panel ${activeTab === 'products' ? 'active' : ''}" id="cms-products">${renderProductManager(data, moduleDescription('products'))}</section>
   <section class="cms-panel ${activeTab === 'graph' ? 'active' : ''}" id="cms-graph">${renderKnowledgeGraphManager(data, moduleDescription('graph'))}</section>
   <section class="cms-panel ${activeTab === 'assets' ? 'active' : ''}" id="cms-assets">${renderAssetManager(data, moduleDescription('assets'))}</section>
+  <section class="cms-panel ${activeTab === 'icons' ? 'active' : ''}" id="cms-icons">${renderSidebarIconManager(data, moduleDescription('icons'))}</section>
   <section class="cms-panel ${activeTab === 'ops' ? 'active' : ''}" id="cms-ops">${renderOperationalGuide(data)}</section>
   <section class="cms-panel ${activeTab === 'backup' ? 'active' : ''}" id="cms-backup">${renderBackupPanel(moduleDescription('backup'))}</section>`;
 
@@ -91,6 +95,7 @@ function bindActiveCmsPanel(activeTab){
   if(activeTab === 'articles') bindCmsArticles(currentCms, renderCms);
   if(activeTab === 'graph') bindKnowledgeGraphManager(currentCms, renderCms);
   if(activeTab === 'assets') bindAssetManager(currentCms);
+  if(activeTab === 'icons') bindSidebarIconManager(currentCms, renderCms);
   if(activeTab === 'backup') bindBackupPanel(currentCms, renderCms);
   if(activeTab === 'ops') bindOperationalGuide(currentCms, renderCms);
 }
