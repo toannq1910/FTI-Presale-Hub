@@ -781,24 +781,34 @@
   font-size:20px;
   background:rgba(34,197,94,.12);
   border-radius:12px;
+  overflow:hidden;
 }
+.sidebar-icon-preview img{width:100%;height:100%;object-fit:contain}
 .sidebar-icon-meta{display:flex;flex-direction:column;flex:1;min-width:0}
 .sidebar-icon-meta b{font-size:14px}
 .sidebar-icon-meta small{color:#8296b8;font-size:11px}
+.sidebar-icon-pending{
+  display:flex;align-items:center;gap:8px;margin-top:6px;
+  font-size:11px;color:#93c5fd;
+}
+.sidebar-icon-pending span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px}
+.sidebar-icon-controls{display:flex;align-items:center;gap:8px;flex:0 0 auto}
 .sidebar-icon-input{
-  width:84px;flex:0 0 84px;
+  width:120px;flex:0 0 120px;
   background:rgba(0,0,0,.2);
   border:1px solid var(--line,#263754);
   border-radius:10px;
   color:#fff;
   padding:8px 10px;
-  font-size:16px;
+  font-size:15px;
   text-align:center;
 }
 .sidebar-icon-input:focus{outline:2px solid rgba(34,197,94,.5);outline-offset:1px}
+.btn-xs{padding:8px 12px;font-size:12px;font-weight:700;white-space:nowrap}
+.sidebar-icon-upload-btn{display:inline-flex;align-items:center;cursor:pointer}
 @media(max-width:700px){
   .sidebar-icon-row{flex-wrap:wrap}
-  .sidebar-icon-input{margin-left:54px}
+  .sidebar-icon-controls{margin-left:54px;flex-wrap:wrap}
 }
 
 .article-layout{

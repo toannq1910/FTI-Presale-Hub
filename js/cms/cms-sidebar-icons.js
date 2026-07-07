@@ -1,4 +1,4 @@
-/* v1.0.0 Sidebar Icon Manager */
+/* v2.0.0 Sidebar Icon Manager — emoji hoặc ảnh upload (PNG/JPG/SVG) */
 import { $, $$, esc, toast, saveCms } from './cms-core.js';
 
 // Fallback icons — must mirror the hardcoded defaults originally baked into
@@ -35,6 +35,11 @@ export const DEFAULT_SIDEBAR_ICONS = {
   'permissions': '🛡️',
   'audit-log': '📜'
 };
+
+// Where uploaded icon files are expected to live once committed to the repo.
+export const SIDEBAR_ICON_ASSET_DIR = 'assets/icons/sidebar';
+const ACCEPTED_EXTENSIONS = ['png', 'jpg', 'jpeg', 'svg'];
+const FILE_ACCEPT = 'image/png,image/jpeg,image/svg+xml,.png,.jpg,.jpeg,.svg';
 
 // Grouped purely for a readable admin UI — doesn't affect rendering logic.
 const ICON_SECTIONS = [
@@ -80,8 +85,20 @@ const ICON_SECTIONS = [
   ]}
 ];
 
+// A value is treated as an "image icon" (path/URL) rather than emoji text if
+// it points at a file — either a real path under assets/icons, or any
+// http(s)/blob URL used for live preview before the file exists in the repo.
+export function isImageIconValue(value = ''){
+  return /\.(png|jpe?g|svg|webp|gif)$/i.test(value) || /^(https?:|blob:|data:image)/i.test(value);
+}
+
 export function currentSidebarIcons(data){
   return { ...DEFAULT_SIDEBAR_ICONS, ...(data.sidebarIcons || {}) };
+}
+
+function iconMarkup(value){
+  if(!value) return '❔';
+  return isImageIconValue(value) ? `<img src="${esc(value)}" alt="">` : esc(value);
 }
 
 // Writes icons straight into the live sidebar DOM. Nav items are matched via
@@ -95,8 +112,33 @@ export function applySidebarIcons(icons){
     const el = key.startsWith('group-')
       ? document.querySelector(`.sidebar-nav [data-icon-key="${key}"] > span`)
       : document.querySelector(`.sidebar-nav [data-page="${key}"] > span`);
-    if(el) el.textContent = icon;
+    if(!el) return;
+    if(isImageIconValue(icon)){
+      el.innerHTML = `<img src="${esc(icon)}" alt="" onerror="this.replaceWith(document.createTextNode('❔'))">`;
+    } else {
+      el.textContent = icon;
+    }
   });
+}
+
+// Files chosen this session, keyed by icon key, kept only in memory so the
+// "Tải file" button can hand the admin the exact bytes + suggested filename.
+// Never sent anywhere — nothing here is persisted except the resulting path
+// string once the admin clicks Lưu icon.
+const pendingUploads = new Map();
+
+function suggestedFileName(key, file){
+  const ext = (file.name.split('.').pop() || 'png').toLowerCase();
+  return `${key}.${ext}`;
+}
+
+function rowExtraMarkup(key){
+  const pending = pendingUploads.get(key);
+  if(!pending) return '';
+  return `<div class="sidebar-icon-pending" data-icon-pending="${esc(key)}">
+    <span>📁 ${esc(pending.fileName)}</span>
+    <a href="${pending.objectUrl}" download="${esc(pending.fileName)}" class="btn btn-soft btn-xs">Tải file</a>
+  </div>`;
 }
 
 export function renderSidebarIconManager(data, description = ''){
@@ -105,7 +147,7 @@ export function renderSidebarIconManager(data, description = ''){
   <div class="ops-hero" style="margin-bottom:16px">
     <div>
       <h3 style="margin:0 0 6px">Icon Sidebar</h3>
-      <p style="margin:0">Đổi emoji hiển thị cho từng mục menu bên trái. Xem trước ngay khi gõ, bấm <b>Lưu icon</b> để áp dụng vào sidebar và ghi vào dữ liệu CMS. Nhớ bấm <b>Export JSON</b> ở trên nếu muốn publish lên GitHub.</p>
+      <p style="margin:0">Đổi icon cho từng mục menu bên trái bằng <b>emoji</b> hoặc <b>upload ảnh</b> (PNG/JPG/SVG). Sau khi upload, icon sẽ hiện ngay để xem trước. Bấm <b>Lưu icon</b> để ghi vào dữ liệu CMS, sau đó bấm nút <b>Tải file</b> ở mỗi icon vừa upload và copy các file đó vào thư mục <code>${esc(SIDEBAR_ICON_ASSET_DIR)}/</code> trong repo <u>trước khi</u> Export JSON &amp; commit — nếu không icon sẽ không hiện cho người khác.</p>
     </div>
     <div class="cms-actions">
       <button class="btn btn-soft" id="sidebarIconReset" type="button">Khôi phục mặc định</button>
@@ -117,12 +159,19 @@ export function renderSidebarIconManager(data, description = ''){
       <h4>${esc(section.title)}</h4>
       <div class="sidebar-icon-rows">
         ${section.items.map(([key, label]) => `<div class="sidebar-icon-row" data-icon-row="${esc(key)}">
-          <span class="sidebar-icon-preview" data-icon-preview="${esc(key)}">${esc(icons[key] || '❔')}</span>
+          <span class="sidebar-icon-preview" data-icon-preview="${esc(key)}">${iconMarkup(icons[key])}</span>
           <div class="sidebar-icon-meta">
             <b>${esc(label)}</b>
             <small>${esc(key)}</small>
+            <div data-icon-extra="${esc(key)}">${rowExtraMarkup(key)}</div>
           </div>
-          <input type="text" maxlength="8" class="sidebar-icon-input" data-icon-input="${esc(key)}" value="${esc(icons[key] || '')}" placeholder="Dán emoji, ví dụ 🚀">
+          <div class="sidebar-icon-controls">
+            <input type="text" class="sidebar-icon-input" data-icon-input="${esc(key)}" value="${esc(icons[key] || '')}" placeholder="Emoji, vd 🚀">
+            <label class="btn btn-soft btn-xs sidebar-icon-upload-btn">
+              Upload ảnh
+              <input type="file" hidden accept="${FILE_ACCEPT}" data-icon-file="${esc(key)}">
+            </label>
+          </div>
         </div>`).join('')}
       </div>
     </section>`).join('')}
@@ -133,19 +182,56 @@ export function bindSidebarIconManager(data, renderCms){
   $$('[data-icon-input]').forEach(input => {
     input.oninput = () => {
       const key = input.dataset.iconInput;
+      pendingUploads.delete(key); // manual emoji edit overrides any pending upload for this row
+      const extra = document.querySelector(`[data-icon-extra="${key}"]`);
+      if(extra) extra.innerHTML = '';
       const preview = document.querySelector(`[data-icon-preview="${key}"]`);
-      if(preview) preview.textContent = input.value.trim() || '❔';
+      if(preview) preview.innerHTML = iconMarkup(input.value.trim());
+    };
+  });
+
+  $$('[data-icon-file]').forEach(fileInput => {
+    fileInput.onchange = () => {
+      const key = fileInput.dataset.iconFile;
+      const file = fileInput.files?.[0];
+      if(!file) return;
+
+      const ext = (file.name.split('.').pop() || '').toLowerCase();
+      if(!ACCEPTED_EXTENSIONS.includes(ext)){
+        toast('Chỉ chấp nhận file PNG, JPG hoặc SVG.');
+        fileInput.value = '';
+        return;
+      }
+
+      const fileName = suggestedFileName(key, file);
+      const path = `${SIDEBAR_ICON_ASSET_DIR}/${fileName}`;
+      const objectUrl = URL.createObjectURL(file);
+      pendingUploads.set(key, { file, fileName, path, objectUrl });
+
+      const input = document.querySelector(`[data-icon-input="${key}"]`);
+      if(input) input.value = path;
+
+      const preview = document.querySelector(`[data-icon-preview="${key}"]`);
+      if(preview) preview.innerHTML = `<img src="${objectUrl}" alt="">`;
+
+      const extra = document.querySelector(`[data-icon-extra="${key}"]`);
+      if(extra) extra.innerHTML = rowExtraMarkup(key);
+
+      toast(`Đã chọn ảnh cho "${key}". Icon sẽ hiển thị ngay khi xem trước; nhớ tải file và thêm vào repo trước khi publish.`);
     };
   });
 
   const resetBtn = $('#sidebarIconReset');
   if(resetBtn){
     resetBtn.onclick = () => {
+      pendingUploads.clear();
       $$('[data-icon-input]').forEach(input => {
         const key = input.dataset.iconInput;
         input.value = DEFAULT_SIDEBAR_ICONS[key] || '';
         const preview = document.querySelector(`[data-icon-preview="${key}"]`);
-        if(preview) preview.textContent = input.value || '❔';
+        if(preview) preview.innerHTML = iconMarkup(input.value);
+        const extra = document.querySelector(`[data-icon-extra="${key}"]`);
+        if(extra) extra.innerHTML = '';
       });
       toast('Đã khôi phục icon mặc định (chưa lưu).');
     };
@@ -161,8 +247,20 @@ export function bindSidebarIconManager(data, renderCms){
       });
       data.sidebarIcons = icons;
       saveCms(data);
-      applySidebarIcons(icons);
-      toast('Đã lưu icon sidebar.');
+
+      // Live-apply: emoji values apply immediately everywhere; image paths
+      // that were just uploaded apply immediately too (via their in-memory
+      // object URL) so the admin sees the real result right away, even
+      // though the saved path won't resolve for other visitors until the
+      // file is actually added to the repo.
+      const liveIcons = { ...icons };
+      pendingUploads.forEach((upload, key) => { liveIcons[key] = upload.objectUrl; });
+      applySidebarIcons(liveIcons);
+
+      const uploadCount = pendingUploads.size;
+      toast(uploadCount
+        ? `Đã lưu icon. Còn ${uploadCount} file ảnh cần tải về và thêm vào ${SIDEBAR_ICON_ASSET_DIR}/ trước khi publish.`
+        : 'Đã lưu icon sidebar.');
       renderCms(data, 'icons');
     };
   }
