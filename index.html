@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=20260701-5">
+<link rel="stylesheet" href="css/styles.css?v=20260701-8">
 <link rel="stylesheet" href="css/cms.css?v=20260701-5">
 
 <style id="vcStaticSidebarStyle">
@@ -95,13 +95,38 @@ body:not(.cms-locked) .auth-system-group{display:block!important}
 </head>
 <body>
 <div id="loginOverlay" class="login-overlay" hidden>
-  <form class="login-card" id="loginForm">
-    <img src="assets/logo-fpt.png" class="login-logo" alt="FPT"><span class="eyebrow">Enterprise Authentication</span>
-    <h1>FTI Collaboration Hub</h1><p>Đăng nhập để sử dụng CMS theo phân quyền.</p>
-    <label>Username</label><input id="loginEmail" type="text" autocomplete="username">
-    <label>Password</label><input id="loginPassword" type="password" autocomplete="current-password">
-    <button class="btn btn-primary">Đăng nhập</button><p class="auth-hint">Đăng nhập bằng tài khoản được cấp quyền CMS.</p>
-  </form>
+  <div class="login-shell">
+    <div class="login-aurora" aria-hidden="true"></div>
+    <div class="login-brand-panel">
+      <img src="assets/logo-fpt.png" class="login-logo" alt="FPT">
+      <span class="eyebrow login-eyebrow">Enterprise Authentication</span>
+      <h1 class="login-brand-title">FTI Collaboration Hub</h1>
+      <p class="login-brand-sub">Customer Intelligence Hub — nơi quản trị dữ liệu presale, sản phẩm và tài liệu tập trung cho toàn đội ngũ.</p>
+      <ul class="login-feature-list">
+        <li><span class="login-feature-icon">🗂️</span>Quản trị CMS tập trung — sản phẩm, bài viết, tài liệu</li>
+        <li><span class="login-feature-icon">🛡️</span>Phân quyền theo Role &amp; Group, kiểm soát chặt chẽ</li>
+        <li><span class="login-feature-icon">📜</span>Audit Log theo thời gian thực cho mọi thao tác</li>
+      </ul>
+      <div class="login-status-badge"><span class="login-status-dot"></span>SYSTEM ONLINE · v10.8</div>
+    </div>
+    <form class="login-card" id="loginForm">
+      <span class="eyebrow login-form-eyebrow">Đăng nhập</span>
+      <h2>Chào mừng trở lại</h2>
+      <p class="login-form-sub">Đăng nhập để sử dụng CMS theo phân quyền được cấp.</p>
+      <label for="loginEmail">Username</label>
+      <input id="loginEmail" type="text" autocomplete="username" placeholder="vd. admin" required>
+      <label for="loginPassword">Password</label>
+      <div class="login-password-field">
+        <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Nhập mật khẩu" required>
+        <button type="button" class="login-password-toggle" id="loginPasswordToggle" aria-label="Hiện mật khẩu" aria-pressed="false">
+          <svg class="icon-eye" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.8"/></svg>
+          <svg class="icon-eye-off" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" hidden><path d="M3 3l18 18M10.6 10.7a3.2 3.2 0 0 0 4.5 4.5M6.2 6.4C3.4 8.1 1 12 1 12s4 7 11 7c2 0 3.7-.5 5.1-1.3M17.9 17.9C20.5 16.2 23 12 23 12s-1.7-3-4.6-5.2M12 5c7 0 11 7 11 7-.3.5-.9 1.4-1.8 2.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <button class="btn btn-primary login-submit">Đăng nhập</button>
+      <p class="auth-hint">Đăng nhập bằng tài khoản được cấp quyền CMS.</p>
+    </form>
+  </div>
 </div>
 <div class="app-shell">
 <aside class="sidebar" id="sidebar">
@@ -160,6 +185,6 @@ body:not(.cms-locked) .auth-system-group{display:block!important}
 <script type="module" src="js/api-center-runtime.js"></script>
 <script type="module" src="js/video-conference-complete-runtime.js"></script>
 <script type="module" src="js/cms-full-content-sync.js?v=20260701-5"></script>
-<script type="module" src="js/enterprise-auth-runtime.js?v=20260701-7"></script>
+<script type="module" src="js/enterprise-auth-runtime.js?v=20260701-8"></script>
 <script type="module" src="js/oncallcx-user-guide-runtime.js?v=20260701-4"></script>
 </body></html>

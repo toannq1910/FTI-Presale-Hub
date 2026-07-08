@@ -360,6 +360,20 @@ function bindLoginForm() {
     catch (err) { showToast(err.message || 'Đăng nhập thất bại', 'error'); }
   });
 
+  const toggleBtn = document.querySelector('#loginPasswordToggle');
+  const passwordInput = document.querySelector('#loginPassword');
+  if (toggleBtn && passwordInput && !toggleBtn.dataset.bound) {
+    toggleBtn.dataset.bound = '1';
+    toggleBtn.addEventListener('click', () => {
+      const showing = passwordInput.type === 'text';
+      passwordInput.type = showing ? 'password' : 'text';
+      toggleBtn.setAttribute('aria-pressed', String(!showing));
+      toggleBtn.setAttribute('aria-label', showing ? 'Hiện mật khẩu' : 'Ẩn mật khẩu');
+      toggleBtn.querySelector('.icon-eye').hidden = !showing;
+      toggleBtn.querySelector('.icon-eye-off').hidden = showing;
+    });
+  }
+
   const logoutBtn = document.querySelector('#logoutBtn');
   if (logoutBtn) logoutBtn.onclick = null;
   logoutBtn?.addEventListener('click', evt => {
