@@ -5,10 +5,10 @@ import { renderPreview } from './cms-preview.js';
 import { renderBackupPanel, bindBackupPanel } from './cms-backup.js';
 import { renderAssetManager, bindAssetManager } from './cms-assets.js?v=20260701-4';
 import { renderProductManager, bindProductManager } from './cms-products.js';
-import { renderKnowledgeGraphManager, bindKnowledgeGraphManager } from './cms-graph.js';
-import { renderCmsArticles, bindCmsArticles } from './cms-articles.js';
-import { renderOperationalGuide, bindOperationalGuide } from './cms-ops.js';
-import { renderSidebarIconManager, bindSidebarIconManager } from './cms-sidebar-icons.js';
+import { renderKnowledgeGraphManager, bindKnowledgeGraphManager } from './cms-graph.js?v=20260701-5';
+import { renderCmsArticles, bindCmsArticles } from './cms-articles.js?v=20260701-5';
+import { renderOperationalGuide, bindOperationalGuide } from './cms-ops.js?v=20260701-5';
+import { renderSidebarIconManager, bindSidebarIconManager } from './cms-sidebar-icons.js?v=20260701-5';
 
 let currentCms = null;
 

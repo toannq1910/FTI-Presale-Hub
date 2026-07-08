@@ -1,7 +1,7 @@
 /* v9.8.1 Sidebar Alignment route bridge */
 import { loadCms } from './cms/cms-core.js';
 import { renderSidebarAlignment, bindSidebarAlignment } from './cms/cms-sidebar.js';
-import { renderCms } from './cms/cms-app.js';
+import { renderCms } from './cms/cms-app.js?v=20260701-5';
 
 async function openSidebarAlignment(){
   if(location.hash !== '#sidebar-alignment') return;

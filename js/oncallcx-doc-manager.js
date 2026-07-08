@@ -5,7 +5,7 @@
    trong code gốc, không đổi logic bên trong).
    Phụ thuộc: $, $$, toast được export từ main.js.
 */
-import { $, $$, toast } from './main.js';
+import { $, $$, toast } from './main.js?v=20260701-5';
 
 /* ========= v9.0.3 OnCallCX Document Manager ========= */
 const OCX_DOC_DB='fti_ocx_document_manager_v1';
