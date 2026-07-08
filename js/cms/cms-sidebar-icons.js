@@ -1,4 +1,4 @@
-/* v2.0.0 Sidebar Icon Manager — emoji hoặc ảnh upload (PNG/JPG/SVG) */
+/* v3.0.0 Sidebar Icon Manager — emoji hoặc ảnh upload (nhúng base64 trực tiếp) */
 import { $, $$, esc, toast, saveCms } from './cms-core.js';
 
 // Fallback icons — must mirror the hardcoded defaults originally baked into
@@ -36,10 +36,11 @@ export const DEFAULT_SIDEBAR_ICONS = {
   'audit-log': '📜'
 };
 
-// Where uploaded icon files are expected to live once committed to the repo.
-export const SIDEBAR_ICON_ASSET_DIR = 'assets/icons/sidebar';
-const ACCEPTED_EXTENSIONS = ['png', 'jpg', 'jpeg', 'svg'];
-const FILE_ACCEPT = 'image/png,image/jpeg,image/svg+xml,.png,.jpg,.jpeg,.svg';
+const ACCEPTED_EXTENSIONS = ['png', 'jpg', 'jpeg', 'svg', 'webp'];
+const FILE_ACCEPT = 'image/png,image/jpeg,image/svg+xml,image/webp,.png,.jpg,.jpeg,.svg,.webp';
+// Soft ceiling so admins get a heads-up before cms-content.json bloats — not
+// a hard block, just a warning toast.
+const SIZE_WARNING_BYTES = 150 * 1024;
 
 // Grouped purely for a readable admin UI — doesn't affect rendering logic.
 const ICON_SECTIONS = [
@@ -85,11 +86,13 @@ const ICON_SECTIONS = [
   ]}
 ];
 
-// A value is treated as an "image icon" (path/URL) rather than emoji text if
-// it points at a file — either a real path under assets/icons, or any
-// http(s)/blob URL used for live preview before the file exists in the repo.
+// A value counts as an "image icon" (rendered as <img>) rather than emoji
+// text if it's a data URI (uploaded image, embedded directly) or any
+// http(s) URL (in case an admin pastes an external image link manually).
+// Legacy '.png/.svg/...' relative paths from the old file-based approach are
+// still recognized too, so anything saved before this version keeps working.
 export function isImageIconValue(value = ''){
-  return /\.(png|jpe?g|svg|webp|gif)$/i.test(value) || /^(https?:|blob:|data:image)/i.test(value);
+  return /^(https?:|data:image)/i.test(value) || /\.(png|jpe?g|svg|webp|gif)$/i.test(value);
 }
 
 export function currentSidebarIcons(data){
@@ -121,24 +124,13 @@ export function applySidebarIcons(icons){
   });
 }
 
-// Files chosen this session, keyed by icon key, kept only in memory so the
-// "Tải file" button can hand the admin the exact bytes + suggested filename.
-// Never sent anywhere — nothing here is persisted except the resulting path
-// string once the admin clicks Lưu icon.
-const pendingUploads = new Map();
-
-function suggestedFileName(key, file){
-  const ext = (file.name.split('.').pop() || 'png').toLowerCase();
-  return `${key}.${ext}`;
-}
-
-function rowExtraMarkup(key){
-  const pending = pendingUploads.get(key);
-  if(!pending) return '';
-  return `<div class="sidebar-icon-pending" data-icon-pending="${esc(key)}">
-    <span>📁 ${esc(pending.fileName)}</span>
-    <a href="${pending.objectUrl}" download="${esc(pending.fileName)}" class="btn btn-soft btn-xs">Tải file</a>
-  </div>`;
+function readFileAsDataUrl(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
 }
 
 export function renderSidebarIconManager(data, description = ''){
@@ -147,7 +139,7 @@ export function renderSidebarIconManager(data, description = ''){
   <div class="ops-hero" style="margin-bottom:16px">
     <div>
       <h3 style="margin:0 0 6px">Icon Sidebar</h3>
-      <p style="margin:0">Đổi icon cho từng mục menu bên trái bằng <b>emoji</b> hoặc <b>upload ảnh</b> (PNG/JPG/SVG). Sau khi upload, icon sẽ hiện ngay để xem trước. Bấm <b>Lưu icon</b> để ghi vào dữ liệu CMS, sau đó bấm nút <b>Tải file</b> ở mỗi icon vừa upload và copy các file đó vào thư mục <code>${esc(SIDEBAR_ICON_ASSET_DIR)}/</code> trong repo <u>trước khi</u> Export JSON &amp; commit — nếu không icon sẽ không hiện cho người khác.</p>
+      <p style="margin:0">Đổi icon cho từng mục menu bên trái bằng <b>emoji</b> hoặc <b>upload ảnh</b> (PNG/JPG/SVG/WebP). Ảnh được nhúng thẳng vào dữ liệu — upload xong bấm <b>Lưu icon</b> là áp dụng ngay, không cần tải file hay copy vào thư mục nào cả. Sau đó bấm <b>Export JSON</b> ở tab Backup rồi commit/push như bình thường để publish cho mọi người.</p>
     </div>
     <div class="cms-actions">
       <button class="btn btn-soft" id="sidebarIconReset" type="button">Khôi phục mặc định</button>
@@ -163,7 +155,6 @@ export function renderSidebarIconManager(data, description = ''){
           <div class="sidebar-icon-meta">
             <b>${esc(label)}</b>
             <small>${esc(key)}</small>
-            <div data-icon-extra="${esc(key)}">${rowExtraMarkup(key)}</div>
           </div>
           <div class="sidebar-icon-controls">
             <input type="text" class="sidebar-icon-input" data-icon-input="${esc(key)}" value="${esc(icons[key] || '')}" placeholder="Emoji, vd 🚀">
@@ -181,57 +172,56 @@ export function renderSidebarIconManager(data, description = ''){
 export function bindSidebarIconManager(data, renderCms){
   $$('[data-icon-input]').forEach(input => {
     input.oninput = () => {
-      const key = input.dataset.iconInput;
-      pendingUploads.delete(key); // manual emoji edit overrides any pending upload for this row
-      const extra = document.querySelector(`[data-icon-extra="${key}"]`);
-      if(extra) extra.innerHTML = '';
-      const preview = document.querySelector(`[data-icon-preview="${key}"]`);
+      const preview = document.querySelector(`[data-icon-preview="${input.dataset.iconInput}"]`);
       if(preview) preview.innerHTML = iconMarkup(input.value.trim());
     };
   });
 
   $$('[data-icon-file]').forEach(fileInput => {
-    fileInput.onchange = () => {
+    fileInput.onchange = async () => {
       const key = fileInput.dataset.iconFile;
       const file = fileInput.files?.[0];
       if(!file) return;
 
       const ext = (file.name.split('.').pop() || '').toLowerCase();
       if(!ACCEPTED_EXTENSIONS.includes(ext)){
-        toast('Chỉ chấp nhận file PNG, JPG hoặc SVG.');
+        toast('Chỉ chấp nhận file PNG, JPG, SVG hoặc WebP.');
         fileInput.value = '';
         return;
       }
 
-      const fileName = suggestedFileName(key, file);
-      const path = `${SIDEBAR_ICON_ASSET_DIR}/${fileName}`;
-      const objectUrl = URL.createObjectURL(file);
-      pendingUploads.set(key, { file, fileName, path, objectUrl });
+      let dataUrl;
+      try {
+        dataUrl = await readFileAsDataUrl(file);
+      } catch {
+        toast('Không đọc được file ảnh, thử lại nhé.');
+        return;
+      }
 
+      // Directly replace the row's value with the embedded image — no
+      // separate download/copy-into-repo step needed anymore.
       const input = document.querySelector(`[data-icon-input="${key}"]`);
-      if(input) input.value = path;
+      if(input) input.value = dataUrl;
 
       const preview = document.querySelector(`[data-icon-preview="${key}"]`);
-      if(preview) preview.innerHTML = `<img src="${objectUrl}" alt="">`;
+      if(preview) preview.innerHTML = `<img src="${dataUrl}" alt="">`;
 
-      const extra = document.querySelector(`[data-icon-extra="${key}"]`);
-      if(extra) extra.innerHTML = rowExtraMarkup(key);
-
-      toast(`Đã chọn ảnh cho "${key}". Icon sẽ hiển thị ngay khi xem trước; nhớ tải file và thêm vào repo trước khi publish.`);
+      if(file.size > SIZE_WARNING_BYTES){
+        toast(`Ảnh cho "${key}" khá nặng (${Math.round(file.size / 1024)}KB) — nên dùng ảnh nhỏ hơn để dữ liệu CMS không bị phình to.`);
+      } else {
+        toast(`Đã cập nhật ảnh cho "${key}". Bấm "Lưu icon" để áp dụng.`);
+      }
     };
   });
 
   const resetBtn = $('#sidebarIconReset');
   if(resetBtn){
     resetBtn.onclick = () => {
-      pendingUploads.clear();
       $$('[data-icon-input]').forEach(input => {
         const key = input.dataset.iconInput;
         input.value = DEFAULT_SIDEBAR_ICONS[key] || '';
         const preview = document.querySelector(`[data-icon-preview="${key}"]`);
         if(preview) preview.innerHTML = iconMarkup(input.value);
-        const extra = document.querySelector(`[data-icon-extra="${key}"]`);
-        if(extra) extra.innerHTML = '';
       });
       toast('Đã khôi phục icon mặc định (chưa lưu).');
     };
@@ -247,20 +237,8 @@ export function bindSidebarIconManager(data, renderCms){
       });
       data.sidebarIcons = icons;
       saveCms(data);
-
-      // Live-apply: emoji values apply immediately everywhere; image paths
-      // that were just uploaded apply immediately too (via their in-memory
-      // object URL) so the admin sees the real result right away, even
-      // though the saved path won't resolve for other visitors until the
-      // file is actually added to the repo.
-      const liveIcons = { ...icons };
-      pendingUploads.forEach((upload, key) => { liveIcons[key] = upload.objectUrl; });
-      applySidebarIcons(liveIcons);
-
-      const uploadCount = pendingUploads.size;
-      toast(uploadCount
-        ? `Đã lưu icon. Còn ${uploadCount} file ảnh cần tải về và thêm vào ${SIDEBAR_ICON_ASSET_DIR}/ trước khi publish.`
-        : 'Đã lưu icon sidebar.');
+      applySidebarIcons(icons);
+      toast('Đã lưu icon sidebar. Export JSON + commit để publish cho mọi người.');
       renderCms(data, 'icons');
     };
   }

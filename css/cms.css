@@ -787,11 +787,6 @@
 .sidebar-icon-meta{display:flex;flex-direction:column;flex:1;min-width:0}
 .sidebar-icon-meta b{font-size:14px}
 .sidebar-icon-meta small{color:#8296b8;font-size:11px}
-.sidebar-icon-pending{
-  display:flex;align-items:center;gap:8px;margin-top:6px;
-  font-size:11px;color:#93c5fd;
-}
-.sidebar-icon-pending span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px}
 .sidebar-icon-controls{display:flex;align-items:center;gap:8px;flex:0 0 auto}
 .sidebar-icon-input{
   width:120px;flex:0 0 120px;
@@ -802,6 +797,7 @@
   padding:8px 10px;
   font-size:15px;
   text-align:center;
+  text-overflow:ellipsis;
 }
 .sidebar-icon-input:focus{outline:2px solid rgba(34,197,94,.5);outline-offset:1px}
 .btn-xs{padding:8px 12px;font-size:12px;font-weight:700;white-space:nowrap}

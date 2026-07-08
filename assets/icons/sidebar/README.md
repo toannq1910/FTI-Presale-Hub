@@ -1,25 +1,10 @@
 # Sidebar Icons
 
-Ảnh icon thay thế cho menu bên trái (sidebar), được quản lý qua **CMS → Sidebar Icons**.
+⚠️ **Cập nhật:** kể từ phiên bản Sidebar Icon Manager v3, ảnh icon được
+**nhúng thẳng vào `data/cms-content.json` dạng base64** khi upload qua
+**CMS → Sidebar Icons**. Không cần tải file về hay copy vào thư mục này nữa
+— upload xong, bấm **Lưu icon**, rồi Export JSON + commit là xong.
 
-## Quy ước đặt tên
-
-Mỗi file phải đặt tên đúng theo `key` của mục menu, ví dụ:
-
-```
-overview.png
-oncallcx.svg
-group-contact-center.png
-```
-
-Khi bạn tải ảnh lên trong CMS, hệ thống sẽ tự đề xuất đúng tên file này —
-chỉ cần bấm **"Tải file ảnh"** để lấy file đã đổi tên đúng chuẩn, rồi copy
-vào thư mục này (`assets/icons/sidebar/`) trước khi export JSON và commit/push.
-
-## Định dạng hỗ trợ
-
-- PNG / JPG
-- SVG (khuyến khích — sắc nét ở mọi kích thước)
-
-Kích thước hiển thị thực tế trên sidebar là 18×18px, nên ảnh vuông,
-nền trong suốt (PNG/SVG) sẽ cho kết quả đẹp nhất.
+Thư mục này (`assets/icons/sidebar/`) chỉ còn giữ file `oncallcx.svg` từ
+phiên bản cũ (trước khi chuyển sang base64) để tránh vỡ icon đang tham
+chiếu tới nó. Có thể xoá an toàn sau khi đã upload lại icon đó qua CMS.
