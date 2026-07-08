@@ -1072,6 +1072,16 @@ window.FTIAuth = {
   }
 
   window.addEventListener('DOMContentLoaded', ()=>{
+    // Run immediately first — #permissionChip is static markup already in
+    // index.html and localStorage reads are synchronous, so there's no need
+    // to wait before showing the correct logged-in state. Without this,
+    // the page briefly flashes "Login: OFF" / the locked CMS landing card
+    // for up to ~1.4s (the staggered re-checks below) before settling on
+    // the correct state, even for a user who's already logged in.
+    hideLoginOverlay();
+    setPublicUi();
+    fixSidebar();
+    markActive();
     setTimeout(()=>{
       hideLoginOverlay();
       setPublicUi();

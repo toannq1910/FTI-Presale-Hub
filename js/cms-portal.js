@@ -18,5 +18,13 @@ window.addEventListener('hashchange', () => {
 window.addEventListener('DOMContentLoaded', () => {
   ensureCmsMenu();
   loadCms().then(data => applySidebarIcons(data.sidebarIcons)).catch(err => console.warn('Không áp dụng được icon sidebar:', err));
-  if (location.hash === '#cms') setTimeout(openCmsIfAllowed, 80);
+  // hasCmsSession() only reads localStorage (synchronous), so check
+  // immediately first to avoid a visible flash of the locked "CMS Data"
+  // landing card before flipping to the real admin view. Keep a delayed
+  // fallback too in case #pageRoot hasn't been populated by main.js's own
+  // initial render yet at this exact instant.
+  if (location.hash === '#cms') {
+    openCmsIfAllowed();
+    setTimeout(openCmsIfAllowed, 80);
+  }
 });
