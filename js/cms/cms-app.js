@@ -8,7 +8,7 @@ import { renderProductManager, bindProductManager } from './cms-products.js';
 import { renderKnowledgeGraphManager, bindKnowledgeGraphManager } from './cms-graph.js?v=20260701-5';
 import { renderCmsArticles, bindCmsArticles } from './cms-articles.js?v=20260701-5';
 import { renderOperationalGuide, bindOperationalGuide } from './cms-ops.js?v=20260701-5';
-import { renderSidebarIconManager, bindSidebarIconManager } from './cms-sidebar-icons.js?v=20260701-5';
+import { renderSidebarIconManager, bindSidebarIconManager, applySidebarIcons } from './cms-sidebar-icons.js?v=20260701-5';
 
 let currentCms = null;
 
@@ -31,6 +31,12 @@ function moduleDescription(tab){
 export function renderCms(data, activeTab = 'preview'){
   if(!CMS_TABS.has(activeTab)) activeTab = 'preview';
   currentCms = data;
+  // Keep the real (left-hand) sidebar in sync with whatever's saved every
+  // time the CMS renders — not just when the Sidebar Icons tab itself is
+  // opened/saved — so a stray failure in the page-load-time apply call
+  // elsewhere can't leave the real sidebar out of sync while the CMS admin
+  // view itself still shows the correct data.
+  applySidebarIcons(data.sidebarIcons);
   const root = $('#pageRoot');
   if(!root) return;
 

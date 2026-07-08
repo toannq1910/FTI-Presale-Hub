@@ -1,5 +1,5 @@
 /* v9.4.0 Unified CMS entry */
-import { openCms, ensureCmsMenu } from './cms/cms-app.js?v=20260701-5';
+import { openCms, ensureCmsMenu } from './cms/cms-app.js?v=20260701-6';
 import { loadCms } from './cms/cms-core.js';
 import { applySidebarIcons } from './cms/cms-sidebar-icons.js?v=20260701-5';
 
@@ -17,6 +17,6 @@ window.addEventListener('hashchange', () => {
 
 window.addEventListener('DOMContentLoaded', () => {
   ensureCmsMenu();
-  loadCms().then(data => applySidebarIcons(data.sidebarIcons)).catch(() => {});
+  loadCms().then(data => applySidebarIcons(data.sidebarIcons)).catch(err => console.warn('Không áp dụng được icon sidebar:', err));
   if (location.hash === '#cms') setTimeout(openCmsIfAllowed, 80);
 });
