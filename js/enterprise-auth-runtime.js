@@ -372,6 +372,30 @@ async function fetchAllUsersWithGroups(){
   }));
 }
 
+// Creating a brand-new Supabase Auth user + sending them an invite email
+// requires the Admin API (auth.admin.inviteUserByEmail), which needs the
+// service_role key -- that can never reach the browser, so this goes
+// through a Supabase Edge Function ("invite-user") instead. The function
+// re-checks the caller is actually an admin server-side before doing
+// anything privileged; the users.create permission check here is just
+// for UI purposes (hiding the form), not the real security boundary.
+async function inviteNewUser(email, fullName, groupId){
+  const { data: { session } } = await supabase.auth.getSession();
+  if(!session) throw new Error('Phiên đăng nhập đã hết hạn, hãy đăng nhập lại.');
+  const { data, error } = await supabase.functions.invoke('invite-user', {
+    body: { email, full_name: fullName || null, group_id: groupId || null }
+  });
+  if(error){
+    // supabase-js only gives a generic message for non-2xx responses;
+    // the function's own JSON body (with the real reason) is on error.context.
+    let detail = error.message;
+    try { const body = await error.context.json(); if(body?.error) detail = body.error; } catch {}
+    throw new Error(detail);
+  }
+  if(data?.error) throw new Error(data.error);
+  return data || {};
+}
+
 async function renderUsersPageV2() {
   if (location.hash !== '#users') return;
   if (!requirePermission('users.view')) return renderGuardedPage('Bạn cần quyền users.view.');
@@ -380,6 +404,7 @@ async function renderUsersPageV2() {
   const [users, groups] = await Promise.all([fetchAllUsersWithGroups(), fetchAllGroups()]);
   if (location.hash !== '#users') return;
   const canWrite = hasPermission('users.update');
+  const canCreate = hasPermission('users.create');
   document.querySelector('#pageTitle').textContent = 'Quản lý User';
   document.querySelector('#pageSubtitle').textContent = 'User · Group assignment (Supabase)';
 
@@ -387,7 +412,12 @@ async function renderUsersPageV2() {
     <span class="eyebrow">User Management</span>
     <h2>Quản lý User theo Group</h2>
     <p>Gán user vào group để quyết định quyền xem/chỉnh sửa theo module. Dữ liệu đọc/ghi trực tiếp trên Supabase, có Row Level Security.</p>
-    <p style="color:#93c5fd"><b>Tạo user mới:</b> hiện tại vào Supabase Dashboard → Authentication → Users → Add user, sau đó quay lại đây để gán Group. (Tạo user + gửi email mời ngay trong trang này sẽ có ở bước tiếp theo.)</p>
+    ${canCreate ? `<form id="inviteUserForm" class="auth-form">
+      <input name="email" type="email" placeholder="Email user mới" required>
+      <input name="full_name" placeholder="Họ tên (tùy chọn)">
+      <select name="group_id"><option value="">— Chưa gán group —</option>${groups.map(g=>`<option value="${esc(g.id)}">${esc(g.name)}</option>`).join('')}</select>
+      <button class="btn btn-primary">+ Tạo user &amp; gửi email mời</button>
+    </form>` : ''}
   </section>
   <section class="auth-card">
     <h3>Danh sách User</h3>
@@ -395,10 +425,37 @@ async function renderUsersPageV2() {
       ${users.map(u => `<tr>
         <td><b>${esc(u.full_name || u.username || u.id)}</b><br><small>${esc(u.username || '')}</small></td>
         <td>${groups.map(g=>`<label class="auth-inline-check"><input type="checkbox" data-user-group="${esc(u.id)}|${esc(g.id)}" ${(u.groupIds||[]).includes(g.id)?'checked':''} ${canWrite?'':'disabled'}> ${esc(g.name)}</label>`).join('')}</td>
-        <td><button class="btn btn-soft" disabled title="Cần Edge Function (bước tiếp theo)">Reset Pass</button></td>
+        <td><button class="btn btn-soft" data-reset-pass="${esc(u.username || '')}" ${canWrite && u.username ? '' : 'disabled'}>Reset Pass</button></td>
       </tr>`).join('')}
     </tbody></table>
   </section>`;
+
+  root.querySelector('#inviteUserForm')?.addEventListener('submit', async evt => {
+    evt.preventDefault();
+    if (!requirePermission('users.create')) return;
+    const form = evt.currentTarget;
+    const fd = new FormData(form);
+    const email = String(fd.get('email') || '').trim();
+    const fullName = String(fd.get('full_name') || '').trim();
+    const groupId = String(fd.get('group_id') || '').trim();
+    if (!email) return;
+    const submitBtn = form.querySelector('button');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Đang tạo user…';
+    try {
+      const result = await inviteNewUser(email, fullName, groupId);
+      if (result.warning) showToast(result.warning, 'warning');
+      else showToast(`Đã tạo user và gửi email mời tới ${email}.`, 'success');
+      await addAudit('users.invite', { email, groupId });
+      form.reset();
+      renderUsersPageV2();
+    } catch (err) {
+      showToast('Lỗi: ' + err.message, 'error');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '+ Tạo user & gửi email mời';
+    }
+  });
 
   root.querySelectorAll('[data-user-group]').forEach(input => input.addEventListener('change', async () => {
     if (!requirePermission('users.update')) { input.checked = !input.checked; return; }
@@ -413,6 +470,21 @@ async function renderUsersPageV2() {
     await addAudit('users.update_groups', { userId, groupId, checked: input.checked });
     await refreshAuthState();
     showToast('Đã cập nhật group cho user.', 'success');
+  }));
+
+  root.querySelectorAll('[data-reset-pass]').forEach(btn => btn.addEventListener('click', async () => {
+    if (!requirePermission('users.update')) return;
+    const email = btn.getAttribute('data-reset-pass');
+    if (!email) return;
+    if (!confirm(`Gửi email đặt lại mật khẩu tới ${email}?`)) return;
+    btn.disabled = true;
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${location.origin}${location.pathname}#change-password`
+    });
+    btn.disabled = false;
+    if (error) return showToast('Lỗi: ' + error.message, 'error');
+    await addAudit('users.reset_password_email', { email });
+    showToast(`Đã gửi email đặt lại mật khẩu tới ${email}.`, 'success');
   }));
 }
 
