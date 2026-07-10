@@ -208,8 +208,15 @@ function updateAuthUi() {
     chip.classList.toggle('login-on', !!user);
     chip.classList.toggle('login-off', !user);
     const groupLabel = user?.groups?.length ? user.groups.map(g => g.name).join(', ') : '';
-    chip.textContent = user ? `Login: ON · ${shortName(user.email)} · ${groupLabel}` : 'Login: OFF';
+    const shortLabel = user ? (user.displayName || shortName(user.email)) : 'Login';
+    chip.textContent = shortLabel;
+    chip.title = user ? `${user.email}${groupLabel ? ' · ' + groupLabel : ''}` : '';
   }
+  const changePasswordBtn = document.querySelector('#changePasswordBtn');
+  const logoutBtn = document.querySelector('#logoutBtn');
+  if (changePasswordBtn) changePasswordBtn.hidden = !user;
+  if (logoutBtn) logoutBtn.hidden = !user;
+
   const footerName = document.querySelector('.user-pill strong');
   const footerRole = document.querySelector('.user-pill span');
   if (footerName) footerName.textContent = user ? (user.displayName || shortName(user.email)) : 'Guest';
@@ -662,25 +669,30 @@ window.FTIAuth = { login, logout, currentUser, hasPermission, changeOwnPassword 
   function setPublicUi(){
     document.body.classList.toggle('cms-locked', !isLogged());
     const chip=document.querySelector('#permissionChip');
+    const changePasswordBtn=document.querySelector('#changePasswordBtn');
+    const logoutBtn=document.querySelector('#logoutBtn');
     if(chip){
       const u = currentUser();
       if(u){
         const label = u.groups?.length ? u.groups.map(g => g.name).join(', ') : '';
-        chip.textContent=`Login: ON · ${u.displayName || shortName(u.email)} · ${label}`;
+        chip.textContent = u.displayName || shortName(u.email);
+        chip.title = `${u.email}${label ? ' · ' + label : ''}`;
         chip.classList.add('login-on');
         chip.classList.remove('login-guest','login-off');
       }else{
         chip.textContent='Login';
+        chip.title='';
         chip.classList.add('login-guest');
         chip.classList.remove('login-on','login-off');
       }
+      if(changePasswordBtn) changePasswordBtn.hidden = !u;
+      if(logoutBtn) logoutBtn.hidden = !u;
       if(!chip.dataset.publicLoginBound){
         chip.dataset.publicLoginBound='1';
         chip.addEventListener('click', e=>{
           e.preventDefault();
-          if(isLogged()){
-            if(confirm('Bạn muốn đăng xuất?')) logout();
-          }else showLoginOverlay();
+          if(isLogged()) location.hash='#change-password';
+          else showLoginOverlay();
         });
       }
     }
