@@ -39,6 +39,13 @@ const ROUTE_PERMISSIONS = MODULE_ACCESS.reduce((acc,module)=>{
 
 function now() { return new Date().toISOString(); }
 
+// Display-only shortening: "toannq24@fpt.com" -> "toannq24". Used for the
+// identity chip/sidebar footer only -- Audit Log keeps the full email
+// since that's a record meant to be precise, not a friendly display name.
+function shortName(emailOrName = '') {
+  return String(emailOrName).split('@')[0] || emailOrName;
+}
+
 // ---------------------------------------------------------------
 // Cached auth state. Supabase calls are async (network), but most of
 // the app (route guards, sidebar visibility, permission checks) calls
@@ -89,7 +96,7 @@ function currentUser() {
     id: authState.authUser.id,
     email: authState.authUser.email,
     username: authState.authUser.email,
-    displayName: authState.profile?.full_name || authState.authUser.email,
+    displayName: authState.profile?.full_name || shortName(authState.authUser.email),
     groups: authState.groups || []
   };
 }
@@ -177,7 +184,7 @@ async function login(email, password) {
   await addAudit('auth.login_success', { email });
   hideLogin();
   resetLoginForm();
-  showToast(`Đã đăng nhập: ${currentUser()?.displayName || email}`, 'success');
+  showToast(`Đã đăng nhập: ${currentUser()?.displayName || shortName(email)}`, 'success');
 }
 
 async function logout() {
@@ -201,11 +208,11 @@ function updateAuthUi() {
     chip.classList.toggle('login-on', !!user);
     chip.classList.toggle('login-off', !user);
     const groupLabel = user?.groups?.length ? user.groups.map(g => g.name).join(', ') : '';
-    chip.textContent = user ? `Login: ON · ${user.email} · ${groupLabel}` : 'Login: OFF';
+    chip.textContent = user ? `Login: ON · ${shortName(user.email)} · ${groupLabel}` : 'Login: OFF';
   }
   const footerName = document.querySelector('.user-pill strong');
   const footerRole = document.querySelector('.user-pill span');
-  if (footerName) footerName.textContent = user ? (user.displayName || user.email) : 'Guest';
+  if (footerName) footerName.textContent = user ? (user.displayName || shortName(user.email)) : 'Guest';
   if (footerRole) footerRole.textContent = user ? (user.groups?.map(g => g.name).join(', ') || '') : 'Not signed in';
 
   document.querySelectorAll('[data-permission]').forEach(el => {
@@ -523,6 +530,7 @@ function renderAuthRoutes() {
   renderUsersPageV2();
   renderPermissionsPageV2();
   renderAuditPage();
+  renderChangePasswordPage();
   setActiveNav();
   updateAuthUi();
 }
@@ -534,23 +542,75 @@ function renderAuthRoutes() {
 // password). Admin changing someone ELSE's password is a different,
 // privileged operation deferred to the Edge Function follow-up.
 // ---------------------------------------------------------------
+// ---------------------------------------------------------------
+// Self-service "Đổi mật khẩu" page — any logged-in user, including
+// Admins, can change their own password this way via
+// supabase.auth.updateUser(), no elevated privileges needed. Admin
+// changing someone ELSE's password is a different, privileged
+// operation deferred to the Edge Function follow-up.
+// ---------------------------------------------------------------
+function renderChangePasswordPage() {
+  if (location.hash !== '#change-password') return;
+  const user = currentUser();
+  const root = document.querySelector('#pageRoot');
+  if (!root) return;
+  if (!user) { renderGuardedPage('Bạn cần đăng nhập để đổi mật khẩu.'); return; }
+
+  document.querySelector('#pageTitle').textContent = 'Đổi mật khẩu';
+  document.querySelector('#pageSubtitle').textContent = 'Tài khoản của tôi';
+
+  root.innerHTML = `<section class="auth-page-hero">
+    <span class="eyebrow">🔑 Tài khoản</span>
+    <h2>Đổi mật khẩu</h2>
+    <p>Đổi mật khẩu đăng nhập cho tài khoản <b>${esc(user.email)}</b>. Sau khi đổi thành công, hãy dùng mật khẩu mới cho lần đăng nhập tiếp theo.</p>
+  </section>
+  <section class="auth-card" style="max-width:460px">
+    <h3>Mật khẩu mới</h3>
+    <form id="changePasswordForm" class="change-password-form">
+      <label for="newPassword">Mật khẩu mới</label>
+      <input id="newPassword" type="password" autocomplete="new-password" placeholder="Tối thiểu 8 ký tự" required minlength="8">
+      <label for="confirmPassword">Nhập lại mật khẩu mới</label>
+      <input id="confirmPassword" type="password" autocomplete="new-password" placeholder="Nhập lại để xác nhận" required minlength="8">
+      <p class="field-error" id="changePasswordError"></p>
+      <button class="btn btn-primary" type="submit">Đổi mật khẩu</button>
+      <a class="btn btn-soft" href="#overview" style="margin-top:10px;text-align:center">Hủy, quay lại Tổng quan</a>
+    </form>
+  </section>`;
+
+  const form = document.querySelector('#changePasswordForm');
+  form?.addEventListener('submit', async evt => {
+    evt.preventDefault();
+    const errorEl = document.querySelector('#changePasswordError');
+    errorEl.textContent = '';
+    const newPassword = document.querySelector('#newPassword').value;
+    const confirmPassword = document.querySelector('#confirmPassword').value;
+    if (newPassword.length < 8) { errorEl.textContent = 'Mật khẩu cần tối thiểu 8 ký tự.'; return; }
+    if (newPassword !== confirmPassword) { errorEl.textContent = 'Hai mật khẩu không khớp.'; return; }
+    const submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Đang đổi mật khẩu…';
+    try {
+      await changeOwnPassword(newPassword);
+      showToast('Đã đổi mật khẩu thành công.', 'success');
+      form.reset();
+      location.hash = '#overview';
+    } catch (err) {
+      errorEl.textContent = 'Lỗi: ' + err.message;
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Đổi mật khẩu';
+    }
+  });
+}
+
 function bindChangePasswordControl(){
   const btn = document.querySelector('#changePasswordBtn');
   if(!btn || btn.dataset.bound) return;
   btn.dataset.bound = '1';
-  btn.addEventListener('click', async () => {
+  btn.addEventListener('click', evt => {
+    evt.preventDefault();
     if(!currentUser()) return;
-    const current = prompt('Nhập mật khẩu mới (tối thiểu 8 ký tự):');
-    if(!current) return;
-    if(current.length < 8) return showToast('Mật khẩu cần tối thiểu 8 ký tự.', 'warning');
-    const confirm2 = prompt('Nhập lại mật khẩu mới để xác nhận:');
-    if(current !== confirm2) return showToast('Hai mật khẩu không khớp.', 'warning');
-    try {
-      await changeOwnPassword(current);
-      showToast('Đã đổi mật khẩu thành công.', 'success');
-    } catch(err) {
-      showToast('Lỗi: ' + err.message, 'error');
-    }
+    location.hash = '#change-password';
   });
 }
 
@@ -606,7 +666,7 @@ window.FTIAuth = { login, logout, currentUser, hasPermission, changeOwnPassword 
       const u = currentUser();
       if(u){
         const label = u.groups?.length ? u.groups.map(g => g.name).join(', ') : '';
-        chip.textContent=`Login: ON · ${u.email} · ${label}`;
+        chip.textContent=`Login: ON · ${u.displayName || shortName(u.email)} · ${label}`;
         chip.classList.add('login-on');
         chip.classList.remove('login-guest','login-off');
       }else{
