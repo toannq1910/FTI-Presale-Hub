@@ -1,10 +1,14 @@
-/* v9.4.0 Unified CMS entry */
+/* v9.5.0 Unified CMS entry */
 import { openCms, ensureCmsMenu } from './cms/cms-app.js?v=20260701-6';
 import { loadCms } from './cms/cms-core.js';
 import { applySidebarIcons } from './cms/cms-sidebar-icons.js?v=20260701-5';
 
+// hasCmsSession() used to read the old localStorage-based
+// "fti_auth_session" key directly. That key no longer exists since the
+// Supabase migration -- auth state now lives in enterprise-auth-runtime.js
+// and is exposed via window.FTIAuth. Checking it here instead.
 function hasCmsSession(){
-  try{return !!JSON.parse(localStorage.getItem('fti_auth_session')||'null')}catch{return false}
+  return !!(window.FTIAuth && window.FTIAuth.currentUser && window.FTIAuth.currentUser());
 }
 
 function openCmsIfAllowed(){
@@ -15,14 +19,22 @@ window.addEventListener('hashchange', () => {
   openCmsIfAllowed();
 });
 
+// Auth state now resolves asynchronously (Supabase network check), so the
+// exact moment hasCmsSession() starts returning true can't be predicted
+// with a fixed delay alone -- react to the explicit event
+// enterprise-auth-runtime.js dispatches once it actually knows the answer.
+window.addEventListener('fti-auth-changed', () => {
+  openCmsIfAllowed();
+});
+
 window.addEventListener('DOMContentLoaded', () => {
   ensureCmsMenu();
   loadCms().then(data => applySidebarIcons(data.sidebarIcons)).catch(err => console.warn('Không áp dụng được icon sidebar:', err));
-  // hasCmsSession() only reads localStorage (synchronous), so check
-  // immediately first to avoid a visible flash of the locked "CMS Data"
-  // landing card before flipping to the real admin view. Keep a delayed
-  // fallback too in case #pageRoot hasn't been populated by main.js's own
-  // initial render yet at this exact instant.
+  // hasCmsSession() may not have a real answer yet this early (Supabase
+  // check is still in flight) -- try immediately in case it's already
+  // resolved from a previous visit, then rely on the fti-auth-changed
+  // listener above for the real, timing-safe trigger. The extra delayed
+  // check is just a low-cost fallback.
   if (location.hash === '#cms') {
     openCmsIfAllowed();
     setTimeout(openCmsIfAllowed, 80);

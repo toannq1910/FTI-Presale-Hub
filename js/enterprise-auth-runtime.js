@@ -132,6 +132,25 @@ function hideLogin() {
   if (overlay) overlay.hidden = true;
 }
 
+// Login/password inputs otherwise keep whatever was last typed sitting in
+// the DOM even after a successful login -- so if the user later logs out,
+// the very same values silently reappear when the overlay is shown again.
+// Reset explicitly at both points rather than relying on the overlay's
+// hidden state alone.
+function resetLoginForm() {
+  const form = document.querySelector('#loginForm');
+  form?.reset();
+  const toggleBtn = document.querySelector('#loginPasswordToggle');
+  const passwordInput = document.querySelector('#loginPassword');
+  if (toggleBtn && passwordInput && passwordInput.type === 'text') {
+    passwordInput.type = 'password';
+    toggleBtn.setAttribute('aria-pressed', 'false');
+    toggleBtn.setAttribute('aria-label', 'Hiện mật khẩu');
+    toggleBtn.querySelector('.icon-eye').hidden = false;
+    toggleBtn.querySelector('.icon-eye-off').hidden = true;
+  }
+}
+
 async function addAudit(action, detail = {}) {
   const user = currentUser();
   try {
@@ -157,6 +176,7 @@ async function login(email, password) {
   await refreshAuthState();
   await addAudit('auth.login_success', { email });
   hideLogin();
+  resetLoginForm();
   showToast(`Đã đăng nhập: ${currentUser()?.displayName || email}`, 'success');
 }
 
@@ -164,6 +184,7 @@ async function logout() {
   await addAudit('auth.logout', {});
   await supabase.auth.signOut();
   await refreshAuthState();
+  resetLoginForm();
   showLogin();
 }
 
