@@ -5,20 +5,8 @@
    username concept anymore).
 */
 import { esc } from './cms/cms-core.js';
-import { supabase } from './supabase-client.js?v=20260709-1';
+import { supabase, hadAuthCallbackHash } from './supabase-client.js?v=20260713-1';
 
-// Captured immediately at module load, before anything (ours or Supabase's
-// own client) has a chance to rewrite location.hash -- used later to know
-// whether this page load is the result of clicking an invite/recovery
-// link, so we can route the user to #change-password once the session
-// those tokens establish is confirmed. Supabase's own token consumption
-// happens asynchronously (not necessarily before the very first
-// refreshAuthState() call resolves), so this check lives inside
-// refreshAuthState() itself -- the single place every auth-state
-// resolution funnels through, whether triggered by the initial load or
-// by onAuthStateChange firing once Supabase finishes processing the URL
-// -- guarded by a flag so it only ever fires once.
-const hadAuthCallbackHash = /access_token=|type=invite|type=recovery/.test(location.hash);
 let handledAuthCallback = false;
 
 const MODULE_PERMISSIONS = [

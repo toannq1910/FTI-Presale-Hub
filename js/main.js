@@ -19,7 +19,7 @@ function videoHashFromPage(page=''){
   return '';
 }
 function isSystemSecurityPage(page=''){
-  return ['users','permissions','audit-log'].includes(String(page||''));
+  return ['users','permissions','audit-log','change-password'].includes(String(page||''));
 }
 function resolvePageFromHash(){
   const h=location.hash.replace('#','');
@@ -68,7 +68,8 @@ const titles={
   cms:['CMS Data','Unified content management'],
   users:['Quản lý User','Enterprise Authentication · Users'],
   permissions:['Phân quyền','Group-Based Access Control'],
-  'audit-log':['Audit Log','Authentication and CMS activity logs']
+  'audit-log':['Audit Log','Authentication and CMS activity logs'],
+  'change-password':['Đổi mật khẩu','Tài khoản của tôi']
 };
 titles['oncallcx-presale']=['OnCallCX Presale','Architecture · Pricing · Checklist'];
 
