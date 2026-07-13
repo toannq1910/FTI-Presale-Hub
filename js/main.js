@@ -23,6 +23,14 @@ function isSystemSecurityPage(page=''){
 }
 function resolvePageFromHash(){
   const h=location.hash.replace('#','');
+  // Supabase invite/recovery links land back on the site with the session
+  // tokens stuffed into the URL hash (e.g. #access_token=...&type=invite).
+  // This app also uses '#' for routing, so without this check the token
+  // payload would get treated as a page id. Let Supabase's client consume
+  // it (untouched, from the real location.hash) and just render Overview
+  // in the meantime -- enterprise-auth-runtime.js redirects to
+  // #change-password once the session from those tokens is confirmed.
+  if(/access_token=|type=invite|type=recovery|error=/.test(h)) return 'overview';
   if(h==='editor'||h.startsWith('editor:'))return 'cms';
   if(h==='vendor-editor'||h.startsWith('vendor-editor:'))return 'cms';
   if(h.startsWith('api-folder:'))return 'api-reference';
