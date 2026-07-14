@@ -14,7 +14,7 @@
 */
 import { loadCms, saveCms, esc } from './cms/cms-core.js';
 
-const SYNC_VERSION = 'v10.7.1-cms-full-content-sync';
+const SYNC_VERSION = 'v10.7.2-fix-oncallcx-stale-cards';
 const SYNC_STORAGE_KEY = 'fti_cms_full_content_sync_version';
 
 const ARTICLE_SEEDS = [
@@ -45,10 +45,15 @@ const ARTICLE_SEEDS = [
     summary: 'OnCallCX là nền tảng Contact Center as a Service made by FPT, hỗ trợ voice, omni-channel, recording, dashboard, campaign, CRM/ERP integration, API/Webhook và AI integration.',
     tags: ['oncallcx','ccaas','contact-center','fpt'],
     productRefs: ['oncallcx'],
-    cards: [
-      {title:'Product Center', summary:'Thông tin tổng quan, presentation, datasheet, demo và tài liệu sản phẩm.', url:'https://oncallcx.vn'},
-      {title:'API Reference', summary:'CDR API, Outbound Call API, Webhook Incoming và Recording API.', url:'#api-center'}
-    ]
+    // Intentionally empty: main.js's renderOnCallCXOnly() falls back to
+    // rendering the real structured product cards (OnCallCX CCaaS +
+    // OnCallCX UCaaS, with actual feature/tag data) whenever this article
+    // has no cards of its own. The old hardcoded 'Product Center' (external
+    // link) / 'API Reference' (#api-center, a now-inconsistent legacy route
+    // vs. the current #api-reference) cards were stale placeholder content
+    // from an earlier iteration -- see cleanupStaleOncallcxCards() below for
+    // how already-synced browsers get migrated off them too.
+    cards: []
   },
   {
     id: 'article-ccaas-vietnam',
@@ -461,6 +466,23 @@ const VIDEO_PRODUCTS = [
   }
 ];
 
+// Removes stale placeholder cards from browsers that already ran an older
+// version of this sync and cached them in localStorage. mergeById() alone
+// can't fix this: it deliberately preserves an existing `cards` array
+// (even an already-bad one) to avoid clobbering real admin edits, so a
+// browser that synced before this fix would otherwise keep the old cards
+// forever. This targets only the exact known-stale card set, so any
+// genuine admin customization of this article is left untouched.
+function cleanupStaleOncallcxCards(articles) {
+  const STALE_URLS = new Set(['https://oncallcx.vn', '#api-center']);
+  return articles.map(article => {
+    if (article.id !== 'article-oncallcx' || !Array.isArray(article.cards) || !article.cards.length) return article;
+    const isStale = article.cards.every(card => STALE_URLS.has(card?.url));
+    if (!isStale) return article;
+    return { ...article, cards: [] };
+  });
+}
+
 function mergeById(existing = [], seeds = [], mode = 'upsert') {
   const map = new Map();
   existing.forEach(item => {
@@ -523,6 +545,7 @@ async function runSync(force = false) {
   data.meta.cmsCoverageUpdatedAt = new Date().toISOString();
 
   data.articles = mergeById(Array.isArray(data.articles) ? data.articles : [], ARTICLE_SEEDS);
+  data.articles = cleanupStaleOncallcxCards(data.articles);
   data.products = mergeById(Array.isArray(data.products) ? data.products : [], VIDEO_PRODUCTS);
 
   data.cmsModules = mergeById(Array.isArray(data.cmsModules) ? data.cmsModules : [], [
