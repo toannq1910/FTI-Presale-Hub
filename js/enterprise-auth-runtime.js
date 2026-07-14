@@ -406,6 +406,23 @@ async function inviteNewUser(email, fullName, groupId){
   return data || {};
 }
 
+// Delete / lock / unlock all go through the same Edge Function as invite,
+// since they equally require auth.admin.* methods (service_role only).
+async function manageUser(action, userId){
+  const { data: { session } } = await supabase.auth.getSession();
+  if(!session) throw new Error('Phiên đăng nhập đã hết hạn, hãy đăng nhập lại.');
+  const { data, error } = await supabase.functions.invoke('invite-user', {
+    body: { action, user_id: userId }
+  });
+  if(error){
+    let detail = error.message;
+    try { const body = await error.context.json(); if(body?.error) detail = body.error; } catch {}
+    throw new Error(detail);
+  }
+  if(data?.error) throw new Error(data.error);
+  return data || {};
+}
+
 async function renderUsersPageV2() {
   if (location.hash !== '#users') return;
   if (!requirePermission('users.view')) return renderGuardedPage('Bạn cần quyền users.view.');
@@ -432,10 +449,14 @@ async function renderUsersPageV2() {
   <section class="auth-card">
     <h3>Danh sách User</h3>
     <table class="auth-table"><thead><tr><th>User</th><th>Group</th><th>Action</th></tr></thead><tbody>
-      ${users.map(u => `<tr>
-        <td><b>${esc(u.full_name || u.username || u.id)}</b><br><small>${esc(u.username || '')}</small></td>
+      ${users.map(u => `<tr${u.is_locked ? ' class="auth-row-locked"' : ''}>
+        <td><b>${esc(u.full_name || u.username || u.id)}</b>${u.is_locked ? ' <span class="auth-badge auth-badge-locked">Đã khóa</span>' : ''}<br><small>${esc(u.username || '')}</small></td>
         <td>${groups.map(g=>`<label class="auth-inline-check"><input type="checkbox" data-user-group="${esc(u.id)}|${esc(g.id)}" ${(u.groupIds||[]).includes(g.id)?'checked':''} ${canWrite?'':'disabled'}> ${esc(g.name)}</label>`).join('')}</td>
-        <td><button class="btn btn-soft" data-reset-pass="${esc(u.username || '')}" ${canWrite && u.username ? '' : 'disabled'}>Reset Pass</button></td>
+        <td class="auth-action-icons">
+          <button class="icon-btn" data-reset-pass="${esc(u.username || '')}" title="Đặt lại mật khẩu (gửi email)" ${canWrite && u.username ? '' : 'disabled'}>🔑</button>
+          <button class="icon-btn" data-toggle-lock="${esc(u.id)}|${u.is_locked ? 'unlock' : 'lock'}" title="${u.is_locked ? 'Mở khóa user' : 'Khóa user (chặn đăng nhập)'}" ${canWrite ? '' : 'disabled'}>${u.is_locked ? '🔓' : '🔒'}</button>
+          <button class="icon-btn" data-delete-user="${esc(u.id)}" title="Xóa user vĩnh viễn" ${canWrite ? '' : 'disabled'}>🗑️</button>
+        </td>
       </tr>`).join('')}
     </tbody></table>
   </section>`;
@@ -495,6 +516,44 @@ async function renderUsersPageV2() {
     if (error) return showToast('Lỗi: ' + error.message, 'error');
     await addAudit('users.reset_password_email', { email });
     showToast(`Đã gửi email đặt lại mật khẩu tới ${email}.`, 'success');
+  }));
+
+  root.querySelectorAll('[data-toggle-lock]').forEach(btn => btn.addEventListener('click', async () => {
+    if (!requirePermission('users.update')) return;
+    const [userId, action] = String(btn.getAttribute('data-toggle-lock') || '').split('|');
+    const isLock = action === 'lock';
+    const label = users.find(u => u.id === userId)?.full_name || users.find(u => u.id === userId)?.username || userId;
+    if (!confirm(isLock ? `Khóa đăng nhập của "${label}"? User này sẽ không đăng nhập được cho tới khi mở khóa lại.` : `Mở khóa đăng nhập cho "${label}"?`)) return;
+    btn.disabled = true;
+    try {
+      const result = await manageUser(action, userId);
+      if (result.warning) showToast(result.warning, 'warning');
+      else showToast(isLock ? `Đã khóa "${label}".` : `Đã mở khóa "${label}".`, 'success');
+      await addAudit(isLock ? 'users.lock' : 'users.unlock', { userId });
+      renderUsersPageV2();
+    } catch (err) {
+      showToast('Lỗi: ' + err.message, 'error');
+      btn.disabled = false;
+    }
+  }));
+
+  root.querySelectorAll('[data-delete-user]').forEach(btn => btn.addEventListener('click', async () => {
+    if (!requirePermission('users.update')) return;
+    const userId = btn.getAttribute('data-delete-user');
+    const user = users.find(u => u.id === userId);
+    const label = user?.full_name || user?.username || userId;
+    if (!confirm(`XÓA VĨNH VIỄN "${label}"? Hành động này không thể hoàn tác.`)) return;
+    if (!confirm(`Xác nhận lần nữa: xóa hẳn tài khoản "${label}" khỏi hệ thống?`)) return;
+    btn.disabled = true;
+    try {
+      await manageUser('delete', userId);
+      showToast(`Đã xóa "${label}".`, 'success');
+      await addAudit('users.delete', { userId, label });
+      renderUsersPageV2();
+    } catch (err) {
+      showToast('Lỗi: ' + err.message, 'error');
+      btn.disabled = false;
+    }
   }));
 }
 

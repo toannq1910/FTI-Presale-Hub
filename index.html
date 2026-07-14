@@ -42,6 +42,11 @@ html,body{height:100%;overflow:hidden!important}
 .auth-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:10px;margin-top:14px}.auth-form input,.auth-form select{border:1px solid var(--line,#263754);background:#050a18;color:#dbeafe;border-radius:12px;padding:11px 12px;outline:none}
 .auth-table{width:100%;border-collapse:collapse}.auth-table th,.auth-table td{border-bottom:1px solid rgba(148,163,184,.15);padding:10px;text-align:left;color:#c4d3ea}.auth-table th{color:#e2e8f0;background:rgba(255,255,255,.04)}
 .auth-badge{display:inline-flex;border-radius:999px;padding:3px 8px;font-size:11px;font-weight:900;background:rgba(59,130,246,.14);border:1px solid rgba(59,130,246,.28);color:#93c5fd}
+.auth-badge-locked{background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.3);color:#fca5a5}
+.auth-row-locked{opacity:.6}
+.auth-action-icons{display:flex;gap:8px}
+.auth-action-icons .icon-btn{width:34px;height:34px}
+.auth-action-icons .icon-btn:disabled{opacity:.35;cursor:not-allowed}
 .auth-badge.locked{background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.28);color:#fca5a5}
 .auth-inline-check{display:inline-flex;align-items:center;gap:8px;margin:4px 10px 4px 0;padding:7px 10px;border:1px solid rgba(59,130,246,.22);border-radius:999px;background:rgba(15,23,42,.35);color:#dbeafe;font-size:12px;font-weight:800;white-space:nowrap}
 .auth-inline-check input{accent-color:#22c55e}
@@ -184,6 +189,6 @@ body:not(.cms-locked) .auth-system-group{display:block!important}
 <script type="module" src="js/api-center-runtime.js"></script>
 <script type="module" src="js/video-conference-complete-runtime.js"></script>
 <script type="module" src="js/cms-full-content-sync.js?v=20260713-2"></script>
-<script type="module" src="js/enterprise-auth-runtime.js?v=20260713-1"></script>
+<script type="module" src="js/enterprise-auth-runtime.js?v=20260714-1"></script>
 <script type="module" src="js/oncallcx-user-guide-runtime.js?v=20260701-4"></script>
 </body></html>

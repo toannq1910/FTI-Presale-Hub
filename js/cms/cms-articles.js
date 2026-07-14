@@ -70,8 +70,7 @@ const ARTICLE_SYNC_SEEDS = [
     summary:'Trang sản phẩm OnCallCX hiển thị hai bài viết độc lập: OnCallCX CCaaS và OnCallCX UCaaS. Mỗi bài có Product Center, Presentation và tài liệu riêng.',
     cards:[
       {title:'OnCallCX CCaaS', summary:ONCALLCX_CCAAS_SUMMARY, url:'#oncallcx-product-center:prod-oncallcx-fpt'},
-      {title:'OnCallCX UCaaS', summary:'OnCallCX UCaaS tập trung vào tổng đài Cloud PBX, extension, SIP trunk, call routing và tích hợp CRM/API cho doanh nghiệp.', url:'#oncallcx-product-center:prod-oncallcx-ucaas-inherited'},
-      {title:'API Reference', summary:'API/Webhook, CDR, Recording và tích hợp CRM/ERP.', url:'#api-reference'}
+      {title:'OnCallCX UCaaS', summary:'OnCallCX UCaaS tập trung vào tổng đài Cloud PBX, extension, SIP trunk, call routing và tích hợp CRM/API cho doanh nghiệp.', url:'#oncallcx-product-center:prod-oncallcx-ucaas-inherited'}
     ]
   },
   {
@@ -306,6 +305,17 @@ function normalizeArticleRoutes(data){
   });
   data.articles.forEach(normalizeArticleRoute);
   data.articles = dedupeArticles(data.articles);
+  // Migration: article-oncallcx used to also carry a bare, under-filled
+  // 'API Reference' card (no feature tags, unlike its two sibling cards) --
+  // that content already has its own dedicated page/sidebar entry
+  // elsewhere, so this card was always redundant here. The merge above
+  // only fills in cards when none exist yet, so sessions that already
+  // created this article with the old 3-card seed need this explicit
+  // one-time strip to actually drop it.
+  const oncallcxArticle = data.articles.find(a => a.id === 'article-oncallcx');
+  if(oncallcxArticle && Array.isArray(oncallcxArticle.cards)){
+    oncallcxArticle.cards = oncallcxArticle.cards.filter(c => c?.title !== 'API Reference' || c?.url !== '#api-reference');
+  }
   data.articles.sort((a,b) => {
     const ao = articleOrder(a);
     const bo = articleOrder(b);
