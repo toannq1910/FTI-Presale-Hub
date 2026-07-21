@@ -5,7 +5,7 @@
    username concept anymore).
 */
 import { esc } from './cms/cms-core.js';
-import { supabase, hadAuthCallbackHash } from './supabase-client.js?v=20260713-1';
+import { supabase, hadAuthCallbackHash, authCallbackError } from './supabase-client.js?v=20260720-1';
 
 let handledAuthCallback = false;
 
@@ -275,6 +275,26 @@ function bindLoginForm() {
     evt.preventDefault();
     logout();
   });
+
+  const forgotLink = document.querySelector('#forgotPasswordLink');
+  if (forgotLink && !forgotLink.dataset.bound) {
+    forgotLink.dataset.bound = '1';
+    forgotLink.addEventListener('click', async evt => {
+      evt.preventDefault();
+      const emailInput = document.querySelector('#loginEmail');
+      const prefill = emailInput?.value.trim() || '';
+      const email = prompt('Nhập email tài khoản để nhận link đặt lại mật khẩu:', prefill);
+      if (!email) return;
+      if (!email.includes('@')) return showToast('Email không hợp lệ.', 'warning');
+      forgotLink.textContent = 'Đang gửi...';
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${location.origin}${location.pathname}#change-password`
+      });
+      forgotLink.textContent = 'Quên mật khẩu?';
+      if (error) return showToast('Lỗi: ' + error.message, 'error');
+      showToast(`Đã gửi email đặt lại mật khẩu tới ${email.trim()}. Vui lòng kiểm tra hộp thư (kể cả Spam).`, 'success');
+    });
+  }
 }
 
 function setActiveNav() {
@@ -772,6 +792,15 @@ async function initAuth() {
 
   await refreshAuthState();
   if (!currentUser()) showLogin(); else hideLogin();
+
+  // Supabase sends failed/expired/already-used invite or recovery links
+  // back as #error=...&error_description=... instead of a usable session.
+  // Without this, the person just silently lands on Overview with zero
+  // explanation of what went wrong -- surfacing it directly instead.
+  if (authCallbackError) {
+    showLogin();
+    showToast(`Link không hợp lệ hoặc đã hết hạn: ${authCallbackError}. Hãy dùng "Quên mật khẩu?" để nhận link mới.`, 'error');
+  }
 }
 
 window.addEventListener('DOMContentLoaded', () => setTimeout(initAuth, 0));
