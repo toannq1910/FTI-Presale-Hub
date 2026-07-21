@@ -5,7 +5,7 @@
    username concept anymore).
 */
 import { esc } from './cms/cms-core.js';
-import { supabase, hadAuthCallbackHash, authCallbackError } from './supabase-client.js?v=20260720-1';
+import { supabase, hadAuthCallbackHash, authCallbackError, ensureAuthCallbackSession } from './supabase-client.js?v=20260720-2';
 
 let handledAuthCallback = false;
 
@@ -789,6 +789,13 @@ async function initAuth() {
   supabase.auth.onAuthStateChange((_event, _session) => {
     refreshAuthState();
   });
+
+  // Must finish BEFORE the first refreshAuthState() check below -- this is
+  // what actually establishes the session from an invite/recovery link's
+  // tokens (hash) or code (query string), explicitly and awaited, rather
+  // than relying on detectSessionInUrl's internal (otherwise unawaitable)
+  // background processing racing against our own auth check.
+  await ensureAuthCallbackSession();
 
   await refreshAuthState();
   if (!currentUser()) showLogin(); else hideLogin();

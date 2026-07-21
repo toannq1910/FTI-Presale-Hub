@@ -13,50 +13,72 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const SUPABASE_URL = 'https://bhjfwptspbgxskambgpz.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_IFniZpwqDxne-sdIVSPODg_EkftlJzf';
 
-// Must be captured BEFORE createClient() runs: with detectSessionInUrl:true,
-// the client can read/consume/rewrite location.hash as a side effect of
-// being created, so checking this from an importing module (after the
-// `import` line has already fully evaluated this file) can be too late --
-// the hash may already be gone by then. Capturing it here, first, and
-// exporting the flags is the only way to reliably know whether the page
-// was loaded from an invite/recovery email link.
-//
-// Two different shapes can show up here depending on Supabase's configured
-// Auth flow type:
-//   - Implicit flow: tokens land in the HASH, e.g. #access_token=...&type=recovery
-//   - PKCE flow (Supabase's current default): a `code` lands in the QUERY
-//     string instead, e.g. ?code=xxxx -- detectSessionInUrl only auto-handles
-//     this on some supabase-js versions, so this is checked explicitly too.
-// A failed/expired/already-used link comes back as #error=...&error_code=...
-// instead of either of the above -- surfaced separately so the app can show
-// a real explanation instead of silently landing on Overview.
+// Captured BEFORE createClient() runs and BEFORE any manual parsing below
+// mutates anything, since these raw strings are read only once here.
 const hash = location.hash;
 const search = location.search;
-export const hadAuthCallbackHash = /access_token=|type=invite|type=recovery/.test(hash);
-export const hadAuthCallbackCode = /[?&]code=/.test(search);
+
+// A failed/expired/already-used link comes back as #error=...&error_description=...
+// -- surfaced separately so the app can show a real explanation instead of
+// silently landing on Overview with no session and no clue why.
 export const authCallbackError = (() => {
   const params = new URLSearchParams(hash.replace(/^#/, ''));
   const description = params.get('error_description');
   return description ? decodeURIComponent(description.replace(/\+/g, ' ')) : null;
 })();
 
+// Whether this page load is an auth callback at all (invite/recovery link,
+// success or failure) -- used by enterprise-auth-runtime.js to decide
+// whether to redirect to #change-password once a session is confirmed.
+export const hadAuthCallbackHash = /access_token=|type=invite|type=recovery|error=/.test(hash);
+
 export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: true
+    // Deliberately OFF: relying on this to auto-parse the URL asynchronously
+    // in the background creates a race condition against our own code below
+    // (and against enterprise-auth-runtime.js's initAuth(), which needs to
+    // know definitively whether a session exists before deciding what to
+    // render) -- there's no way to await "detectSessionInUrl finished".
+    // Instead, everything below establishes the session explicitly and
+    // synchronously (well, as an awaited promise) so callers can just
+    // `await ensureAuthCallbackSession()` and know for certain it's done.
+    detectSessionInUrl: false
   }
 });
 
-// Safety net for the PKCE (?code=) shape: if detectSessionInUrl didn't
-// already consume it (behavior differs slightly by supabase-js version),
-// explicitly exchange it for a session so the rest of the app doesn't have
-// to know which flow type is configured.
-if (hadAuthCallbackCode) {
-  const codeMatch = search.match(/[?&]code=([^&]+)/);
-  if (codeMatch) {
-    supabase.auth.exchangeCodeForSession(decodeURIComponent(codeMatch[1])).catch(err => {
-      console.warn('[supabase-client] exchangeCodeForSession failed:', err);
-    });
+// Two different shapes can show up in an auth callback link, depending on
+// Supabase's configured Auth flow type:
+//   - Implicit flow: tokens land in the HASH, e.g. #access_token=...&type=recovery
+//   - PKCE flow (Supabase's current default for new projects): a `code`
+//     lands in the QUERY STRING instead, e.g. ?code=xxxx
+// Call this once, early, and await it before checking supabase.auth.getUser()
+// anywhere else -- guarantees the session (if any) is fully established
+// first, removing any timing race with detectSessionInUrl's own internal
+// (otherwise unawaitable) async processing.
+export async function ensureAuthCallbackSession() {
+  const hashParams = new URLSearchParams(hash.replace(/^#/, ''));
+  const accessToken = hashParams.get('access_token');
+  const refreshToken = hashParams.get('refresh_token');
+  if (accessToken && refreshToken) {
+    const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+    if (error) console.warn('[supabase-client] setSession from hash tokens failed:', error);
+    // Scrub the raw tokens out of the visible URL/history immediately --
+    // otherwise they'd sit there in plain sight (address bar, browser
+    // history) after this point serves no further purpose. Preserves the
+    // 'type=recovery' bit for enterprise-auth-runtime.js's redirect-to-
+    // change-password check, dropping only the sensitive token values.
+    const cleaned = hashParams.get('type') ? `#type=${hashParams.get('type')}` : '';
+    history.replaceState(null, '', location.pathname + location.search + cleaned);
+    return;
+  }
+
+  const searchParams = new URLSearchParams(search);
+  const code = searchParams.get('code');
+  if (code) {
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) console.warn('[supabase-client] exchangeCodeForSession failed:', error);
+    history.replaceState(null, '', location.pathname + hash);
   }
 }
